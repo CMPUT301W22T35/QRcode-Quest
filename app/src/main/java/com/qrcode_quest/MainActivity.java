@@ -1,4 +1,4 @@
-package com.example.qrcode_quest;
+package com.qrcode_quest;
 
 import androidx.appcompat.app.AppCompatActivity;
 
