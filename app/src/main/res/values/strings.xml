@@ -2,4 +2,6 @@
     <string name="app_name">QRcode-quest</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="fragment_test_label">fragment_test</string>
+    <string name="fragment_test2_label">fragment_test2</string>
 </resources>

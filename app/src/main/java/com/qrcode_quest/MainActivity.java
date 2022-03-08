@@ -3,12 +3,24 @@ package com.qrcode_quest;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDirections;
+import androidx.navigation.NavHost;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity {
+
+    NavHostFragment navigationHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,46 +30,17 @@ public class MainActivity extends AppCompatActivity {
         Toast toast = Toast.makeText(this, "Hello toast", Toast.LENGTH_SHORT);
         toast.show();
 
-        initButtons();
+        initFragments();
     }
 
-    private void initButtons() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
+    private void initFragments() {
+        FragmentContainerView container = findViewById(R.id.fragmentContainerView);
 
-        // replace current fragment in fragment container by TestFragment instance
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // fragment replaced by test
-                fragmentManager.beginTransaction()
-                        .add(R.id.frameLayout, TestFragment.class, null)
-                        .setReorderingAllowed(true)
-                        .addToBackStack("test")
-                        .commit();
-            }
-        });
+        // https://stackoverflow.com/questions/58703451/fragmentcontainerview-as-navhostfragment
+        NavController controller = ((NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView))).getNavController();
 
-        // replace current fragment in fragment container by TestFragment2 instance
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // fragment replaced by test
-                fragmentManager.beginTransaction()
-                        .add(R.id.frameLayout, TestFragment2.class, null)
-                        .setReorderingAllowed(true)
-                        .addToBackStack("test2")
-                        .commit();
-            }
-        });
-
-        // clear back stack
-        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // fragment replaced by test
-                fragmentManager
-                        .popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            }
-        });
+        NavDirections action = TestFragmentDirections.actionTestFragmentToTestFragment2();
+        controller.navigate(action);
+        //NavigationUI.setupWithNavController(view, controller);
     }
 }
