@@ -16,8 +16,7 @@ import java.security.NoSuchAlgorithmException;
 public class RawQRCode {
     private final String qr;
 
-    // is ASCII the right choice?
-    static private final Charset charset = StandardCharsets.US_ASCII; // encode method for String to byte[]
+    static private final Charset charset = StandardCharsets.US_ASCII; // encode method between String&byte[]
 
     /**
      * Create a RawQRCode from a text representation of QR code
@@ -96,11 +95,12 @@ public class RawQRCode {
      * @param hash a hex representation of hash that the score will be calculated from
      * @return the score calculated
      */
-    static public int getScoreFromHash(byte[] hash) {
+    static public int getScoreFromHash(String hash) {
+        byte[] bytes = hash.getBytes(charset);
         int score = 0;
         int i = 0;
-        while (i < hash.length) {
-            byte digit = getHexDigitOfHexCharacter(hash[i]);
+        while (i < bytes.length) {
+            byte digit = getHexDigitOfHexCharacter(bytes[i]);
             int baseScore = digit;
             if (digit == 0)
                 baseScore = 20;
@@ -108,8 +108,8 @@ public class RawQRCode {
             // count continuous string of same digits as combo
             int comboScore = 1;
             int sequenceCount = 1;
-            while (i + sequenceCount < hash.length &&
-                    getHexDigitOfHexCharacter(hash[i + sequenceCount]) == digit) {
+            while (i + sequenceCount < bytes.length &&
+                    getHexDigitOfHexCharacter(bytes[i + sequenceCount]) == digit) {
                 comboScore *= baseScore;
                 sequenceCount += 1;
             }
@@ -127,10 +127,10 @@ public class RawQRCode {
      * Gives SHA-256 hash of the QR code text, see <url href="https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html">MessageDigest</url>
      * @return the SHA-256 hash value in hexadecimal format, with each digit a byte value less than 16
      */
-    public byte[] getQRHash() throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public String getQRHash() throws NoSuchAlgorithmException, UnsupportedEncodingException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");  // use SHA-256 algorithm
         md.update(qr.getBytes(charset));  // encode to byte[] then apply SHA-256 hash
-        return getHexRepresentationOfByteArray(md.digest());  // write in hex format
+        return new String(getHexRepresentationOfByteArray(md.digest()), charset);  // write in hex format
     }
 
     /**
