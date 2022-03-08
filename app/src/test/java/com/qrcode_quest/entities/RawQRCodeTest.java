@@ -1,4 +1,4 @@
-package com.qrcode_quest;
+package com.qrcode_quest.entities;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
