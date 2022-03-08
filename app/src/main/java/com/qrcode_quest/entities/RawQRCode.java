@@ -29,6 +29,38 @@ public class RawQRCode {
         return qr;
     }
 
+    /**
+     * Turns value of a hex digit between 0 and 15 into its readable byte representation
+     * @param input An input value in the range between 0-15
+     * @return the result value is in range '0' to '9' or 'a' to 'f'
+     */
+    static public byte getHexCharacterOfHexDigit(byte input) throws IllegalArgumentException {
+        if (input >= 0 && input < 10) {
+            return (byte) ('0' + input);
+        } else if (input >= 10 && input < 16) {
+            return (byte) ('a' + (input - 10));
+        } else {
+            throw new IllegalArgumentException(
+                    "Input byte value " + Integer.toString(input) + " out of range [0, 16) and is not a hex digit!");
+        }
+    }
+
+    /**
+     * Turns a hex character to its corresponding numerical value
+     * @param digit a hex character that is a byte in either '0' to '9' or 'a' to 'f'
+     * @return the interpreted numerical hex value between 0 and 15
+     */
+    static public byte getHexDigitOfHexCharacter(byte digit) throws IllegalArgumentException {
+        if (digit >= '0' && digit <= '9') {
+            return (byte) (digit - '0');
+        } else if (digit >= 'a' && digit <= 'f') {
+            return (byte) (10 + (digit - 'a'));
+        } else {
+            throw new IllegalArgumentException(
+                    "Input byte character " + digit + " is not in '0' to '9' or 'a' to 'f'!");
+        }
+    }
+
     static public byte[] getHexRepresentationOfByteArray(byte[] input) {
         int outputLength = input.length * 2;  // length will double in hexadecimal format
         int finalByte = input[input.length - 1] & 0xFF;
@@ -49,6 +81,12 @@ public class RawQRCode {
                 result[i * 2 + 1] = (byte) (inputDigit - upper * 16);
             }
         }
+
+        // each entry the byte array is currently within range 0-15, but we want them to be readable
+        for (int i = 0; i < result.length; i++) {
+            result[i] = getHexCharacterOfHexDigit(result[i]);
+        }
+
         return result;
     }
 
@@ -62,7 +100,7 @@ public class RawQRCode {
         int score = 0;
         int i = 0;
         while (i < hash.length) {
-            byte digit = hash[i];
+            byte digit = getHexDigitOfHexCharacter(hash[i]);
             int baseScore = digit;
             if (digit == 0)
                 baseScore = 20;
@@ -70,7 +108,8 @@ public class RawQRCode {
             // count continuous string of same digits as combo
             int comboScore = 1;
             int sequenceCount = 1;
-            while (i + sequenceCount < hash.length && hash[i + sequenceCount] == digit) {
+            while (i + sequenceCount < hash.length &&
+                    getHexDigitOfHexCharacter(hash[i + sequenceCount]) == digit) {
                 comboScore *= baseScore;
                 sequenceCount += 1;
             }
@@ -82,52 +121,6 @@ public class RawQRCode {
             i += sequenceCount;
         }
         return score;
-    }
-
-    /**
-     * translate a hex byte array to readable byte array
-     * meaning the original value range from 0 to 15 will be mapped to '0' to '9' and 'a' to 'e'
-     * @param qrHash the hash to translate
-     * @return a new byte array of same length, but in readable format
-     */
-    static public byte[] translateHashToReadable(byte[] qrHash) {
-        byte[] result = qrHash.clone();
-        for(int i = 0; i < result.length; i++) {
-            byte digit = result[i];
-            if (digit >= 0 && digit < 10) {
-                result[i] = (byte) ('0' + digit);
-            } else if (digit >= 10 && digit < 16) {
-                result[i] = (byte) ('a' + (digit - 10));
-            } else {
-                throw new IllegalArgumentException(
-                        "hex representation of qrHash contains byte value out of range [0, 16) " +
-                        "at index " + Integer.toString(i) + " with value " + Byte.toString(digit));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * translate a readable hex byte array to hex byte array with each entry less than 16
-     * meaning the original values '0' to '9' and 'a' to 'e' will be mapped to 0-15
-     * @param bytes the hash to translate
-     * @return a new byte array of same length, but with each entry less than 16
-     */
-    static public byte[] translateReadableToHash(byte[] bytes) {
-        byte[] result = bytes.clone();
-        for(int i = 0; i < result.length; i++) {
-            byte digit = result[i];
-            if (digit >= '0' && digit <= '9') {
-                result[i] = (byte) (digit - '0');
-            } else if (digit >= 'a' && digit <= 'f') {
-                result[i] = (byte) (10 + (digit - 'a'));
-            } else {
-                throw new IllegalArgumentException(
-                        "input is not a readable hexadecimal byte array " +
-                        "at index " + Integer.toString(i) + " with value " + Byte.toString(digit));
-            }
-        }
-        return result;
     }
 
     /**
