@@ -56,8 +56,7 @@ public class PlayerAccount {
         this.phone = phone;
     }
 
-    @NonNull
-    public String getUsername() {
+    public @NonNull String getUsername() {
         return username;
     }
 
@@ -65,17 +64,15 @@ public class PlayerAccount {
     public void setEmail(@NonNull String email) {
         this.email = email;
     }
-    @NonNull
-    public String getEmail() {
+    public @NonNull String getEmail() {
         return email;
     }
 
     // Phone getter/setter
-    public void setPhoneNumber(String phoneNumber){
+    public void setPhoneNumber(@NonNull String phoneNumber){
         this.phone = phoneNumber;
     }
-    @NonNull
-    public String getPhoneNumber() {
+    public @NonNull String getPhoneNumber() {
         return phone;
     }
 }
