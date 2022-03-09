@@ -37,10 +37,11 @@ public class PlayerAccount {
      * <br><br>
      * <i><b>Important</b>: This does <b>not</b> communicate with the database.
      * Username uniqueness is not guaranteed and the addition is <b>not</b> saved automatically.</i>
+     *
+     * @param username The unique username of the new PlayerAccount
      * @see PlayerManager
-     * @param username
      */
-    public PlayerAccount(String username){
+    public PlayerAccount(@NonNull String username){
         this.username = username;
         this.email = "";
         this.phone = "";
@@ -50,7 +51,7 @@ public class PlayerAccount {
      * For more detailed documentation:
      * @see PlayerAccount#PlayerAccount(String)
      */
-    public PlayerAccount(String username, String email, String phone){
+    public PlayerAccount(@NonNull String username, String email, String phone){
         this.username = username;
         this.email = email;
         this.phone = phone;
