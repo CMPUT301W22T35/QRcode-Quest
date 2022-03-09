@@ -1,13 +1,18 @@
 package com.qrcode_quest.entities;
 
+import androidx.annotation.NonNull;
+
 /**
  * Represents one comment made by a user under a qr code.
  * @author tianming
  * @version 1.0
  */
 public class Comment {
+    @NonNull
     private String uid;  // id of the commenter
+    @NonNull
     private String content;
+    @NonNull
     private String qrHash;
 
     /**
@@ -16,7 +21,7 @@ public class Comment {
      * @param content content of the comment
      * @param qrHash hash string of the qr code
      */
-    public Comment(String uid, String content, String qrHash) {
+    public Comment(@NonNull String uid, @NonNull String content, @NonNull String qrHash) {
         this.uid = uid;
         this.content = content;
         this.qrHash = qrHash;
@@ -26,7 +31,7 @@ public class Comment {
      * get the id of the commenter
      * @return id of the player commented under the qr code
      */
-    public String getUid() {
+    public @NonNull String getUid() {
         return uid;
     }
 
@@ -34,7 +39,7 @@ public class Comment {
      * set the commenter id of the comment
      * @param uid id of the player commented under the qr code
      */
-    public void setUid(String uid) {
+    public void setUid(@NonNull String uid) {
         this.uid = uid;
     }
 
@@ -42,7 +47,7 @@ public class Comment {
      * get the comment content
      * @return the content string
      */
-    public String getContent() {
+    public @NonNull String getContent() {
         return content;
     }
 
@@ -50,7 +55,7 @@ public class Comment {
      * set the comment content
      * @param content the content string
      */
-    public void setContent(String content) {
+    public void setContent(@NonNull String content) {
         this.content = content;
     }
 
@@ -58,7 +63,7 @@ public class Comment {
      * get the hash of qr code
      * @return hash string of qr code
      */
-    public String getQrHash() {
+    public @NonNull String getQrHash() {
         return qrHash;
     }
 
@@ -66,7 +71,7 @@ public class Comment {
      * set the comment to be under another qr code
      * @param qrHash hash string of the new qr code
      */
-    public void setQrHash(String qrHash) {
+    public void setQrHash(@NonNull String qrHash) {
         this.qrHash = qrHash;
     }
 }

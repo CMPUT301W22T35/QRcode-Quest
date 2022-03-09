@@ -1,5 +1,7 @@
 package com.qrcode_quest.entities;
 
+import androidx.annotation.NonNull;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
  * @version 1.0
  */
 public class RawQRCode {
-    private final String qr;
+    @NonNull private final String qr;
 
     static private final Charset charset = StandardCharsets.US_ASCII; // encode method between String&byte[]
 
@@ -22,9 +24,9 @@ public class RawQRCode {
      * Create a RawQRCode from a text representation of QR code
      * @param qr text of the QR code
      */
-    public RawQRCode(String qr) { this.qr = qr; }
+    public RawQRCode(@NonNull String qr) { this.qr = qr; }
 
-    public String getQR() {
+    public @NonNull String getQR() {
         return qr;
     }
 
