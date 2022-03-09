@@ -8,13 +8,14 @@ import org.junit.Test;
 public class QRShotTest {
     @Test
     public void testFullConstructor(){
+        Geolocation location = new Geolocation(-0.1, 0.1);
         QRShot shot = new QRShot("Dad", "randomhash",
-                null, new Geolocation(-0.1, 0.1));
+                null, location);
 
         assertNotEquals(shot.getName(), "");
         assertEquals(shot.getOwnerName(), "Dad");
         assertEquals(shot.getCodeHash(), "randomhash");
-        assertEquals(shot.getLocation(), new Geolocation(-0.1, 0.1));
+        assertEquals(shot.getLocation(), location);
 
         // Note: Photo is not tested as it requires static functions building a bitmap
         assertEquals(shot.getPhoto(), null);
@@ -35,8 +36,9 @@ public class QRShotTest {
         QRShot shot = new QRShot("Dad", "randomhash");
 
         // Set and test location
-        shot.setLocation(new Geolocation(1.0, -1.0));
-        assertEquals(shot.getLocation(), new Geolocation(1.0, -1.0));
+        Geolocation location = new Geolocation(-0.1, 0.1);
+        shot.setLocation(location);
+        assertEquals(shot.getLocation(), location);
 
         // Note: Photo is not tested as it requires static functions building a bitmap
         shot.setPhoto(null);
