@@ -19,6 +19,7 @@ public class Result<T> {
      */
     public Result(T result){
         this.result = result;
+        this.error = null;
     }
 
     /**
@@ -27,13 +28,14 @@ public class Result<T> {
      */
     public Result(DbError error){
         this.error = error;
+        this.result = null;
     }
 
     /**
      * Returns if a Result contains a success response.
      */
     public boolean isSuccess(){
-        return this.error != null;
+        return (this.error == null);
     }
 
     /**
