@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "563697182778",
+    "project_id": "qrquestegwhite",
+    "storage_bucket": "qrquestegwhite.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563697182778:android:d5e9c645f511b4322c2d03",
+        "android_client_info": {
+          "package_name": "com.qrcode_quest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "563697182778-t2n9o806h5647na9c49u63dlvmms8odj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEIZ3VvGCqfvQU2JFOJi44l3L-I1817q4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "563697182778-t2n9o806h5647na9c49u63dlvmms8odj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
