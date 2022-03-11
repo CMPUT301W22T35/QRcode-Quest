@@ -31,6 +31,12 @@ public class PlayerAccount {
     @NonNull
     private String phone;
 
+    /** A flag determining if a user has privileged access */
+    private boolean isOwner;
+
+    /** A flag determining of a user has been deleted and should not be displayed */
+    private boolean isDeleted;
+
     /**
      * Creates a local instance of a player.
      * In most cases, <code>PlayerManager</code> should be used to create new players.
@@ -45,16 +51,52 @@ public class PlayerAccount {
         this.username = username;
         this.email = "";
         this.phone = "";
+        this.isDeleted = false;
+        this.isOwner = false;
     }
 
     /**
      * For more detailed documentation:
      * @see PlayerAccount#PlayerAccount(String)
      */
-    public PlayerAccount(@NonNull String username, String email, String phone){
+    public PlayerAccount(@NonNull String username, @NonNull String email, @NonNull String phone){
+
         this.username = username;
         this.email = email;
         this.phone = phone;
+        this.isDeleted = false;
+        this.isOwner = false;
+    }
+
+    /**
+     * For more detailed documentation:
+     * @see PlayerAccount#PlayerAccount(String)
+     */
+    public PlayerAccount(@NonNull String username, @NonNull String email, @NonNull String phone,
+                         boolean isDeleted, boolean isOwner){
+
+        this.username = username;
+        this.email = email;
+        this.phone = phone;
+        this.isDeleted = isDeleted;
+        this.isOwner = isOwner;
+    }
+
+
+    // isDeleted getter/setter
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+    public boolean isDeleted() {
+        return this.isDeleted;
+    }
+
+    // isOwner getter/setter
+    public void setOwner(boolean isOwner){
+        this.isOwner = isOwner;
+    }
+    public boolean isOwner() {
+        return this.isOwner;
     }
 
     public @NonNull String getUsername() {
@@ -76,4 +118,5 @@ public class PlayerAccount {
     public @NonNull String getPhoneNumber() {
         return phone;
     }
+
 }
