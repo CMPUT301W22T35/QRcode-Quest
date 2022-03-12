@@ -34,6 +34,20 @@ import java.util.HashMap;
  * @see com.qrcode_quest.entities.QRShot
  */
 public class QRManager extends DatabaseManager {
+    FirebaseStorage firebaseStorage;  // for uploading the photos
+    public QRManager() {
+        super();
+        this.firebaseStorage = FirebaseStorage.getInstance();
+    }
+    public QRManager(FirebaseFirestore db) {
+        super(db);
+        this.firebaseStorage = FirebaseStorage.getInstance();
+    }
+    public QRManager(FirebaseFirestore db, FirebaseStorage firebaseStorage) {
+        this(db);
+        this.firebaseStorage = firebaseStorage;
+    }
+
     /**
      * Get all qr shot rows in the database
      * @param listener handles the returned list of QRShot objects on complete
@@ -162,8 +176,7 @@ public class QRManager extends DatabaseManager {
                     // transaction is basically completed, we upload the photo if applicable
                     // TODO: move this to a wrapper on onCompleteListener to guarantee execute upload after transaction complete
                     // see: https://firebase.google.com/docs/storage/android/upload-files
-                    FirebaseStorage storage = FirebaseStorage.getInstance();
-                    StorageReference photoRef = storage.getReference();
+                    StorageReference photoRef = firebaseStorage.getReference();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     UploadTask uploadTask = photoRef.putBytes(baos.toByteArray());
