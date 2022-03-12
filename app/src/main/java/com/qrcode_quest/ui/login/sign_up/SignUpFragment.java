@@ -2,6 +2,9 @@ package com.qrcode_quest.ui.login.sign_up;
 
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.qrcode_quest.Constants.*;
+
+import static java.util.Objects.requireNonNull;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,9 +21,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.qrcode_quest.R;
 import com.qrcode_quest.database.PlayerManager;
@@ -28,22 +31,31 @@ import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.UUID;
 
+/**
+ * A view to enable the user to either log in using a QR code or register a new user.
+ *
+ * @author jdumouch
+ * @version 1.0
+ */
 public class SignUpFragment extends Fragment {
+    /**
+     * Provides a handler for a successful registration.
+     */
     public interface RegisterHandler {
+        /**
+         * Called on a successful registration.
+         * @param deviceUID The unique device ID used to register a session
+         * @param username The username of the registered player
+         */
         void onRegistered(String deviceUID, String username);
     }
 
     /** A tag constant used for logging */
     private static final String CLASS_TAG = "SignUpFragment";
 
-    // TODO move this to a global location
-    private static final String PREF_PATH = "qrcode_quest";
-    private static final String AUTHED_USERNAME_PREF = "authed_username";
-    private static final String DEVICE_UID_PREF = "device_UID";
-
-    private EditText usernameField;
+    private TextInputEditText usernameField;
     private TextInputLayout usernameLayout;
-    private EditText emailField;
+    private TextInputEditText emailField;
     private TextInputLayout emailLayout;
     private Button scanLoginButton;
     private Button registerButton;
@@ -76,7 +88,7 @@ public class SignUpFragment extends Fragment {
 
         assert this.getActivity() != null;
         sharedPrefs = this.getActivity().getApplicationContext()
-                .getSharedPreferences(PREF_PATH, MODE_PRIVATE);
+                .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
 
         // Grab the view objects from the newly created fragment view
         usernameField = view.findViewById(R.id.login_signup_username);
@@ -125,11 +137,11 @@ public class SignUpFragment extends Fragment {
     }
 
     /**
-     * Validates the input and submits an addPlayer request.
+     * Validates user input and creates a new player/session.
      */
     void onRegisterClicked() {
         // Ensure that if the user entered an email it is valid
-        String chosenEmail = emailField.getText().toString();
+        String chosenEmail = requireNonNull(emailField.getText()).toString().trim();
         if (!chosenEmail.isEmpty() && !Patterns.EMAIL_ADDRESS.matcher(chosenEmail).matches()){
             emailLayout.setError("Invalid email address");
         }
@@ -138,11 +150,16 @@ public class SignUpFragment extends Fragment {
         }
 
         // Check the user actually entered a username
-        String chosenUsername = usernameField.getText().toString();
+        String chosenUsername = requireNonNull(usernameField.getText()).toString();
         if (chosenUsername.trim().isEmpty()) {
             usernameLayout.setError("Username is required");
-            return;
         }
+        else if (!chosenUsername.trim().equals(chosenUsername)){
+            usernameLayout.setError("No leading/trailing whitespace");
+        }
+
+        // Prevent a database request while a username error exists
+        if (usernameLayout.isErrorEnabled()) { return; }
 
         // Prevent the user from spamming calls
         registerButton.setEnabled(false);
@@ -155,18 +172,23 @@ public class SignUpFragment extends Fragment {
             if (!existsResult.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to check username existence");
                 Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                return;
             }
 
             Boolean isTaken = existsResult.unwrap();
             assert isTaken != null;
 
             if (!isTaken){
+                // Prevent registration while there are errors
+                if (usernameLayout.isErrorEnabled() || emailLayout.isErrorEnabled()){ return; }
+
                 // Username is free, we can add the user
                 PlayerAccount newPlayer = new PlayerAccount(chosenUsername, chosenEmail, "");
                 playerManager.addPlayer(newPlayer, addResult -> {
                     if (!addResult.isSuccess()){
                         Log.e(CLASS_TAG, "Failed to add user.");
                         Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                        return;
                     }
                     Log.i(CLASS_TAG, "New user registered: " + chosenUsername);
 
@@ -178,6 +200,7 @@ public class SignUpFragment extends Fragment {
                         if (!sessionResult.isSuccess()){
                             Log.e(CLASS_TAG, "Failed to add session.");
                             Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                            return;
                         }
 
                         // Call the parent to authenticate new user

@@ -11,7 +11,9 @@ import android.view.ViewGroup;
 import com.qrcode_quest.R;
 
 /**
- *
+ * A view to show the user that a login is in progress
+ * @author jdumouch
+ * @version 1.0
  */
 public class LoginLoadingFragment extends Fragment {
     public LoginLoadingFragment() {}

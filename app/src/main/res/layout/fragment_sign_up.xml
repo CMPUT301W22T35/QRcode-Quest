@@ -48,7 +48,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_signup_prompt">
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/login_signup_username"
             style="@style/Widget.AppCompat.EditText"
             android:layout_width="match_parent"
@@ -71,7 +71,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_signup_username_layout">
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/login_signup_email"
             style="@style/Widget.AppCompat.EditText"
             android:layout_width="match_parent"
