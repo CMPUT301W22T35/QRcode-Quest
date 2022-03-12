@@ -14,14 +14,14 @@ public class ResultTest {
 
         // Test all values are as they should be
         assertTrue(r1.isSuccess());
-        assertEquals(r1.getData(), "test");
+        assertEquals(r1.unwrap(), "test");
         assertNull(r1.getError());
 
         Result<Integer> r2 = new Result<>(10);
 
         // Test a second generic type
         assertTrue(r2.isSuccess());
-        assertEquals(r2.getData().intValue(), 10);
+        assertEquals(r2.unwrap().intValue(), 10);
         assertNull(r2.getError());
     }
 
@@ -33,7 +33,6 @@ public class ResultTest {
         assertFalse(r1.isSuccess());
         assertEquals(r1.getError().getMessage(), "failed");
         assertEquals(r1.getError().getSender(), this);
-        assertNull(r1.getData());
 
         Result<Integer> r2 = new Result<>(new DbError("failed", this));
 
@@ -41,6 +40,11 @@ public class ResultTest {
         assertFalse(r2.isSuccess());
         assertEquals(r2.getError().getMessage(), "failed");
         assertEquals(r2.getError().getSender(), this);
-        assertNull(r2.getData());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testUnwrapException(){
+        Result<Void> r = new Result<>(new DbError("err", this));
+        r.unwrap();
     }
 }
