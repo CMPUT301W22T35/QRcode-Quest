@@ -17,8 +17,20 @@ public class DatabaseManager {
 
     static private final String SENDER_NAME = "DatabaseManager";
 
-    private FirebaseFirestore db;
+    protected FirebaseFirestore db;
+    public DatabaseManager() { this.db = FirebaseFirestore.getInstance(); }
     public DatabaseManager(FirebaseFirestore db) { this.db = db; }
+
+    /**
+     * A simple callback interface for Managers to return data to their callers.
+     */
+    public interface OnManagerResult<T> {
+        /**
+         * Passes data from a Manager to a caller.
+         * @param result The data wrapped in a Result
+         */
+        void onResult(Result<T> result);
+    }
 
     /**
      * get the Firestore database instance in the manager
@@ -28,7 +40,7 @@ public class DatabaseManager {
         return db;
     }
 
-    public <T, DocumentType> void retrieveResultByTask(
+    protected <T, DocumentType> void retrieveResultByTask(
             Task<DocumentType> task,
             ManagerResult.OnRetrieveResult<Result<T>, DocumentType> onRetrieve) {
         // execute the task
@@ -51,7 +63,7 @@ public class DatabaseManager {
         });
     }
 
-    public <T> void retrieveObjectFromDocument(
+    protected <T> void retrieveObjectFromDocument(
             String collectionName,
             String documentName,
             ManagerResult.OnRetrieveResult<Result<T>, DocumentSnapshot> onRetrieve) {
