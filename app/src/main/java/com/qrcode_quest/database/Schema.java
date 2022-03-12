@@ -18,9 +18,7 @@ public class Schema {
     }
     public static final String PLAYER_NAME = "playerName";
     public static final String PLAYER_PROFILE_QRCODE = "profileQRcode";
-    public static final String PLAYER_PROFILE_QRCODE_RAW = "profileRawQRcode";
     public static final String PLAYER_LOGIN_QRCODE = "loginQRcode";
-    public static final String PLAYER_LOGIN_QRCODE_RAW = "loginRawQRcode";
     public static final String PLAYER_EMAIL = "email";
     public static final String PLAYER_PHONE = "phone";
     public static final String PLAYER_IS_DELETED = "isDeleted";
@@ -45,6 +43,11 @@ public class Schema {
     public static final String COMMENT_POSITION = "commentNumber";
     public static final String COMMENT_PLAYER_NAME = "playerName";
     public static final String COMMENT_TEXT = "text";
+    // workaround because there is no collection level locking
+    public static String getCommentMetaDocumentName(String qrHash) {
+        return "commentMeta_" + qrHash;
+    }
+    public static final String COMMENT_META_COUNT = "commentNum";
 
     public static final String COLLECTION_AUTH = "PlayerDevice";
     public static String getAuthDocumentName(String playerName, String deviceUID) {
@@ -62,13 +65,11 @@ public class Schema {
 
   PlayerAccount
   *playerName: a string, a unique id that is also the displayed name of the player
-  -profileQRcode: a hash code, generated at account creation and is shared on the screen when the
+  -profileQRcode: a string, generated at account creation and is shared on the screen when the
   user wants to display the profile of the player on
   another device
-  -profileRawQRcode:a string, for sharing profile code
-  -loginQRcode: a hash code, generated at account creation, and is shared on the screen when
+  -loginQRcode: a string, generated at account creation, and is shared on the screen when
   the user wants to login from another device
-  -loginRawQRcode: a string, for sharing login code
   -email: a string, email of the player
   -phone: a string, phone number of the player
   -isDeleted: a boolean, true if the account has been deleted by the owner
