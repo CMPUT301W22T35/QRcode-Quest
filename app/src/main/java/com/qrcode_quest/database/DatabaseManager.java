@@ -42,7 +42,8 @@ public class DatabaseManager {
 
     protected <T, DocumentType> void retrieveResultByTask(
             Task<DocumentType> task,
-            ManagerResult.OnRetrieveResult<Result<T>, DocumentType> onRetrieve) {
+            ManagerResult.Listener<T> listener,
+            ManagerResult.Retriever<T, DocumentType> retriever) {
         // execute the task
         task.addOnCompleteListener(new OnCompleteListener<DocumentType>() {
             @Override
@@ -50,14 +51,14 @@ public class DatabaseManager {
                 if (!task.isSuccessful()) {
                     Result<T> result = new Result<>(new DbError(
                             "DatabaseManager.retrieveResultByTask received failure!" +
-                            task.getException(),
+                                    task.getException(),
                             SENDER_NAME));
-                    onRetrieve.onResult(result);
+                    listener.onResult(result);
                 } else {
                     // successful task, process the result
                     DocumentType doc = task.getResult();
-                    Result<T> result = onRetrieve.retrieveResultFrom(doc);;
-                    onRetrieve.onResult(result);
+                    Result<T> result = retriever.retrieveResultFrom(doc);;
+                    listener.onResult(result);
                 }
             }
         });
@@ -66,13 +67,14 @@ public class DatabaseManager {
     protected <T> void retrieveObjectFromDocument(
             String collectionName,
             String documentName,
-            ManagerResult.OnRetrieveResult<Result<T>, DocumentSnapshot> onRetrieve) {
+            ManagerResult.Listener<T> listener,
+            ManagerResult.Retriever<T, DocumentSnapshot> retriever) {
         // get a task that retrieves the document
         Task<DocumentSnapshot> task =
                 db.collection(collectionName)
-                .document(documentName)
-                .get();
+                        .document(documentName)
+                        .get();
         // execute the task
-        retrieveResultByTask(task, onRetrieve);
+        retrieveResultByTask(task, listener, retriever);
     }
 }

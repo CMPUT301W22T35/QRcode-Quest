@@ -21,16 +21,7 @@ public class ManagerResult {
      * return values when the queries are completed. Below provides an OnResult interface that
      * will be called when the query completes execution.
      */
-    public interface OnRetrieveResult<ResultType, DocumentType> {
-        /**
-         * after the database retrieved the data, the data will not be in the format of objects
-         * we want, but rather in a document format that has several fields that can be read;
-         * we need to convert it to the target class by providing a method to do so
-         * @param document retrieved database document reference
-         * @return result data object after being converted into the desired class
-         */
-        ResultType retrieveResultFrom(DocumentType document);
-
+    public interface Listener<T>{
         /**
          * A callback interface for a db request that returns a result object; the result object is
          * of the class Result; the caller can then handle the returned result in this callback to
@@ -38,20 +29,28 @@ public class ManagerResult {
          * applicable
          * @param result the result of query on completion, contains query result and error information
          */
-        void onResult(ResultType result);
+        void onResult(Result<T> result);
     }
 
-    public abstract static class OnInsertDocumentResult implements
-            OnRetrieveResult<Result<Void>, Void> {
+
+    /**
+     * Retrievers provide an interface for a set of classes that can be used to handle
+     * object retrieval from a document.
+     */
+    public interface Retriever<T, DocumentType>{
+        /**
+         * after the database retrieved the data, the data will not be in the format of objects
+         * we want, but rather in a document format that has several fields that can be read;
+         * we need to convert it to the target class by providing a method to do so
+         * @param document retrieved database document reference
+         * @return result data object after being converted into the desired class
+         */
+        Result<T> retrieveResultFrom(DocumentType document);
+    }
+
+    public static class PlayerAccountRetriever implements
+            Retriever<PlayerAccount, DocumentSnapshot> {
         @Override
-        public Result<Void> retrieveResultFrom(Void document) {
-            return new Result<>((Void) null);  // if this callback is called then task is already successful
-        }
-    }
-
-    public abstract static class OnPlayerAccountResult implements
-            OnRetrieveResult<Result<PlayerAccount>, DocumentSnapshot> {
-
         public Result<PlayerAccount> retrieveResultFrom(DocumentSnapshot document) {
             assert document != null;
             // not an error when result does not exist
@@ -77,8 +76,17 @@ public class ManagerResult {
         }
     }
 
-    public abstract static class OnCommentListResult implements
-            OnRetrieveResult<Result<ArrayList<Comment>>, QuerySnapshot> {
+
+    public static class VoidResultRetriever implements
+            Retriever<Void, Void> {
+        @Override
+        public Result<Void> retrieveResultFrom(Void document) {
+            return new Result<>((Void) null);  // if this callback is called then task is already successful
+        }
+    }
+
+    public static class CommentListRetriever implements
+            Retriever<ArrayList<Comment>, QuerySnapshot> {
         /**
          * turn the query result into a list of Comment objects
          * @param querySnapshot database query result snapshot
