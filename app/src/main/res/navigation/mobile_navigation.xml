@@ -9,7 +9,11 @@
         android:id="@+id/navigation_home"
         android:name="com.qrcode_quest.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_navigation_home_to_playerCodesFragment"
+            app:destination="@id/playerCodesFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_dashboard"
@@ -18,8 +22,19 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.qrcode_quest.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_player_profile"
+        android:name="com.qrcode_quest.ui.player_profile.PlayerProfileFragment"
+        android:label="@string/title_player_profile"
+        tools:layout="@layout/fragment_player_profile" />
+
+    <fragment
+        android:id="@+id/playerCodesFragment"
+        android:name="com.qrcode_quest.ui.player_codes.PlayerCodesFragment"
+        android:label="@string/title_player_codes"
+        tools:layout="@layout/fragment_player_codes" >
+        <action
+            android:id="@+id/action_playerCodesFragment_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </fragment>
+
 </navigation>
