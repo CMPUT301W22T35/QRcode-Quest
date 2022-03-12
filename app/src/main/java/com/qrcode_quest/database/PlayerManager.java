@@ -4,7 +4,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.qrcode_quest.R;
 import com.qrcode_quest.database.ManagerResult.*;
 import com.qrcode_quest.entities.PlayerAccount;
 
@@ -26,7 +25,7 @@ public class PlayerManager extends DatabaseManager {
     public void getPlayer(String username, Listener<PlayerAccount> listener){
         Task<DocumentSnapshot> task = db
                 .collection(Schema.COLLECTION_PLAYER_ACCOUNT)
-                .document(username)
+                .document(Schema.getPlayerAccountDocumentName(username))
                 .get();
         retrieveResultByTask(task, listener, new PlayerAccountRetriever());
     }
@@ -36,9 +35,9 @@ public class PlayerManager extends DatabaseManager {
      * @param username The username to check
      * @param listener Calls listener with "true" result if the name is taken, otherwise false.
      */
-    public void checkUserExists(String username, OnManagerResult<Boolean> listener) {
+    public void checkUserExists(String username, Listener<Boolean> listener) {
         db.collection(Schema.COLLECTION_PLAYER_ACCOUNT)
-                .document(username)
+                .document(Schema.getPlayerAccountDocumentName(username))
                 .get()
                 .addOnCompleteListener(task->{
                     if (!task.isSuccessful()){
@@ -62,7 +61,8 @@ public class PlayerManager extends DatabaseManager {
     public void addPlayer(PlayerAccount player, Listener<Void> listener){
         Task<Void> task = db.runTransaction(transaction -> {
             final CollectionReference playersRef = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT);
-            final DocumentReference playerRef = playersRef.document(player.getUsername());
+            final DocumentReference playerRef = playersRef.document(
+                    Schema.getPlayerAccountDocumentName(player.getUsername()));
             // Prevent overwrites
             if (transaction.get(playerRef).exists()) {
                 return null;
@@ -83,7 +83,8 @@ public class PlayerManager extends DatabaseManager {
     public void setDeletedPlayer(String username, boolean deleted, Listener<Void> listener){
         Task<Void> task = db.runTransaction(transaction -> {
             final CollectionReference playersRef = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT);
-            final DocumentReference playerRef = playersRef.document(username);
+            final DocumentReference playerRef = playersRef.document(
+                    Schema.getPlayerAccountDocumentName(username));
             if (!transaction.get(playerRef).exists()) {
                 return null;
             }
@@ -102,7 +103,9 @@ public class PlayerManager extends DatabaseManager {
     public void updatePlayer(PlayerAccount player, Listener<Void> listener){
         Task<Void> task = db.runTransaction(transaction -> {
             final CollectionReference playersRef = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT);
-            final DocumentReference playerRef = playersRef.document(player.getUsername());
+            final DocumentReference playerRef = playersRef.document(
+                    Schema.getPlayerAccountDocumentName(player.getUsername()));
+
             // Prevent record creation
             if (!transaction.get(playerRef).exists()) {
                 return null;
@@ -121,7 +124,7 @@ public class PlayerManager extends DatabaseManager {
      * @param listener The listener to return the result to
      */
     public void validatePlayerSession(String deviceId, String username,
-                                      OnManagerResult<Boolean> listener) {
+                                      Listener<Boolean> listener) {
 
         db.collection(Schema.COLLECTION_AUTH)
                 .document(Schema.getAuthDocumentName(username, deviceId))
