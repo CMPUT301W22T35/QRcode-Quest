@@ -204,7 +204,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
     private boolean doAfterScan(String verify_code) {
 
-
+        //TODO
         return false;
     }
 
