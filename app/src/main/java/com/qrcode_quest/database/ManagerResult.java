@@ -209,4 +209,21 @@ public class ManagerResult {
             return new Result<>(new ArrayList<QRCode>(map.values()));
         }
     }
+
+
+    public static class PlayerListRetriever implements
+            Retriever<ArrayList<PlayerAccount>, QuerySnapshot> {
+        @Override
+        public Result<ArrayList<PlayerAccount>> retrieveResultFrom(QuerySnapshot snapshot) {
+            assert snapshot != null;
+            List<DocumentSnapshot> documents = snapshot.getDocuments();
+            ArrayList<PlayerAccount> players = new ArrayList<>();
+
+            for (DocumentSnapshot document : documents){
+                players.add(PlayerAccount.fromDocument(document));
+            }
+
+            return new Result<>(players);
+        }
+    }
 }

@@ -4,14 +4,20 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.qrcode_quest.database.ManagerResult.*;
 import com.qrcode_quest.entities.PlayerAccount;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Acts as an interface between the app and the database for queries concerning PlayerAccounts.
+ * All results are returned to the caller through the ManagerResult.Listener interface, wrapped
+ * in a Result.
  * @see com.qrcode_quest.entities.PlayerAccount
+ * @see ManagerResult.Listener
+ * @see Result
  *
  * @author jdumouch
  * @version 1.0
@@ -20,7 +26,6 @@ public class PlayerManager extends DatabaseManager {
     /**
      * Fetches a player's data from the database
      * @param username The username of the player to fetch
-     * @param listener The listener to receive the results.
      */
     public void getPlayer(String username, Listener<PlayerAccount> listener){
         Task<DocumentSnapshot> task = db
@@ -33,7 +38,6 @@ public class PlayerManager extends DatabaseManager {
     /**
      * Checks the database for username availability
      * @param username The username to check
-     * @param listener Calls listener with "true" result if the name is taken, otherwise false.
      */
     public void checkUserExists(String username, Listener<Boolean> listener) {
         db.collection(Schema.COLLECTION_PLAYER_ACCOUNT)
@@ -56,7 +60,6 @@ public class PlayerManager extends DatabaseManager {
      * Adds a PlayerAccount to the database.
      * The username <b>must</b> be unique or the operation will fail.
      * @param player The PlayerAccount to add
-     * @param listener The listener to return the success/failure result
      */
     public void addPlayer(PlayerAccount player, Listener<Void> listener){
         Task<Void> task = db.runTransaction(transaction -> {
@@ -118,10 +121,19 @@ public class PlayerManager extends DatabaseManager {
     }
 
     /**
+     * Fetches all the undeleted players from the database
+     */
+    public void getPlayerList(Listener<ArrayList<PlayerAccount>> listener){
+        Task<QuerySnapshot> task = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT)
+                .whereEqualTo(Schema.PLAYER_IS_DELETED, false)
+                .get();
+        retrieveResultByTask(task, listener, new PlayerListRetriever());
+    }
+
+    /**
      * Tests if a device is authorized to sign into a player's account.
      * @param deviceId The device id to sign with
      * @param username The username of the player to sign into
-     * @param listener The listener to return the result to
      */
     public void validatePlayerSession(String deviceId, String username,
                                       Listener<Boolean> listener) {
