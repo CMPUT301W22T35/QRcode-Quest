@@ -1,27 +1,66 @@
 package com.qrcode_quest.database;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
- * Represents a set of interfaces to access the Firestore database
- * @author jdumouch, tianming
+ * Represents a set of interfaces to access the Firestore database;
+ * implemented as a singleton (initialize/get by getInstance())
+ * @author tianming
  * @version 1.0
  */
 public class DatabaseManager {
+
+    static private final String SENDER_NAME = "DatabaseManager";
+
+    private FirebaseFirestore db;
+    public DatabaseManager(FirebaseFirestore db) { this.db = db; }
+
     /**
-     * Provides a callback interface for requests that can return a result object that extends
-     * the class Result; the caller can then handle the returned result in a callback to determine
-     * if it is successful, what is the value of the result and etc.
+     * get the Firestore database instance in the manager
+     * @return the Firestore instance
      */
-    public interface OnResult<R> {
-        void onResult(R result);
+    public FirebaseFirestore getDb() {
+        return db;
     }
 
-    FirebaseFirestore db;
-
-    public DatabaseManager() {
-        this.db = FirebaseFirestore.getInstance();
+    public <T, DocumentType> void retrieveResultByTask(
+            Task<DocumentType> task,
+            ManagerResult.OnRetrieveResult<Result<T>, DocumentType> onRetrieve) {
+        // execute the task
+        task.addOnCompleteListener(new OnCompleteListener<DocumentType>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentType> task) {
+                if (!task.isSuccessful()) {
+                    Result<T> result = new Result<>(new DbError(
+                            "DatabaseManager.retrieveResultByTask received failure!" +
+                            task.getException(),
+                            SENDER_NAME));
+                    onRetrieve.onResult(result);
+                } else {
+                    // successful task, process the result
+                    DocumentType doc = task.getResult();
+                    Result<T> result = onRetrieve.retrieveResultFrom(doc);;
+                    onRetrieve.onResult(result);
+                }
+            }
+        });
     }
 
-
+    public <T> void retrieveObjectFromDocument(
+            String collectionName,
+            String documentName,
+            ManagerResult.OnRetrieveResult<Result<T>, DocumentSnapshot> onRetrieve) {
+        // get a task that retrieves the document
+        Task<DocumentSnapshot> task =
+                db.collection(collectionName)
+                .document(documentName)
+                .get();
+        // execute the task
+        retrieveResultByTask(task, onRetrieve);
+    }
 }

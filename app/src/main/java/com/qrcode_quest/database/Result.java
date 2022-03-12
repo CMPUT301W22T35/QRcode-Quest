@@ -40,7 +40,7 @@ public class Result<T> {
 
     /**
      * Returns the data wrapped by the result. <br>
-     * (Null on error)
+     * (Null on error or data not found)
      */
     public T getData(){
         return this.result;
