@@ -17,14 +17,14 @@ import java.util.ArrayList;
 public class CustomPlayerList extends ArrayAdapter<PlayerAccount> {
     private ArrayList<PlayerAccount> players;
     // private PlayerManager playerManager;
-    private Boolean isLeaderboardList;
+    // private Boolean isLeaderboardList;
     private Context context;
 
     public CustomPlayerList(Context context, ArrayList<PlayerAccount> players) {
         super(context, 0, players);
         this.players = players;
         this.context = context;
-        this.isLeaderboardList = isLeaderBoardList;
+        // this.isLeaderboardList = isLeaderBoardList;
     }
 
     @NonNull
