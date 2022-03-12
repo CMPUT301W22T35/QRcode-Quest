@@ -28,9 +28,12 @@ public class Schema {
     public static String getQRShotDocumentName(String qrHash, String playerName) {
         return qrHash + "_" + playerName;
     }
-    public static final String QRSHOT_QRHASH = "playerName";
+    public static final String QRSHOT_QRHASH = "qrhash";
     public static final String QRSHOT_PLAYER_NAME = "playerName";
     public static final String QRSHOT_SCORE = "score";
+    public static String getPhotoPathOnCloudStorage(String qrHash, String playerName) {
+        return "images/" + qrHash + "_" + playerName;
+    }
     public static final String QRSHOT_PHOTO_REF = "photoRef";
     public static final String QRSHOT_LONGITUDE = "longitude";
     public static final String QRSHOT_LATITUDE = "latitude";

@@ -3,8 +3,6 @@ package com.qrcode_quest.database;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -13,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
+import com.qrcode_quest.database.ManagerResult.*;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;
@@ -37,9 +36,9 @@ public class CommentManager extends DatabaseManager {
     /**
      * add a comment under a QR code
      * @param comment the comment to be added
-     * @param onResult the callback to be executed to decide what to do when update finishes
+     * @param listener the callback to be executed to decide what to do when update finishes
      */
-    public void addComment(Comment comment, ManagerResult.OnInsertDocumentResult onResult) {
+    public void addComment(Comment comment, Listener<Void> listener) {
 
         final String qrHash = comment.getQrHash();
         final CollectionReference commentCollectionRef = getDb().collection(Schema.COLLECTION_COMMENT);
@@ -87,7 +86,7 @@ public class CommentManager extends DatabaseManager {
                 return null;
             }
         });
-        retrieveResultByTask(task, onResult);
+        retrieveResultByTask(task, listener, new VoidResultRetriever());
     }
 
     /**
@@ -95,11 +94,11 @@ public class CommentManager extends DatabaseManager {
      * @param qrHash identifies the QR code that holds the comments
      * @param onResult specifies how the result should be handled
      */
-    public void getQRComments(String qrHash, ManagerResult.OnCommentListResult onResult) {
+    public void getQRComments(String qrHash, Listener<ArrayList<Comment>> onResult) {
         // create a task to retrieve all Comment documents that has the given qrHash
         Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_COMMENT)
                 .whereEqualTo(Schema.COMMENT_QRHASH, qrHash)
                 .get();
-        retrieveResultByTask(task, onResult);
+        retrieveResultByTask(task, onResult, new CommentListRetriever());
     }
 }
