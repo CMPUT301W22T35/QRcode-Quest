@@ -14,7 +14,6 @@ import java.util.ArrayList;
 public class QRCode {
     @NonNull private final String hashCode;
     private final int score;
-    @NonNull private ArrayList<Comment> comments;
 
     /**
      * create a QRCode object from a RawQRCode; no comments will be attached to the
@@ -25,19 +24,16 @@ public class QRCode {
             throws UnsupportedEncodingException, NoSuchAlgorithmException {
         this.hashCode = rawCode.getQRHash();
         this.score = rawCode.getScore();
-        this.comments = new ArrayList<>();
     }
 
     /**
      * create a QRCode object
      * @param hashCode hash string of the actual qr code represented by this object
      * @param score score of the qr code
-     * @param comments comments made under the qr code by players
      */
-    public QRCode(@NonNull String hashCode, int score, @NonNull ArrayList<Comment> comments) {
+    public QRCode(@NonNull String hashCode, int score) {
         this.hashCode = hashCode;
         this.score = score;
-        this.comments = comments;
     }
 
     /**
@@ -54,21 +50,5 @@ public class QRCode {
      */
     public int getScore() {
         return score;
-    }
-
-    /**
-     * get a reference to the object's inner comment list
-     * @return the comment list under the qr code
-     */
-    public @NonNull ArrayList<Comment> getComments() {
-        return comments;
-    }
-
-    /**
-     * set the object's inner comment list as provided
-     * @param comments the comments to set under the qr code
-     */
-    public void setComments(@NonNull ArrayList<Comment> comments) {
-        this.comments = comments;
     }
 }
