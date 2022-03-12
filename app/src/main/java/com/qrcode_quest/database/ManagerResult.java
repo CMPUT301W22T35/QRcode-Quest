@@ -65,12 +65,14 @@ public class ManagerResult {
             String name = document.getString(Schema.PLAYER_NAME);
             String email = document.getString(Schema.PLAYER_EMAIL);
             String phone = document.getString(Schema.PLAYER_PHONE);
-            if (name == null || email == null || phone == null) {
+            Boolean isOwner = document.getBoolean(Schema.PLAYER_IS_OWNER);
+
+            if (name == null || email == null || phone == null || isOwner == null ) {
                 DbError error = new DbError("Player's account contains null field on attributes " +
                         "playerName, email or phone in the database!", document.getId());
                 return new Result<>(error);
             }
-            PlayerAccount account = new PlayerAccount(name, email, phone);
+            PlayerAccount account = new PlayerAccount(name, email, phone, false, isOwner);
             return new Result<>(account);
         }
     }
