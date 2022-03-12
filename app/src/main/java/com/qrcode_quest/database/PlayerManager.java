@@ -4,6 +4,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.qrcode_quest.R;
 import com.qrcode_quest.database.ManagerResult.*;
 import com.qrcode_quest.entities.PlayerAccount;
 
@@ -110,6 +111,47 @@ public class PlayerManager extends DatabaseManager {
             transaction.set(playerRef, player.toHashMap());
             return null;
         });
+        retrieveResultByTask(task, listener, new VoidResultRetriever());
+    }
+
+    /**
+     * Tests if a device is authorized to sign into a player's account.
+     * @param deviceId The device id to sign with
+     * @param username The username of the player to sign into
+     * @param listener The listener to return the result to
+     */
+    public void validatePlayerSession(String deviceId, String username,
+                                      OnManagerResult<Boolean> listener) {
+
+        db.collection(Schema.COLLECTION_AUTH)
+                .document(Schema.getAuthDocumentName(username, deviceId))
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null){
+                        listener.onResult( new Result<>(
+                                new DbError("Database task failed", task)
+                        ));
+                        return;
+                    }
+
+                    listener.onResult(new Result<>(task.getResult().exists()));
+                });
+    }
+
+    /**
+     * Authenticates a new device to log in to a player.
+     * @param deviceId The device to authenticate
+     * @param username The player to authenticate for
+     */
+    public void createPlayerSession(String deviceId, String username, Listener<Void> listener){
+        HashMap<String, Object> sessionMap = new HashMap<>();
+        sessionMap.put(Schema.AUTH_DEVICE_ID, deviceId);
+        sessionMap.put(Schema.AUTH_PLAYER, username);
+        sessionMap.put(Schema.AUTH_IS_PRIMARY_ACCOUNT, true);
+
+        Task<Void> task = db.collection(Schema.COLLECTION_AUTH)
+                .document(Schema.getAuthDocumentName(username, deviceId))
+                .set(sessionMap);
         retrieveResultByTask(task, listener, new VoidResultRetriever());
     }
 }
