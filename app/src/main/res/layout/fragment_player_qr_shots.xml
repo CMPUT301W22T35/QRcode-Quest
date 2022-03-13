@@ -64,7 +64,7 @@
                 android:layout_height="match_parent"
                 android:visibility="invisible"
                 tools:layout_editor_absoluteY="604dp"
-                tools:listitem="@layout/fragment_qrshot_item_view" />
+                tools:listitem="@layout/qrshot_item_view" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

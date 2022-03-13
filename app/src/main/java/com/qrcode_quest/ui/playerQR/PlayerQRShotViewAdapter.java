@@ -4,11 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.qrcode_quest.databinding.FragmentQrshotItemViewBinding;
+import com.qrcode_quest.R;
+import com.qrcode_quest.databinding.QrshotItemViewBinding;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 
@@ -28,6 +31,7 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
     public interface ItemClickHandler {
         /**
          * A handler for a user tapping an item.
+         *
          * @param shot The QRShot that was pressed
          */
         void onItemClick(QRShot shot);
@@ -35,26 +39,29 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
 
     private final List<QRShot> shots;
     private final HashMap<String, QRCode> codes;
+    private final ItemClickHandler onClickListener;
 
     /**
      * Create a new ViewAdapter using the passed lists to build item data.
-     * @param items The QRShots to display
-     * @param codes The HashMap containing AT LEAST the relevant hashes, may include all hashes.
+     *
+     * @param items           The QRShots to display
+     * @param codes           The HashMap containing AT LEAST the relevant hashes, may include all hashes.
+     * @param onClickListener The listener to handle on click events
      */
-    public PlayerQRShotViewAdapter(List<QRShot> items, HashMap<String, QRCode> codes) {
+    public PlayerQRShotViewAdapter(List<QRShot> items, HashMap<String, QRCode> codes,
+                                   ItemClickHandler onClickListener) {
         this.shots = items;
         this.codes = codes;
+        this.onClickListener = onClickListener;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(
-                FragmentQrshotItemViewBinding.inflate(
-                    LayoutInflater.from(parent.getContext()),
-                    parent,
-                    false)
-        );
+        return new ViewHolder(QrshotItemViewBinding.inflate(
+                LayoutInflater.from(parent.getContext()),
+                parent,
+                false));
     }
 
     @SuppressLint("DefaultLocale")
@@ -62,14 +69,22 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
     public void onBindViewHolder(final ViewHolder holder, int position) {
         // Try to get the underlying QR objects
         QRShot shot = shots.get(position);
-        if (shot == null) { return; }
+        if (shot == null) {
+            return;
+        }
         QRCode code = codes.get(shot.getCodeHash());
-        if (code == null) { return; }
+        if (code == null) {
+            return;
+        }
 
         // Load them into the ViewHolders
         holder.shot = shot;
         holder.qrName.setText(shot.getCodeHash());
         holder.qrScore.setText(String.format("%d", code.getScore()));
+
+        holder.itemView.setOnClickListener(v -> {
+            onClickListener.onItemClick(shot);
+        });
     }
 
     @Override
@@ -87,8 +102,10 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
 
         /**
          * Constructs a ViewHolder and binds the View to the data
+         *
+         * @param binding
          */
-        public ViewHolder(FragmentQrshotItemViewBinding binding) {
+        public ViewHolder(@NonNull QrshotItemViewBinding binding) {
             super(binding.getRoot());
             qrName = binding.playerQrlistContentName;
             qrScore = binding.playerQrlistContentScore;
