@@ -31,12 +31,11 @@ public class MockDb {
     //-------------------------------------Snapshots---------------------------------------------
     /**
      * create a mock document snapshot that uses a hashmap as implementation
-     * @param documentName document id
      * @param content hashmap representation of the key value pairs in the document
      * @return a mock document snapshot
      */
     static public DocumentSnapshot createMockDocumentSnapshot(
-            String documentName, HashMap<String, Object> content) {
+            HashMap<String, Object> content) {
         // make sure the content is independent from the actual mock database
         assert content != null;
         HashMap<String, Object> snapshot = new HashMap<>(content);
@@ -64,7 +63,6 @@ public class MockDb {
             String key = invocation.getArgument(0);
             return snapshot.get(key);
         });
-        when(docRef.getId()).thenReturn(documentName);
 
         return docRef;
     }
@@ -74,10 +72,14 @@ public class MockDb {
         QuerySnapshot querySnapshot = mock(QuerySnapshot.class);
 
         when(querySnapshot.size()).thenReturn(documents.size());
-        when(querySnapshot.getDocuments()).thenAnswer(new Answer<ArrayList<HashMap<String,Object>>>() {
+        when(querySnapshot.getDocuments()).thenAnswer(new Answer<ArrayList<DocumentSnapshot>>() {
             @Override
-            public ArrayList<HashMap<String, Object>> answer(InvocationOnMock invocation) throws Throwable {
-                return new ArrayList<>(documents);
+            public ArrayList<DocumentSnapshot> answer(InvocationOnMock invocation) throws Throwable {
+                ArrayList<DocumentSnapshot> documentSnapshots = new ArrayList<>();
+                for (HashMap<String, Object> map: documents) {
+                    documentSnapshots.add(createMockDocumentSnapshot(map));
+                }
+                return new ArrayList<>(documentSnapshots);
             }
         });
 
@@ -192,9 +194,7 @@ public class MockDb {
                     HashMap<String, Object> content =
                             safeRetrieveDocumentContent(dbContent, collectionName, documentName);
                     if (content != null) {
-                        DocumentSnapshot snapshot = createMockDocumentSnapshot(
-                                documentName,
-                                content);
+                        DocumentSnapshot snapshot = createMockDocumentSnapshot(content);
                         when(task.getResult()).thenReturn(snapshot);
                     } else {
                         // return a null document snapshot for the retriever
@@ -253,10 +253,13 @@ public class MockDb {
             @Override
             public Query answer(InvocationOnMock invocation) throws Throwable {
                 String key = invocation.getArgument(0);
-                Object targetValue = invocation.getArgument(2);
+                Object targetValue = invocation.getArgument(1);
 
+                HashMap<String, HashMap<String, Object>> colContent = dbContent.get(collectionName);
+                if (colContent == null)
+                    colContent = new HashMap<>();
                 ArrayList<HashMap<String, Object>> filteredDocuments = new ArrayList<>();
-                for (HashMap<String, Object> document: Objects.requireNonNull(dbContent.get(collectionName)).values()) {
+                for (HashMap<String, Object> document: colContent.values()) {
                     if (document.containsKey(key) && Objects.requireNonNull(
                             document.get(key)).equals(targetValue))
                         filteredDocuments.add(document);
@@ -304,6 +307,8 @@ public class MockDb {
     ) throws FirebaseFirestoreException {
         Transaction transaction = mock(Transaction.class);
 
+        // transaction.get differs from task in that it will not return null document snapshot
+        // when the document does not exist; instead it returns an empty snapshot
         when(transaction.get(any(DocumentReference.class))).thenAnswer(new Answer<DocumentSnapshot>() {
             @Override
             public DocumentSnapshot answer(InvocationOnMock invocation) throws Throwable {
@@ -311,18 +316,17 @@ public class MockDb {
                 CollectionReference colRef = docRef.getParent();
                 HashMap<String, Object> content = safeRetrieveDocumentContent(dbContent, colRef.getId(), docRef.getId());
                 if (content == null)
-                    return null;
-                else
-                    return createMockDocumentSnapshot(docRef.getId(),
-                        safeRetrieveDocumentContent(dbContent, colRef.getId(), docRef.getId()));
+                    content = new HashMap<>();
+                return createMockDocumentSnapshot(content);
             }
         });
-        when(transaction.set(any(DocumentReference.class), HashMap.class)).thenAnswer(new Answer<Transaction>() {
+        when(transaction.set(any(DocumentReference.class), any(HashMap.class))).thenAnswer(new Answer<Transaction>() {
             @Override
             public Transaction answer(InvocationOnMock invocation) throws Throwable {
                 DocumentReference docRef = invocation.getArgument(0);
                 CollectionReference colRef = docRef.getParent();
                 HashMap<String, Object> map = invocation.getArgument(1);
+                ensureCollectionExist(dbContent, colRef.getId());
                 Objects.requireNonNull(dbContent.get(colRef.getId())).put(docRef.getId(), map);
 
                 return transaction;
@@ -362,11 +366,10 @@ public class MockDb {
         });
         when(db.runTransaction(any(Transaction.Function.class))).thenAnswer((Answer<Task<Void>>) invocation -> {
             Transaction.Function<Void> function = invocation.getArgument(0);
-            createMockTask(task -> {
+            return createMockTask(task -> {
                 when(task.getResult()).thenReturn(null);
                 function.apply(createMockTransaction(dbContent));
             });
-            return null;
         });
 
         return db;

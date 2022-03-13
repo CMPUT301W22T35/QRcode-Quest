@@ -58,7 +58,8 @@ public class DatabaseManagerTest {
             public Result<Void> retrieveResultFrom(DocumentSnapshot document) {
                 testFlags[2] = (document.get("testNull") == null);
                 assertEquals("hello world", document.get("testString"));
-                assertEquals(3, document.get("testLong"));
+                assertEquals(3,
+                        Objects.requireNonNull(document.getLong("testLong")).intValue());
                 assertNull(document.get("thisKeyDoesNotExist"));
                 return new Result<>((Void) null);
             }
