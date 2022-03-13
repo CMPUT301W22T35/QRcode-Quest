@@ -22,17 +22,6 @@ public class DatabaseManager {
     public DatabaseManager(FirebaseFirestore db) { this.db = db; }
 
     /**
-     * A simple callback interface for Managers to return data to their callers.
-     */
-    public interface OnManagerResult<T> {
-        /**
-         * Passes data from a Manager to a caller.
-         * @param result The data wrapped in a Result
-         */
-        void onResult(Result<T> result);
-    }
-
-    /**
      * get the Firestore database instance in the manager
      * @return the Firestore instance
      */
