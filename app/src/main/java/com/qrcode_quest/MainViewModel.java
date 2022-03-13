@@ -55,6 +55,7 @@ public class MainViewModel extends AndroidViewModel {
         // Grab the username of the authenticated player
         SharedPreferences sharedPrefs = getApplication().getApplicationContext()
                 .getSharedPreferences(SHARED_PREF_PATH, Context.MODE_PRIVATE);
+        if (!sharedPrefs.contains(AUTHED_USERNAME_PREF)) { return; }
         String username = sharedPrefs.getString(AUTHED_USERNAME_PREF, "");
 
         // Load the players record

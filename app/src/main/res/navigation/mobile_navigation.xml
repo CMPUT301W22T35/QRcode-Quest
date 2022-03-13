@@ -16,16 +16,21 @@
         android:name="com.qrcode_quest.ui.leaderboard.LeaderboardFragment"
         android:label="@string/title_leaderboard"
         tools:layout="@layout/fragment_leaderboard" >
-
+        <action
+            android:id="@+id/action_navigation_leaderboard_to_navigation_player_qrlist"
+            app:destination="@id/navigation_player_qrlist"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/navigation_leaderboard">
+            <argument
+                android:name="player"
+                app:argType="com.qrcode_quest.entities.PlayerAccount" />
+        </action>
     </fragment>
 
-    <action
-        android:id="@+id/action_navigation_leaderboard_to_navigation_player_qrlist"
-        app:destination="@id/navigation_player_qrlist">
-        <argument
-            android:name="player"
-            app:argType="com.qrcode_quest.entities.PlayerAccount" />
-    </action>
+
 
     <fragment
         android:id="@+id/navigation_account"

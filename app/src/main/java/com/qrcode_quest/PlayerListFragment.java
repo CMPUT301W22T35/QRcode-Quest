@@ -1,6 +1,7 @@
 package com.qrcode_quest;
 
-import static com.qrcode_quest.MobileNavigationDirections.actionNavigationLeaderboardToNavigationPlayerQrlist;
+
+import static com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections.*;
 
 import android.os.Bundle;
 
@@ -18,8 +19,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.qrcode_quest.MobileNavigationDirections.ActionNavigationLeaderboardToNavigationPlayerQrlist;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections;
+import com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections.ActionNavigationLeaderboardToNavigationPlayerQrlist;
 
 import java.util.ArrayList;
 
