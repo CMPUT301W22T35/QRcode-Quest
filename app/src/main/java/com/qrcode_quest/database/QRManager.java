@@ -34,7 +34,7 @@ import java.util.Objects;
 
 /**
  * Interfaces to query and update QRShot objects in the Firestore database
- * @author tianming, jdumouch (barely ;P)
+ * @author tianming, jdumouch
  * @version 1.0
  * @see com.qrcode_quest.entities.QRCode
  * @see com.qrcode_quest.entities.QRShot
@@ -169,6 +169,39 @@ public class QRManager extends DatabaseManager {
         Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT)
                 .whereEqualTo(Schema.QRSHOT_PLAYER_NAME, playerName).get();
         retrieveQRShotsWithPhotos(task, listener);
+    }
+
+    /**
+     * Get a QRShot that is owned by a player and matches a specific hash.
+     * @param playerName The owner of the QRShot
+     * @param hash The hash of the QRShot
+     * @param listener The listener to return the result to (null on no-existence)
+     */
+    public void getPlayerShotByHash(String playerName, String hash, Listener<QRShot> listener){
+        Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT)
+                .whereEqualTo(Schema.QRSHOT_PLAYER_NAME, playerName)
+                .whereEqualTo(Schema.QRSHOT_QRHASH, hash)
+                .get();
+
+        // Retrieve the list of results, this should be size 0..1
+        retrieveQRShotsWithPhotos(task, result->{
+            // Catch and forward errors
+            if (!result.isSuccess()){
+                listener.onResult(new Result<>(result.getError()));
+                return;
+            }
+
+            // Unwrap the list
+            ArrayList<QRShot> foundShots = result.unwrap();
+            if (foundShots.size() > 0){
+                // Return the first (and only possible) code
+                listener.onResult(new Result<>(foundShots.get(0)));
+            }
+            else{
+                // Return null on empty
+                listener.onResult(new Result<>(null));
+            }
+        });
     }
 
     /**
