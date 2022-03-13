@@ -97,6 +97,11 @@ public class QRManager extends DatabaseManager {
                 }
             }
 
+            // Return the results without waiting for photos, if possible
+            if (numPhotosRemaining[0] == 0){
+                listener.onResult(new Result<>(shots));
+            }
+
             // open all download tasks at once
             for (String path: photoPathToShot.keySet()) {
                 StorageReference photoRef = firebaseStorage.getReference(path);
