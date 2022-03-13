@@ -149,8 +149,6 @@ public class ManagerResult {
             assert querySnapshot != null;
             List<DocumentSnapshot> documents = querySnapshot.getDocuments();
             ArrayList<QRShot> shots = new ArrayList<>();
-            for(int i = 0; i < documents.size(); i++)
-                shots.add(null);
             for (DocumentSnapshot document: documents) {
                 // retrieve fields in the document
                 String name = document.getString(Schema.QRSHOT_PLAYER_NAME);
