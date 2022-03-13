@@ -35,17 +35,17 @@ public class MockDb {
      * @return a mock document snapshot
      */
     static public DocumentSnapshot createMockDocumentSnapshot(
-            HashMap<String, Object> content) {
+            HashMap<String, Object> content, boolean exists) {
         // make sure the content is independent from the actual mock database
         assert content != null;
         HashMap<String, Object> snapshot = new HashMap<>(content);
 
-        DocumentSnapshot docRef = mock(DocumentSnapshot.class);
-        when(docRef.getString(anyString())).thenAnswer((Answer<String>) invocation -> {
+        DocumentSnapshot docSnapshot = mock(DocumentSnapshot.class);
+        when(docSnapshot.getString(anyString())).thenAnswer((Answer<String>) invocation -> {
             String key = invocation.getArgument(0);
             return (String) snapshot.get(key);
         });
-        when(docRef.getLong(anyString())).thenAnswer((Answer<Long>) invocation -> {
+        when(docSnapshot.getLong(anyString())).thenAnswer((Answer<Long>) invocation -> {
             String key = invocation.getArgument(0);
             Object val = snapshot.get(key);
             if (val == null)
@@ -55,20 +55,21 @@ public class MockDb {
             else
                 return (Long) val;
         });
-        when(docRef.getBoolean(anyString())).thenAnswer((Answer<Boolean>) invocation -> {
+        when(docSnapshot.getBoolean(anyString())).thenAnswer((Answer<Boolean>) invocation -> {
             String key = invocation.getArgument(0);
             return (Boolean) snapshot.get(key);
         });
-        when(docRef.getDouble(anyString())).thenAnswer((Answer<Double>) invocation -> {
+        when(docSnapshot.getDouble(anyString())).thenAnswer((Answer<Double>) invocation -> {
             String key = invocation.getArgument(0);
             return (Double) snapshot.get(key);
         });
-        when(docRef.get(anyString())).thenAnswer(invocation -> {
+        when(docSnapshot.get(anyString())).thenAnswer(invocation -> {
             String key = invocation.getArgument(0);
             return snapshot.get(key);
         });
+        when(docSnapshot.exists()).thenReturn(exists);
 
-        return docRef;
+        return docSnapshot;
     }
 
     static public QuerySnapshot createQuerySnapshot(Collection<HashMap<String, Object>> resultDocuments) {
@@ -81,7 +82,7 @@ public class MockDb {
             public ArrayList<DocumentSnapshot> answer(InvocationOnMock invocation) throws Throwable {
                 ArrayList<DocumentSnapshot> documentSnapshots = new ArrayList<>();
                 for (HashMap<String, Object> map: documents) {
-                    documentSnapshots.add(createMockDocumentSnapshot(map));
+                    documentSnapshots.add(createMockDocumentSnapshot(map, true));
                 }
                 return new ArrayList<>(documentSnapshots);
             }
@@ -103,7 +104,9 @@ public class MockDb {
 
     /**
      * create a task that executes an action when the first listener is attached
-     * note by default task will not execute at all if no listeners are attached to it
+     * note by default task will not execute at all if no listeners are attached to it;
+     * by default tasks return null on getResult(), meaning they need to be explicitly reset to
+     * return correct values inside the action
      * @param action action to perform
      * @param <TResult> one that passed to listeners as Task<TResult> usually DocumentSnapshot or QuerySnapshot
      * @return a mock task
@@ -112,8 +115,8 @@ public class MockDb {
         final Boolean[] taskIsExecuted = {false};
 
         Task<TResult> task = mock(Task.class);
-        when(task.isSuccessful()).thenReturn(true);
-        when(task.isComplete()).thenReturn(taskIsExecuted[0]);
+        when(task.isSuccessful()).thenAnswer((Answer<Boolean>) invocation -> taskIsExecuted[0]);
+        when(task.isComplete()).thenAnswer((Answer<Boolean>) invocation -> taskIsExecuted[0]);
         when(task.getResult()).thenReturn(null);
 
         when(task.addOnCompleteListener(any(OnCompleteListener.class))).thenAnswer((Answer<Task<TResult>>) invocation -> {
@@ -129,6 +132,7 @@ public class MockDb {
         when(task.addOnSuccessListener(any(OnSuccessListener.class))).then((Answer<Task<TResult>>) invocation -> {
             if (!taskIsExecuted[0]) {
                 action.onMockTaskExecution(task);
+                assert task.getResult() != null;
                 taskIsExecuted[0] = true;
             }
             if (task.isSuccessful())
@@ -140,6 +144,7 @@ public class MockDb {
         when(task.addOnFailureListener(any(OnFailureListener.class))).then((Answer<Task<TResult>>) invocation -> {
             if (!taskIsExecuted[0]) {
                 action.onMockTaskExecution(task);
+                assert task.getResult() != null;
                 taskIsExecuted[0] = true;
             }
             if (!task.isSuccessful())
@@ -191,22 +196,18 @@ public class MockDb {
         DocumentReference docRef = mock(DocumentReference.class);
         String collectionName = colRef.getId();
 
-        when(docRef.get()).thenAnswer(new Answer<Task<DocumentSnapshot>>() {
-            @Override
-            public Task<DocumentSnapshot> answer(InvocationOnMock invocation) throws Throwable {
-                return createMockTask(task -> {
-                    HashMap<String, Object> content =
-                            safeRetrieveDocumentContent(dbContent, collectionName, documentName);
-                    if (content != null) {
-                        DocumentSnapshot snapshot = createMockDocumentSnapshot(content);
-                        when(task.getResult()).thenReturn(snapshot);
-                    } else {
-                        // return a null document snapshot for the retriever
-                        when(task.getResult()).thenReturn(null);
-                    }
-                });
+        when(docRef.get()).thenAnswer((Answer<Task<DocumentSnapshot>>) invocation -> createMockTask(task -> {
+            HashMap<String, Object> content =
+                    safeRetrieveDocumentContent(dbContent, collectionName, documentName);
+            DocumentSnapshot snapshot;
+            if (content != null) {
+                snapshot = createMockDocumentSnapshot(content, true);
+            } else {
+                // return a null document snapshot for the retriever
+                snapshot = createMockDocumentSnapshot(new HashMap<>(), false);
             }
-        });
+            when(task.getResult()).thenReturn(snapshot);
+        }));
 
         when(docRef.getId()).thenReturn(documentName);
         when(docRef.getParent()).thenReturn(colRef);
@@ -220,14 +221,15 @@ public class MockDb {
                 return null;
             }
         });
-        when(docRef.set(any(HashMap.class))).thenAnswer(new Answer<Task<DocumentSnapshot>>() {
+        when(docRef.set(any(HashMap.class))).thenAnswer(new Answer<Task<Void>>() {
             @Override
-            public Task<DocumentSnapshot> answer(InvocationOnMock invocation) throws Throwable {
-                return createMockTask(task -> {
+            public Task<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Task<Void> task1 = createMockTask(task -> {
                     ensureDocumentExist(dbContent, collectionName, documentName);
                     Objects.requireNonNull(dbContent.get(collectionName)).put(documentName,
                             invocation.getArgument(0));
                 });
+                return task1;
             }
         });
 
@@ -322,22 +324,22 @@ public class MockDb {
                 DocumentReference docRef = invocation.getArgument(0);
                 CollectionReference colRef = docRef.getParent();
                 HashMap<String, Object> content = safeRetrieveDocumentContent(dbContent, colRef.getId(), docRef.getId());
-                if (content == null)
+                if (content == null) {
                     content = new HashMap<>();
-                return createMockDocumentSnapshot(content);
+                    return createMockDocumentSnapshot(content, false);
+                } else {
+                    return createMockDocumentSnapshot(content, true);
+                }
             }
         });
-        when(transaction.set(any(DocumentReference.class), any(HashMap.class))).thenAnswer(new Answer<Transaction>() {
-            @Override
-            public Transaction answer(InvocationOnMock invocation) throws Throwable {
-                DocumentReference docRef = invocation.getArgument(0);
-                CollectionReference colRef = docRef.getParent();
-                HashMap<String, Object> map = invocation.getArgument(1);
-                ensureCollectionExist(dbContent, colRef.getId());
-                Objects.requireNonNull(dbContent.get(colRef.getId())).put(docRef.getId(), map);
+        when(transaction.set(any(DocumentReference.class), any(HashMap.class))).thenAnswer((Answer<Transaction>) invocation -> {
+            DocumentReference docRef = invocation.getArgument(0);
+            CollectionReference colRef = docRef.getParent();
+            HashMap<String, Object> map = invocation.getArgument(1);
+            ensureCollectionExist(dbContent, colRef.getId());
+            Objects.requireNonNull(dbContent.get(colRef.getId())).put(docRef.getId(), map);
 
-                return transaction;
-            }
+            return transaction;
         });
         when(transaction.update(any(DocumentReference.class), anyString(), any(Object.class))).thenAnswer(new Answer<Transaction>() {
             @Override

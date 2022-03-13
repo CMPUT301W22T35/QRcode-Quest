@@ -77,6 +77,7 @@ public class ManagerResult {
                 return new Result<>(error);
             }
             PlayerAccount account = new PlayerAccount(name, email, phone, false, isOwner);
+
             return new Result<>(account);
         }
     }
