@@ -1,9 +1,12 @@
 package com.qrcode_quest.database;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import android.graphics.Bitmap;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -17,10 +20,32 @@ import com.google.firebase.storage.UploadTask;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class MockFirebaseStorage {
+
+    static public QRManager.PhotoEncoding createMockEncoding() {
+        QRManager.PhotoEncoding encoding = mock(QRManager.PhotoEncoding.class);
+        when(encoding.encodeToBytes(any())).thenCallRealMethod();
+        when(encoding.decodeFromBytes(any(byte[].class))).thenAnswer(
+                (Answer<Bitmap>) invocation -> createMockBitmap(invocation.getArgument(0)));
+        return encoding;
+    }
+
+    static public Bitmap createMockBitmap(byte[] content) {
+        Bitmap bitmap = mock(Bitmap.class);
+
+        when(bitmap.compress(any(Bitmap.CompressFormat.class), anyInt(), any(ByteArrayOutputStream.class)))
+                .thenAnswer((Answer<Boolean>) invocation -> {
+                    ByteArrayOutputStream baos = invocation.getArgument(2);
+                    baos.write(content);
+                    return true;
+                });
+
+        return bitmap;
+    }
 
     /**
      * create an upload task
@@ -63,7 +88,8 @@ public class MockFirebaseStorage {
     static public StorageReference createMockStorageReference(HashMap<String, byte[]> photos, String refPath) {
         StorageReference ref = mock(StorageReference.class);
 
-        when(ref.getBytes(any())).thenAnswer(new Answer<Task<byte[]>>() {
+        when(ref.getBytes(any(Long.class)))
+                .thenAnswer(new Answer<Task<byte[]>>() {
             @Override
             public Task<byte[]> answer(InvocationOnMock invocation) throws Throwable {
                 Task<byte[]> task = MockDb.createMockTask(task1 -> { });

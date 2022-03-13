@@ -59,6 +59,10 @@ public class MockDb {
             String key = invocation.getArgument(0);
             return (Boolean) snapshot.get(key);
         });
+        when(docRef.getDouble(anyString())).thenAnswer((Answer<Double>) invocation -> {
+            String key = invocation.getArgument(0);
+            return (Double) snapshot.get(key);
+        });
         when(docRef.get(anyString())).thenAnswer(invocation -> {
             String key = invocation.getArgument(0);
             return snapshot.get(key);

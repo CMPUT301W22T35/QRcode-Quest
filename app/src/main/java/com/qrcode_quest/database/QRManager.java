@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -41,18 +40,35 @@ import java.util.Objects;
 public class QRManager extends DatabaseManager {
     final static long MAX_FILE_SIZE = 16 * 1024;  // 16KB = 128Kb
 
+    public static class PhotoEncoding {
+        public byte[] encodeToBytes(Bitmap photo) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            return baos.toByteArray();
+        }
+
+        public Bitmap decodeFromBytes(byte[] bytes) {
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            return BitmapFactory.decodeStream(bais);
+        }
+    }
+
     FirebaseStorage firebaseStorage;  // for uploading the photos
+    PhotoEncoding encoding;
     public QRManager() {
         super();
         this.firebaseStorage = FirebaseStorage.getInstance();
+        this.encoding = new PhotoEncoding();
     }
     public QRManager(FirebaseFirestore db) {
         super(db);
         this.firebaseStorage = FirebaseStorage.getInstance();
+        this.encoding = new PhotoEncoding();
     }
-    public QRManager(FirebaseFirestore db, FirebaseStorage firebaseStorage) {
-        this(db);
+    public QRManager(FirebaseFirestore db, FirebaseStorage firebaseStorage, PhotoEncoding encoding) {
+        super(db);
         this.firebaseStorage = firebaseStorage;
+        this.encoding = encoding;
     }
 
     public void retrieveQRShotsWithPhotos(Task<QuerySnapshot> task, Listener<ArrayList<QRShot>> listener) {
@@ -101,8 +117,7 @@ public class QRManager extends DatabaseManager {
                     }
                     byte[] photoBytes = taskLoadPhoto.getResult();
                     if (photoBytes != null) {
-                        ByteArrayInputStream bais = new ByteArrayInputStream(photoBytes);
-                        Bitmap reconstructedPhoto = BitmapFactory.decodeStream(bais);
+                        Bitmap reconstructedPhoto = encoding.decodeFromBytes(photoBytes);
                         Objects.requireNonNull(photoPathToShot.get(path)).setPhoto(reconstructedPhoto);
                     }
 
@@ -163,8 +178,18 @@ public class QRManager extends DatabaseManager {
      * @see QRManager#getAllQRCodes(Listener)
      */
     public void getAllQRCodesAsMap(Listener<HashMap<String, QRCode>> listener){
-        Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT).get();
-        retrieveResultByTask(task, listener, new ManagerResult.QRCodeMapRetriever());
+        getAllQRCodes(result -> {
+            if (!result.isSuccess()) {
+                listener.onResult(new Result<>(result.getError()));
+            } else {
+                ArrayList<QRCode> codes = result.unwrap();
+                HashMap<String, QRCode> map = new HashMap<>();
+                for (QRCode code: codes) {
+                    map.put(code.getHashCode(), code);
+                }
+                listener.onResult(new Result<>(map));
+            }
+        });
     }
 
     /**
@@ -188,7 +213,7 @@ public class QRManager extends DatabaseManager {
                 // the result set should either has 0 or 1 element
                 int size = result.unwrap().size();
                 assert size <= 1;
-                if (size == 0) {
+                if (size != 0) {
                     return new Result<>(result.unwrap().get(0));
                 }
                 return new Result<>((QRCode) null);
@@ -254,9 +279,7 @@ public class QRManager extends DatabaseManager {
                     // TODO: move this to a wrapper on onCompleteListener to guarantee execute upload after transaction complete
                     // see: https://firebase.google.com/docs/storage/android/upload-files
                     StorageReference photoRef = firebaseStorage.getReference(path);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                    UploadTask uploadTask = photoRef.putBytes(baos.toByteArray());
+                    UploadTask uploadTask = photoRef.putBytes(encoding.encodeToBytes(photo));
                     retrieveResultByTask(uploadTask, onImageUploadListener, new ManagerResult.TaskSnapshotRetriever());
                 }
 
