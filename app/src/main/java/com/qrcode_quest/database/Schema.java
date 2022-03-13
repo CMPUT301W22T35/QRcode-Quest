@@ -28,9 +28,12 @@ public class Schema {
     public static String getQRShotDocumentName(String qrHash, String playerName) {
         return qrHash + "_" + playerName;
     }
-    public static final String QRSHOT_QRHASH = "playerName";
+    public static final String QRSHOT_QRHASH = "qrhash";
     public static final String QRSHOT_PLAYER_NAME = "playerName";
     public static final String QRSHOT_SCORE = "score";
+    public static String getPhotoPathOnCloudStorage(String qrHash, String playerName) {
+        return "images/" + qrHash + "_" + playerName;
+    }
     public static final String QRSHOT_PHOTO_REF = "photoRef";
     public static final String QRSHOT_LONGITUDE = "longitude";
     public static final String QRSHOT_LATITUDE = "latitude";
@@ -78,7 +81,11 @@ public class Schema {
   QRShot
   *qrhash: a string, identifies the QR code, the hash in hexadecimal format
   \*playerName: a string, the player that takes photo of the QR code
+<<<<<<< HEAD
   -score: an integer/float, the score of the QR code
+=======
+  -score: an integer, the score of the QR code
+>>>>>>> feature-database
   -photoRef: a reference object, to the image object which represents the photo taken by the
   player (after compression <64kb)
   -longitude: a floating point number, nullable

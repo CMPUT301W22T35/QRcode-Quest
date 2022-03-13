@@ -2,10 +2,16 @@ package com.qrcode_quest.database;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.Comment;
+import com.google.firebase.storage.UploadTask;
+import com.qrcode_quest.entities.QRCode;
+import com.qrcode_quest.entities.QRShot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -85,6 +91,14 @@ public class ManagerResult {
         }
     }
 
+    public static class TaskSnapshotRetriever implements
+            Retriever<Void, UploadTask.TaskSnapshot> {
+        @Override
+        public Result<Void> retrieveResultFrom(UploadTask.TaskSnapshot document) {
+            return new Result<>((Void) null);  // ignore input
+        }
+    }
+
     public static class CommentListRetriever implements
             Retriever<ArrayList<Comment>, QuerySnapshot> {
         /**
@@ -104,6 +118,8 @@ public class ManagerResult {
                 String content = document.getString(Schema.COMMENT_TEXT);
                 Long position = document.getLong(Schema.COMMENT_POSITION);
                 String qrHash = document.getString(Schema.COMMENT_QRHASH);
+
+                // verify the data represents a legal Comment object
                 if (name == null || content == null || position == null || qrHash == null) {
                     DbError error = new DbError("Comment relation contains null attributes " +
                             "in the database!", document.getId());
@@ -115,6 +131,9 @@ public class ManagerResult {
                 }
                 int intIndex = position.intValue() - 1;
                 Comment comment = new Comment(name, content, qrHash);
+
+                // two comments can not have the same index, therefore if the entry already exists,
+                // have encountered an error
                 if (comments.get(intIndex) != null) {
                     DbError error = new DbError("Repeated comment position index detected in " +
                             "the Comment relation of the database!", document.getId());
@@ -123,6 +142,91 @@ public class ManagerResult {
                 comments.set(intIndex, comment);
             }
             return new Result<>(comments);
+        }
+    }
+
+    public static class QRShotListRetriever implements
+            Retriever<ArrayList<QRShot>, QuerySnapshot> {
+        @Override
+        public Result<ArrayList<QRShot>> retrieveResultFrom(QuerySnapshot querySnapshot) {
+            assert querySnapshot != null;
+            List<DocumentSnapshot> documents = querySnapshot.getDocuments();
+            ArrayList<QRShot> shots = new ArrayList<>();
+            for(int i = 0; i < documents.size(); i++)
+                shots.add(null);
+            for (DocumentSnapshot document: documents) {
+                // retrieve fields in the document
+                String name = document.getString(Schema.QRSHOT_PLAYER_NAME);
+                Long score = document.getLong(Schema.QRSHOT_SCORE);
+                String qrHash = document.getString(Schema.QRSHOT_QRHASH);
+                Double latitude = document.getDouble(Schema.QRSHOT_LATITUDE);
+                Double longitude = document.getDouble(Schema.QRSHOT_LONGITUDE);
+                // verify necessary attributes are not null
+                if (name == null || score == null || qrHash == null) {
+                    DbError error = new DbError("QRShot relation contains null name/score/qrHash " +
+                            "in the database!", document.getId());
+                    return new Result<>(error);
+                }
+                // geolocation is only initialized if both longitude and latitude are present
+                Geolocation location = null;
+                if (latitude != null && longitude != null)
+                    location = new Geolocation(latitude, longitude);
+                // TODO: Load photo reference
+                QRShot shot = new QRShot(name, qrHash, null, location);
+                shots.add(shot);
+            }
+
+            return new Result<>(shots);
+        }
+    }
+
+    public static class QRCodeListRetriever implements
+            Retriever<ArrayList<QRCode>, QuerySnapshot> {
+        @Override
+        public Result<ArrayList<QRCode>> retrieveResultFrom(QuerySnapshot querySnapshot) {
+            assert querySnapshot != null;
+            List<DocumentSnapshot> documents = querySnapshot.getDocuments();
+            HashMap<String, QRCode> map = new HashMap<>();
+
+            for (DocumentSnapshot document: documents) {
+                // retrieve fields in the document
+                String qrHash = document.getString(Schema.QRSHOT_QRHASH);
+                if (qrHash == null) {
+                    DbError error = new DbError("QRShot relation contains null qrHash " +
+                            "in the database!", document.getId());
+                    return new Result<>(error);
+                }
+                // ignore if shot is referring to the same qrHash
+                if (map.containsKey(qrHash)) {
+                    continue;
+                }
+                Long score = document.getLong(Schema.QRSHOT_SCORE);
+                // verify necessary attributes are not null
+                if (score == null) {
+                    DbError error = new DbError("QRShot relation contains null name/score/qrHash " +
+                            "in the database!", document.getId());
+                    return new Result<>(error);
+                }
+                map.put(qrHash, new QRCode(qrHash, score.intValue()));
+            }
+            return new Result<>(new ArrayList<QRCode>(map.values()));
+        }
+    }
+
+
+    public static class PlayerListRetriever implements
+            Retriever<ArrayList<PlayerAccount>, QuerySnapshot> {
+        @Override
+        public Result<ArrayList<PlayerAccount>> retrieveResultFrom(QuerySnapshot snapshot) {
+            assert snapshot != null;
+            List<DocumentSnapshot> documents = snapshot.getDocuments();
+            ArrayList<PlayerAccount> players = new ArrayList<>();
+
+            for (DocumentSnapshot document : documents){
+                players.add(PlayerAccount.fromDocument(document));
+            }
+
+            return new Result<>(players);
         }
     }
 }

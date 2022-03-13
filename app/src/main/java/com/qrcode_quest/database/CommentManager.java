@@ -18,7 +18,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Contains functions for query and update comments in the comment section
+ * @author tianming
+ * @version 1.0
+ * @see Comment
+ */
 public class CommentManager extends DatabaseManager {
+    /**
+     * Create a Comment manager
+     * @param db Firestore database instance to query and update
+     */
     public CommentManager(FirebaseFirestore db) {
         super(db);
     }
