@@ -213,7 +213,10 @@ public class MockDb {
         when(docRef.delete()).then(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                Objects.requireNonNull(dbContent.get(collectionName)).remove(documentName);
+                HashMap<String, HashMap<String, Object>> colContent =
+                        Objects.requireNonNull(dbContent.get(collectionName));
+                Objects.requireNonNull(colContent.get(documentName)).clear();
+                colContent.remove(documentName);
                 return null;
             }
         });
@@ -348,6 +351,14 @@ public class MockDb {
                         Objects.requireNonNull(dbContent.get(colRef.getId()));
                 Objects.requireNonNull(colContent.get(docRef.getId())).put(key, val);
 
+                return transaction;
+            }
+        });
+        when(transaction.delete(any(DocumentReference.class))).thenAnswer(new Answer<Transaction>() {
+            @Override
+            public Transaction answer(InvocationOnMock invocation) throws Throwable {
+                DocumentReference docRef = invocation.getArgument(0);
+                docRef.delete();
                 return transaction;
             }
         });

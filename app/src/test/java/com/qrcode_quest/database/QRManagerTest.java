@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class QRManagerTest {
+    static final String QR_HASH1 = "af";
+    static final String QR_HASH2 = "ad";
+
     private HashMap<String, byte[]> pathToPhotos;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
@@ -119,8 +122,6 @@ public class QRManagerTest {
     @Test
     public void testGetters() {
         // get when empty returns an empty list
-        final String QR_HASH1 = "af";
-        final String QR_HASH2 = "ad";
         manager.getCodeShots(QR_HASH1, result -> assertTrue(result.unwrap().isEmpty()));
         manager.getAllQRShots(result -> assertTrue(result.unwrap().isEmpty()));
         manager.getPlayerShots("0", result -> assertTrue(result.unwrap().isEmpty()));
@@ -150,5 +151,44 @@ public class QRManagerTest {
         manager.getQRCode(QR_HASH1, result -> assertNotNull(result.unwrap()));
         manager.getPlayerCodes("0", result -> assertEquals(2, result.unwrap().size()));
         manager.getAllQRCodesAsMap(result -> assertEquals(2, result.unwrap().size()));
+    }
+
+    @Test
+    public void testDeleteCode() {
+        // insert 3 shots at two QR codes
+        ArrayList<QRShot> shots1 = createMockQRShots(1, QR_HASH1);
+        ArrayList<QRShot> shots2 = createMockQRShots(2, QR_HASH2);
+        manager.createQRShot(shots1.get(0),
+                result -> assertTrue(result.isSuccess()),
+                result -> assertTrue(result.isSuccess()));
+        manager.createQRShot(shots2.get(0),
+                result -> assertTrue(result.isSuccess()),
+                result -> assertTrue(result.isSuccess()));
+        manager.createQRShot(shots2.get(1),
+                result -> assertTrue(result.isSuccess()),
+                result -> assertTrue(result.isSuccess()));
+
+        // test remove the first code
+        manager.removeQRCode(QR_HASH1, result -> assertTrue(result.isSuccess()));
+        manager.getCodeShots(QR_HASH1, result -> assertEquals(0, result.unwrap().size()));
+        manager.getCodeShots(QR_HASH2, result -> assertEquals(2, result.unwrap().size()));
+
+        // remove the second code so collection is empty again
+        manager.removeQRCode(QR_HASH2, result -> assertTrue(result.isSuccess()));
+        manager.getCodeShots(QR_HASH1, result -> assertEquals(0, result.unwrap().size()));
+        manager.getCodeShots(QR_HASH2, result -> assertEquals(0, result.unwrap().size()));
+
+        // add them back
+        manager.createQRShot(shots1.get(0),
+                result -> assertTrue(result.isSuccess()),
+                result -> assertTrue(result.isSuccess()));
+        manager.createQRShot(shots2.get(0),
+                result -> assertTrue(result.isSuccess()),
+                result -> assertTrue(result.isSuccess()));
+        manager.createQRShot(shots2.get(1),
+                result -> assertTrue(result.isSuccess()),
+                result -> assertTrue(result.isSuccess()));
+        manager.getCodeShots(QR_HASH1, result -> assertEquals(1, result.unwrap().size()));
+        manager.getCodeShots(QR_HASH2, result -> assertEquals(2, result.unwrap().size()));
     }
 }
