@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import com.qrcode_quest.database.QRManager;
+
 /**
  * Represents a user's capture of a QRCode.
  * Multiple QRShots can be associated with the same underlying QRCode.
@@ -74,14 +76,14 @@ public class QRShot {
     /**
      * Gets the immutable name of the QRShot's owner.
      */
-    public String getOwnerName(){
+    public @NonNull String getOwnerName(){
         return this.ownerName;
     }
 
     /**
      * Gets the immutable hash of the QRShot's referent QRCode.
      */
-    public String getCodeHash(){
+    public @NonNull String getCodeHash(){
         return this.codeHash;
     }
 
