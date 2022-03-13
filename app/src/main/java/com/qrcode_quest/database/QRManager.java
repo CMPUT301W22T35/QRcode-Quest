@@ -165,7 +165,7 @@ public class QRManager extends DatabaseManager {
                 // insert the QRShot
                 HashMap<String, Object> map = new HashMap<>();
                 map.put(Schema.QRSHOT_QRHASH, shot.getCodeHash());
-                map.put(Schema.QRSHOT_PLAYER_NAME, shot.getName());
+                map.put(Schema.QRSHOT_PLAYER_NAME, shot.getOwnerName());
                 map.put(Schema.QRSHOT_SCORE, RawQRCode.getScoreFromHash(shot.getCodeHash()));
                 Geolocation location = shot.getLocation();
                 if (location != null) {

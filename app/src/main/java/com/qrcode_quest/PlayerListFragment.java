@@ -1,15 +1,24 @@
 package com.qrcode_quest;
 
+import static com.qrcode_quest.MobileNavigationDirections.actionNavigationLeaderboardToNavigationPlayerQrlist;
+
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.qrcode_quest.MobileNavigationDirections.ActionNavigationLeaderboardToNavigationPlayerQrlist;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.ArrayList;
@@ -65,6 +74,14 @@ public class PlayerListFragment extends Fragment {
 
         playerAdapter = new CustomPlayerList(this.getContext(), playerDataList);
         playerList.setAdapter(playerAdapter);
+
+        playerList.setOnItemClickListener((adapterView, itemView, i, l) -> {
+            PlayerAccount player = (PlayerAccount)adapterView.getItemAtPosition(i);
+            NavController navController = NavHostFragment.findNavController(this);
+            ActionNavigationLeaderboardToNavigationPlayerQrlist action =
+                    actionNavigationLeaderboardToNavigationPlayerQrlist(player);
+            navController.navigate(action);
+        });
 
         return view;
     }

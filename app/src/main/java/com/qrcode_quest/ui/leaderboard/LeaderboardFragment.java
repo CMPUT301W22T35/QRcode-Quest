@@ -35,7 +35,7 @@ public class LeaderboardFragment extends Fragment {
         leaderboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
 
-        String[] players = {"QRHUNTER12", "PLAYER1", "PLAYER2"}; // replace with firebase later
+        String[] players = {"QRHUNTER12", "PLAYER1", "bob"}; // replace with firebase later
         playerListFragment = PlayerListFragment.newInstance(players);
 
         FragmentManager fragmentManager = getChildFragmentManager();

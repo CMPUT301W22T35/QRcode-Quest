@@ -15,12 +15,32 @@
         android:id="@+id/navigation_leaderboard"
         android:name="com.qrcode_quest.ui.leaderboard.LeaderboardFragment"
         android:label="@string/title_leaderboard"
-        tools:layout="@layout/fragment_leaderboard" />
+        tools:layout="@layout/fragment_leaderboard" >
+
+    </fragment>
+
+    <action
+        android:id="@+id/action_navigation_leaderboard_to_navigation_player_qrlist"
+        app:destination="@id/navigation_player_qrlist">
+        <argument
+            android:name="player"
+            app:argType="com.qrcode_quest.entities.PlayerAccount" />
+    </action>
 
     <fragment
         android:id="@+id/navigation_account"
         android:name="com.qrcode_quest.ui.account.AccountFragment"
         android:label="@string/title_account"
         tools:layout="@layout/fragment_account" />
+
+    <fragment
+        android:label="Player's QR Captures"
+        android:id="@+id/navigation_player_qrlist"
+        android:name="com.qrcode_quest.ui.playerQR.PlayerQRListFragment"
+        tools:layout="@layout/fragment_qrshot_list" >
+        <argument
+            android:name="player"
+            app:argType="com.qrcode_quest.entities.PlayerAccount" />
+    </fragment>
 
 </navigation>

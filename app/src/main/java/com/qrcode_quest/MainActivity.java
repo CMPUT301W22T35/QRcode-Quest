@@ -1,5 +1,6 @@
 package com.qrcode_quest;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -10,7 +11,9 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.ActivityHomeBinding;
+import com.qrcode_quest.entities.QRShot;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,5 +36,4 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
-
 }

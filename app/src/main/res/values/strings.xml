@@ -4,4 +4,13 @@
     <string name="title_home">Home</string>
     <string name="title_leaderboard">Leaderboard</string>
     <string name="title_account">Account</string>
+    <string name="qrshot_name_placeholder">QRShot Name</string>
+    <string name="score_placeholder">Score</string>
+    <string name="qrshot_list_points">Points</string>
+    <string name="player_qrshot_code">Code</string>
+    <string name="number_placeholder">#</string>
+    <string name="player_qrlist_lowest">Lowest</string>
+    <string name="player_qrlist_highest">Highest</string>
+    <string name="player_qrlist_score">Score</string>
+    <string name="player_qrlist_total">Total</string>
 </resources>

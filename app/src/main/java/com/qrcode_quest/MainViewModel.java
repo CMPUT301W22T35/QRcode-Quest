@@ -13,10 +13,19 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.qrcode_quest.database.PlayerManager;
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.entities.QRCode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+/**
+ * A central view model for all fragments in MainActivity.
+ *
+ * @author jdumouch
+ * @version 1.0
+ */
 public class MainViewModel extends AndroidViewModel {
     /** A tag used for logging */
     private static final String CLASS_TAG = "MainViewModel";
@@ -75,7 +84,6 @@ public class MainViewModel extends AndroidViewModel {
     }
     private MutableLiveData<ArrayList<PlayerAccount>> players;
 
-
     /**
      * Loads the player list into `players`
      */
@@ -89,6 +97,33 @@ public class MainViewModel extends AndroidViewModel {
             }
             // Store the list
             players.setValue(result.unwrap());
+        });
+    }
+
+    /**
+     * Gets a list containing all of the QRCodes
+     */
+    public LiveData<HashMap<String, QRCode>> getCodes(){
+        if (qrCodes == null){
+            qrCodes = new MutableLiveData<>();
+            loadQRCodes();
+        }
+
+        return qrCodes;
+    }
+    private MutableLiveData<HashMap<String, QRCode>> qrCodes;
+
+    /**
+     * Grabs all the QRCodes as a hash map
+     */
+    private void loadQRCodes(){
+        new QRManager().getAllQRCodesAsMap(result ->{
+            if (!result.isSuccess()){
+                Log.e(CLASS_TAG, "Failed to load QR codes");
+                return;
+            }
+
+            qrCodes.setValue(result.unwrap());
         });
     }
 }
