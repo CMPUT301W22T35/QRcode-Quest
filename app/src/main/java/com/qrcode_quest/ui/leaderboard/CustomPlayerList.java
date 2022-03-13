@@ -1,4 +1,4 @@
-package com.qrcode_quest;
+package com.qrcode_quest.ui.leaderboard;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.qrcode_quest.R;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.ArrayList;

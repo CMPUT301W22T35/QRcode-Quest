@@ -12,7 +12,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.qrcode_quest.PlayerListFragment;
 import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.FragmentLeaderboardBinding;
 
