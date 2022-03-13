@@ -20,9 +20,10 @@ import com.qrcode_quest.databinding.FragmentQrViewBinding;
 import com.qrcode_quest.entities.QRShot;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link QRViewFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A fragment for displaying a QR code's data.
+ *
+ * @author jdumouch
+ * @version 1.0
  */
 public class QRViewFragment extends Fragment {
     private FragmentQrViewBinding binding;
@@ -35,22 +36,13 @@ public class QRViewFragment extends Fragment {
 
     public QRViewFragment() {}
 
-    public static QRViewFragment newInstance(String shotHash, String shotOwner) {
-        QRViewFragment fragment = new QRViewFragment();
-        Bundle args = new Bundle();
-        args.putString(SHOT_HASH_PARAM, shotHash);
-        args.putString(SHOT_OWNER_PARAM, shotOwner);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            shotOwner = getArguments().getString(SHOT_OWNER_PARAM);
-            shotHash = getArguments().getString(SHOT_HASH_PARAM);
-        }
+        assert getArguments() != null;
+
+        shotOwner = getArguments().getString(SHOT_OWNER_PARAM);
+        shotHash = getArguments().getString(SHOT_HASH_PARAM);
     }
 
     @Override

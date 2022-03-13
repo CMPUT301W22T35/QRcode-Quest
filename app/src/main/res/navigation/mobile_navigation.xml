@@ -61,10 +61,12 @@
         tools:layout="@layout/fragment_qr_view" >
         <argument
             android:name="shot_owner"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="false" />
         <argument
             android:name="shot_hash"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
 
 </navigation>
