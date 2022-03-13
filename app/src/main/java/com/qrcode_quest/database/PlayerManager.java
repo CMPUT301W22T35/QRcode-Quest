@@ -28,6 +28,7 @@ public class PlayerManager extends DatabaseManager {
     public PlayerManager(FirebaseFirestore db) {
         super(db);
     }
+    public PlayerManager() { super(); }
 
     /**
      * Fetches a player's data from the database
