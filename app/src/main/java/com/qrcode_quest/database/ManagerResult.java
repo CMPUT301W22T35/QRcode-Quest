@@ -210,6 +210,40 @@ public class ManagerResult {
         }
     }
 
+    public static class QRCodeMapRetriever implements
+            Retriever<HashMap<String, QRCode>, QuerySnapshot> {
+        @Override
+        public Result<HashMap<String, QRCode>> retrieveResultFrom(QuerySnapshot querySnapshot) {
+            assert querySnapshot != null;
+            List<DocumentSnapshot> documents = querySnapshot.getDocuments();
+            HashMap<String, QRCode> map = new HashMap<>();
+
+            for (DocumentSnapshot document: documents) {
+                // retrieve fields in the document
+                String qrHash = document.getString(Schema.QRSHOT_QRHASH);
+                if (qrHash == null) {
+                    DbError error = new DbError("QRShot relation contains null qrHash " +
+                            "in the database!", document.getId());
+                    return new Result<>(error);
+                }
+                // ignore if shot is referring to the same qrHash
+                if (map.containsKey(qrHash)) {
+                    continue;
+                }
+                Long score = document.getLong(Schema.QRSHOT_SCORE);
+                // verify necessary attributes are not null
+                if (score == null) {
+                    DbError error = new DbError("QRShot relation contains null name/score/qrHash " +
+                            "in the database!", document.getId());
+                    return new Result<>(error);
+                }
+                map.put(qrHash, new QRCode(qrHash, score.intValue()));
+            }
+
+            return new Result<>(map);
+        }
+    }
+
 
     public static class PlayerListRetriever implements
             Retriever<ArrayList<PlayerAccount>, QuerySnapshot> {

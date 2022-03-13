@@ -28,12 +28,26 @@ import java.util.HashMap;
 
 /**
  * Interfaces to query and update QRShot objects in the Firestore database
- * @author tianming
+ * @author tianming, jdumouch (barely ;P)
  * @version 1.0
  * @see com.qrcode_quest.entities.QRCode
  * @see com.qrcode_quest.entities.QRShot
  */
 public class QRManager extends DatabaseManager {
+    FirebaseStorage firebaseStorage;  // for uploading the photos
+    public QRManager() {
+        super();
+        this.firebaseStorage = FirebaseStorage.getInstance();
+    }
+    public QRManager(FirebaseFirestore db) {
+        super(db);
+        this.firebaseStorage = FirebaseStorage.getInstance();
+    }
+    public QRManager(FirebaseFirestore db, FirebaseStorage firebaseStorage) {
+        this(db);
+        this.firebaseStorage = firebaseStorage;
+    }
+
     /**
      * Get all qr shot rows in the database
      * @param listener handles the returned list of QRShot objects on complete
@@ -74,6 +88,16 @@ public class QRManager extends DatabaseManager {
         Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT)
                 .get();
         retrieveResultByTask(task, listener, new ManagerResult.QRCodeListRetriever());
+    }
+
+    /**
+     * Gets all qr codes in the database as a map, with the key being the hash of the code.
+     * @see QRManager#getAllQRCodes(Listener)
+     */
+    public void getAllQRCodesAsMap(Listener<HashMap<String, QRCode>> listener){
+        Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT)
+                .get();
+        retrieveResultByTask(task, listener, new ManagerResult.QRCodeMapRetriever());
     }
 
     /**
@@ -162,8 +186,7 @@ public class QRManager extends DatabaseManager {
                     // transaction is basically completed, we upload the photo if applicable
                     // TODO: move this to a wrapper on onCompleteListener to guarantee execute upload after transaction complete
                     // see: https://firebase.google.com/docs/storage/android/upload-files
-                    FirebaseStorage storage = FirebaseStorage.getInstance();
-                    StorageReference photoRef = storage.getReference();
+                    StorageReference photoRef = firebaseStorage.getReference();
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     UploadTask uploadTask = photoRef.putBytes(baos.toByteArray());
