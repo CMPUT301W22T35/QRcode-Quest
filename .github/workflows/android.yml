@@ -21,7 +21,7 @@ jobs:
         cache: gradle
 
     - name: Rename temporary google-services.json
-      run: mv app/google-services.CI app/google-services.json
+      run: mv app/google-services.CI /home/runner/work/QRcode-Quest/QRcode-Quest/app/google-services.json
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
