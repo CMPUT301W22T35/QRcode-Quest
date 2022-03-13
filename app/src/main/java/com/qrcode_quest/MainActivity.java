@@ -1,6 +1,7 @@
 package com.qrcode_quest;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -10,9 +11,13 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.ActivityHomeBinding;
 
 public class MainActivity extends AppCompatActivity {
+    /** A constant tag used for logging */
+    public static final String CLASS_TAG = "MainActivity";
 
     private ActivityHomeBinding binding;
 

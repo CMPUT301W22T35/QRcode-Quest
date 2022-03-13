@@ -42,11 +42,14 @@ public class PlayerQRListViewModel extends ViewModel {
      * Handles fetching a player's QRShots from the database
      */
     private void loadPlayerShots(String playerName){
+        Log.d(CLASS_TAG, String.format("Loading %s's QRShots...", playerName));
         new QRManager().getPlayerShots(playerName, result -> {
             if (!result.isSuccess()) {
                 Log.e(CLASS_TAG, "Failed to get QRShots.");
                 return;
             }
+
+            Log.d(CLASS_TAG, String.format("Loading %s's QRShots...done", playerName));
             playerShots.setValue(result.unwrap());
             loadedPlayerName = playerName;
         });

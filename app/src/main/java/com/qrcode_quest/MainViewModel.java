@@ -59,6 +59,7 @@ public class MainViewModel extends AndroidViewModel {
         String username = sharedPrefs.getString(AUTHED_USERNAME_PREF, "");
 
         // Load the players record
+        Log.d(CLASS_TAG, "Loaded authed user: " + username + "...");
         new PlayerManager().getPlayer(username, result -> {
             // Catch errors/failure
             if (!result.isSuccess() || result.unwrap() == null) {
@@ -66,6 +67,7 @@ public class MainViewModel extends AndroidViewModel {
                 return;
             }
 
+            Log.d(CLASS_TAG, "Loading authed user: " + username + "... done.");
             // Store the user
             currentPlayer.setValue(result.unwrap());
         });
@@ -96,6 +98,7 @@ public class MainViewModel extends AndroidViewModel {
                 Log.e(CLASS_TAG, "Failed to load player list");
                 return;
             }
+            Log.d("MainViewModel", "Loading players...done");
             // Store the list
             players.setValue(result.unwrap());
         });
@@ -118,12 +121,14 @@ public class MainViewModel extends AndroidViewModel {
      * Grabs all the QRCodes as a hash map
      */
     private void loadQRCodes(){
+        Log.d("MainViewModel", "Loading QRCodes...");
         new QRManager().getAllQRCodesAsMap(result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load QR codes");
                 return;
             }
 
+            Log.d("MainViewModel", "Loading QRCodes...done.");
             qrCodes.setValue(result.unwrap());
         });
     }

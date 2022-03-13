@@ -62,10 +62,13 @@ public class PlayerQRListFragment extends Fragment {
         Context context = recyclerView.getContext();
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
+        setStats(null, null);
+
         // Load QRShot/QRCode data into the RecyclerView
         viewModel.getPlayerShots(player.getUsername()).observe(getViewLifecycleOwner(), shots ->{
             mainViewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
                 recyclerView.setAdapter(new PlayerQRShotViewAdapter(shots, codes));
+
                 setStats(shots, codes);
 
                 binding.playerQrlistProgress.setVisibility(View.INVISIBLE);
@@ -85,11 +88,11 @@ public class PlayerQRListFragment extends Fragment {
     @SuppressLint("DefaultLocale")
     private void setStats(ArrayList<QRShot> shots, HashMap<String, QRCode> codes){
         // Handle empty stats
-        if (shots.size() == 0){
+        if (shots == null || shots.size() == 0){
             binding.playerQrlistLowest.setText("--");
             binding.playerQrlistHighest.setText("--");
             binding.playerQrlistScore.setText("--");
-            binding.playerQrlistTotal.setText("0");
+            binding.playerQrlistTotal.setText("--");
             return;
         }
 

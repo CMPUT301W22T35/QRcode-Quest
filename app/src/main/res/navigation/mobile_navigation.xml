@@ -31,7 +31,6 @@
     </fragment>
 
 
-
     <fragment
         android:id="@+id/navigation_account"
         android:name="com.qrcode_quest.ui.account.AccountFragment"

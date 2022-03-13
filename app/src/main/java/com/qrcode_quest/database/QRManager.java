@@ -2,6 +2,7 @@ package com.qrcode_quest.database;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -95,6 +96,11 @@ public class QRManager extends DatabaseManager {
                     photoPathToShot.put(Schema.getPhotoPathOnCloudStorage(shot.getCodeHash(),
                             shot.getOwnerName()), shot);
                 }
+            }
+
+            // Return the results without waiting for photos, if possible
+            if (numPhotosRemaining[0] == 0){
+                listener.onResult(new Result<>(shots));
             }
 
             // open all download tasks at once
