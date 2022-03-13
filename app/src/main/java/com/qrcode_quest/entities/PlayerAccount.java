@@ -146,7 +146,7 @@ public class PlayerAccount implements Parcelable {
     /**
      * Builds a HashMap out of a PlayerAccount
      */
-    public HashMap<String, Object> toHashMap(){
+    public HashMap<String, Object> toHashMap() {
         HashMap<String, Object> playerMap = new HashMap<>();
         playerMap.put(Schema.PLAYER_NAME, this.getUsername());
         playerMap.put(Schema.PLAYER_EMAIL, this.getEmail());
@@ -157,6 +157,7 @@ public class PlayerAccount implements Parcelable {
         playerMap.put(Schema.PLAYER_LOGIN_QRCODE, "");
         playerMap.put(Schema.PLAYER_PROFILE_QRCODE, "");
         return playerMap;
+    }
 
     /**
      * Implement a creator to build PlayerAccounts from Parcels
