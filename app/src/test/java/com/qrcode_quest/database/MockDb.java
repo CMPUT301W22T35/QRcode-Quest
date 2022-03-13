@@ -163,11 +163,11 @@ public class MockDb {
     }
 
     /**
-     * return an empty hash map when the collection or the document does not exist
+     * return the document snapshot if collection and document exists, otherwise return null
      * @param dbContent mock database to access
      * @param collectionName name of collection to access
      * @param documentName name of document to retrieve
-     * @return the content hashmap of the document
+     * @return the Result object that contains information about hash map content
      */
     static private HashMap<String, Object> safeRetrieveDocumentContent(
             HashMap<String, HashMap<String, HashMap<String, Object>>> dbContent,
@@ -176,8 +176,6 @@ public class MockDb {
         HashMap<String, HashMap<String, Object>> colContent = dbContent.get(collectionName);
         if (colContent != null)
             docContent = colContent.get(documentName);
-        if (docContent == null)
-            docContent = new HashMap<>();
         return docContent;
     }
 
@@ -191,10 +189,17 @@ public class MockDb {
             @Override
             public Task<DocumentSnapshot> answer(InvocationOnMock invocation) throws Throwable {
                 return createMockTask(task -> {
-                    DocumentSnapshot snapshot = createMockDocumentSnapshot(
-                            documentName,
-                            safeRetrieveDocumentContent(dbContent, collectionName, documentName));
-                    when(task.getResult()).thenReturn(snapshot);
+                    HashMap<String, Object> content =
+                            safeRetrieveDocumentContent(dbContent, collectionName, documentName);
+                    if (content != null) {
+                        DocumentSnapshot snapshot = createMockDocumentSnapshot(
+                                documentName,
+                                content);
+                        when(task.getResult()).thenReturn(snapshot);
+                    } else {
+                        // return a null document snapshot for the retriever
+                        when(task.getResult()).thenReturn(null);
+                    }
                 });
             }
         });
@@ -304,7 +309,11 @@ public class MockDb {
             public DocumentSnapshot answer(InvocationOnMock invocation) throws Throwable {
                 DocumentReference docRef = invocation.getArgument(0);
                 CollectionReference colRef = docRef.getParent();
-                return createMockDocumentSnapshot(docRef.getId(),
+                HashMap<String, Object> content = safeRetrieveDocumentContent(dbContent, colRef.getId(), docRef.getId());
+                if (content == null)
+                    return null;
+                else
+                    return createMockDocumentSnapshot(docRef.getId(),
                         safeRetrieveDocumentContent(dbContent, colRef.getId(), docRef.getId()));
             }
         });

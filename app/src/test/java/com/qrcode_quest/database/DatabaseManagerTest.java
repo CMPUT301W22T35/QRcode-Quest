@@ -84,9 +84,13 @@ public class DatabaseManagerTest {
         // test with a document that does not exist
         dbManager.retrieveObjectFromDocument("col", "abcd",
                 result -> {
-                    assertTrue(result.isSuccess());  // should not fail
-                    assertNull(result.unwrap());  // but no data should be returned
+                    assertFalse(result.isSuccess());  // should fail
+                    assertEquals("document does not exist",
+                            result.getError().getMessage());  // should return error message
                 },
-                document -> new Result<>(document.getLong("testValue")));
+                document -> {
+                    assertNull(document);
+                    return new Result<>(new DbError("document does not exist", "test retriever"));
+                });
     }
 }
