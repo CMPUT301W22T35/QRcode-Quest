@@ -89,9 +89,12 @@ public class DatabaseManagerTest {
                     assertEquals("document does not exist",
                             result.getError().getMessage());  // should return error message
                 },
-                document -> {
-                    assertNull(document);
-                    return new Result<>(new DbError("document does not exist", "test retriever"));
+                new ManagerResult.Retriever<Object, DocumentSnapshot>() {
+                    @Override
+                    public Result<Object> retrieveResultFrom(DocumentSnapshot document) {
+                        assertTrue(document == null || !document.exists());
+                        return new Result<>(new DbError("document does not exist", "test"));
+                    }
                 });
     }
 }

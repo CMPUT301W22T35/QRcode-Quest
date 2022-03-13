@@ -88,7 +88,7 @@ public class QRManagerTest {
         assertTrue(testFlags[2]);
 
         // add a few more and retrieve together
-        for(int i = 0; i < 4; i++) {
+        for(int i = 1; i < 4; i++) {
             manager.createQRShot(shots.get(i),
                     result -> assertTrue(result.isSuccess()),
                     result -> assertTrue(result.isSuccess()));
