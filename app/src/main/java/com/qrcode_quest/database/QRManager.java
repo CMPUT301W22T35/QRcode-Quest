@@ -28,7 +28,7 @@ import java.util.HashMap;
 
 /**
  * Interfaces to query and update QRShot objects in the Firestore database
- * @author tianming
+ * @author tianming, jdumouch (barely ;P)
  * @version 1.0
  * @see com.qrcode_quest.entities.QRCode
  * @see com.qrcode_quest.entities.QRShot
@@ -88,6 +88,16 @@ public class QRManager extends DatabaseManager {
         Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT)
                 .get();
         retrieveResultByTask(task, listener, new ManagerResult.QRCodeListRetriever());
+    }
+
+    /**
+     * Gets all qr codes in the database as a map, with the key being the hash of the code.
+     * @see QRManager#getAllQRCodes(Listener)
+     */
+    public void getAllQRCodesAsMap(Listener<HashMap<String, QRCode>> listener){
+        Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_QRSHOT)
+                .get();
+        retrieveResultByTask(task, listener, new ManagerResult.QRCodeMapRetriever());
     }
 
     /**
@@ -155,7 +165,7 @@ public class QRManager extends DatabaseManager {
                 // insert the QRShot
                 HashMap<String, Object> map = new HashMap<>();
                 map.put(Schema.QRSHOT_QRHASH, shot.getCodeHash());
-                map.put(Schema.QRSHOT_PLAYER_NAME, shot.getName());
+                map.put(Schema.QRSHOT_PLAYER_NAME, shot.getOwnerName());
                 map.put(Schema.QRSHOT_SCORE, RawQRCode.getScoreFromHash(shot.getCodeHash()));
                 Geolocation location = shot.getLocation();
                 if (location != null) {
