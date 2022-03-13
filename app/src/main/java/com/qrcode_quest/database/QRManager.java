@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -292,20 +293,32 @@ public class QRManager extends DatabaseManager {
     public void removeQRCode(String qrHash, Listener<Void> listener) {
         final CollectionReference collectionRef = getDb().collection(Schema.COLLECTION_QRSHOT);
 
-        getCodeShots(qrHash, result -> {
-            if (!result.isSuccess())
-                listener.onResult(new Result<>(result.getError()));
-            ArrayList<QRShot> shots = result.unwrap();  // all the shots to delete
+        getCodeShots(qrHash, new Listener<ArrayList<QRShot>>() {
+            @Override
+            public void onResult(Result<ArrayList<QRShot>> result) {
+                if (!result.isSuccess())
+                    listener.onResult(new Result<>(result.getError()));
+                ArrayList<QRShot> shots = result.unwrap();  // all the shots to delete
 
-            Task<Void> task = getDb().runTransaction(transaction -> {
-                for(QRShot shot: shots) {
-                    String docName = Schema.getQRShotDocumentName(shot.getCodeHash(), shot.getOwnerName());
-                    DocumentReference docRef = collectionRef.document(docName);
-                    transaction.delete(docRef);
-                }
-                return null;
-            });
-            retrieveResultByTask(task, listener, new ManagerResult.VoidResultRetriever());
+                Task<Void> task = QRManager.this.getDb().runTransaction(transaction -> {
+                    for (QRShot shot : shots) {
+                        String docName = Schema.getQRShotDocumentName(shot.getCodeHash(), shot.getOwnerName());
+                        DocumentReference docRef = collectionRef.document(docName);
+                        transaction.delete(docRef);
+                    }
+
+                    // just pray that this is successfully executed so re-adding photos will not cause issues
+                    for (QRShot shot : shots) {
+                        if (shot.getPhoto() != null) {
+                            String photoPath = Schema.getPhotoPathOnCloudStorage(shot.getCodeHash(), shot.getOwnerName());
+                            StorageReference ref = firebaseStorage.getReference(photoPath);
+                            ref.delete().addOnCompleteListener(task1 -> { });  // addCompleteListener to make unit tests work
+                        }
+                    }
+                    return null;
+                });
+                QRManager.this.retrieveResultByTask(task, listener, new ManagerResult.VoidResultRetriever());
+            }
         });
     }
 }

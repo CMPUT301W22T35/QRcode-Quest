@@ -109,6 +109,13 @@ public class MockFirebaseStorage {
                 return createMockUploadTask(photos, refPath, bytes);
             }
         });
+        when(ref.delete()).thenAnswer(new Answer<Task<Void>>() {
+            @Override
+            public Task<Void> answer(InvocationOnMock invocation) throws Throwable {
+                photos.remove(refPath);
+                return MockDb.createMockTask(task1 -> { });
+            }
+        });
 
         return ref;
     }
