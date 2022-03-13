@@ -1,5 +1,7 @@
 package com.qrcode_quest.entities;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -19,7 +21,7 @@ import java.util.HashMap;
  * @author jdumouch
  * @version 1.0
  */
-public class PlayerAccount {
+public class PlayerAccount implements Parcelable {
 
     /**
      * A unique username associated with the account.<br>
@@ -125,7 +127,6 @@ public class PlayerAccount {
         return phone;
     }
 
-
     /**
      * Builds a PlayerAccount from a DocumentSnapshot.
      */
@@ -156,5 +157,41 @@ public class PlayerAccount {
         playerMap.put(Schema.PLAYER_LOGIN_QRCODE, "");
         playerMap.put(Schema.PLAYER_PROFILE_QRCODE, "");
         return playerMap;
+
+    /**
+     * Implement a creator to build PlayerAccounts from Parcels
+     */
+    public static final Parcelable.Creator<PlayerAccount> CREATOR =
+            new Parcelable.Creator<PlayerAccount>(){
+
+        @Override
+        public PlayerAccount createFromParcel(Parcel parcel) {
+            return new PlayerAccount(
+                parcel.readString(),
+                parcel.readString(),
+                parcel.readString(),
+                parcel.readInt() > 0,
+                parcel.readInt() > 0
+            );
+        }
+
+        @Override
+        public PlayerAccount[] newArray(int i) {
+            return new PlayerAccount[i];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(this.username);
+        parcel.writeString(this.email);
+        parcel.writeString(this.phone);
+        parcel.writeInt(this.isDeleted ? 1 : 0);
+        parcel.writeInt(this.isOwner ? 1 : 0);
     }
 }
