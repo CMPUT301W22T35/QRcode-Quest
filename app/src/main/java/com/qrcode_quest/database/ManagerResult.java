@@ -77,6 +77,7 @@ public class ManagerResult {
                 return new Result<>(error);
             }
             PlayerAccount account = new PlayerAccount(name, email, phone, false, isOwner);
+
             return new Result<>(account);
         }
     }
@@ -142,6 +143,31 @@ public class ManagerResult {
         }
     }
 
+    /**
+     * retrieve a QRShot object WITHOUT photo from the given document snapshot
+     * if the document does not represent a consistent instance of QRShot, an error is returned
+     * @return a result object that contains a QRShot object if succeed, otherwise would contain an error message
+     */
+    public static Result<QRShot> getQRShotFromDocumentSnapshot(DocumentSnapshot document) {
+        String name = document.getString(Schema.QRSHOT_PLAYER_NAME);
+        Long score = document.getLong(Schema.QRSHOT_SCORE);
+        String qrHash = document.getString(Schema.QRSHOT_QRHASH);
+        Double latitude = document.getDouble(Schema.QRSHOT_LATITUDE);
+        Double longitude = document.getDouble(Schema.QRSHOT_LONGITUDE);
+        // verify necessary attributes are not null
+        if (name == null || score == null || qrHash == null) {
+            DbError error = new DbError("QRShot relation contains null name/score/qrHash " +
+                    "in the database!", document.getId());
+            return new Result<>(error);
+        }
+        // geolocation is only initialized if both longitude and latitude are present
+        Geolocation location = null;
+        if (latitude != null && longitude != null)
+            location = new Geolocation(latitude, longitude);
+        QRShot shot = new QRShot(name, qrHash, null, location);
+        return new Result<>(shot);
+    }
+
     public static class QRShotListRetriever implements
             Retriever<ArrayList<QRShot>, QuerySnapshot> {
         @Override
@@ -151,24 +177,11 @@ public class ManagerResult {
             ArrayList<QRShot> shots = new ArrayList<>();
             for (DocumentSnapshot document: documents) {
                 // retrieve fields in the document
-                String name = document.getString(Schema.QRSHOT_PLAYER_NAME);
-                Long score = document.getLong(Schema.QRSHOT_SCORE);
-                String qrHash = document.getString(Schema.QRSHOT_QRHASH);
-                Double latitude = document.getDouble(Schema.QRSHOT_LATITUDE);
-                Double longitude = document.getDouble(Schema.QRSHOT_LONGITUDE);
-                // verify necessary attributes are not null
-                if (name == null || score == null || qrHash == null) {
-                    DbError error = new DbError("QRShot relation contains null name/score/qrHash " +
-                            "in the database!", document.getId());
-                    return new Result<>(error);
-                }
-                // geolocation is only initialized if both longitude and latitude are present
-                Geolocation location = null;
-                if (latitude != null && longitude != null)
-                    location = new Geolocation(latitude, longitude);
-                // TODO: Load photo reference
-                QRShot shot = new QRShot(name, qrHash, null, location);
-                shots.add(shot);
+                Result<QRShot> shotResult = getQRShotFromDocumentSnapshot(document);
+                if (shotResult.isSuccess())
+                    shots.add(shotResult.unwrap());
+                else
+                    return new Result<>(shotResult.getError());
             }
 
             return new Result<>(shots);
@@ -207,41 +220,6 @@ public class ManagerResult {
             return new Result<>(new ArrayList<QRCode>(map.values()));
         }
     }
-
-    public static class QRCodeMapRetriever implements
-            Retriever<HashMap<String, QRCode>, QuerySnapshot> {
-        @Override
-        public Result<HashMap<String, QRCode>> retrieveResultFrom(QuerySnapshot querySnapshot) {
-            assert querySnapshot != null;
-            List<DocumentSnapshot> documents = querySnapshot.getDocuments();
-            HashMap<String, QRCode> map = new HashMap<>();
-
-            for (DocumentSnapshot document: documents) {
-                // retrieve fields in the document
-                String qrHash = document.getString(Schema.QRSHOT_QRHASH);
-                if (qrHash == null) {
-                    DbError error = new DbError("QRShot relation contains null qrHash " +
-                            "in the database!", document.getId());
-                    return new Result<>(error);
-                }
-                // ignore if shot is referring to the same qrHash
-                if (map.containsKey(qrHash)) {
-                    continue;
-                }
-                Long score = document.getLong(Schema.QRSHOT_SCORE);
-                // verify necessary attributes are not null
-                if (score == null) {
-                    DbError error = new DbError("QRShot relation contains null name/score/qrHash " +
-                            "in the database!", document.getId());
-                    return new Result<>(error);
-                }
-                map.put(qrHash, new QRCode(qrHash, score.intValue()));
-            }
-
-            return new Result<>(map);
-        }
-    }
-
 
     public static class PlayerListRetriever implements
             Retriever<ArrayList<PlayerAccount>, QuerySnapshot> {

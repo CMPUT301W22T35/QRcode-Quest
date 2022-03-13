@@ -4,6 +4,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.qrcode_quest.database.ManagerResult.*;
 import com.qrcode_quest.entities.PlayerAccount;
@@ -23,6 +25,11 @@ import java.util.HashMap;
  * @version 1.0
  */
 public class PlayerManager extends DatabaseManager {
+    public PlayerManager(FirebaseFirestore db) {
+        super(db);
+    }
+    public PlayerManager() { super(); }
+
     /**
      * Fetches a player's data from the database
      * @param username The username of the player to fetch
@@ -50,9 +57,11 @@ public class PlayerManager extends DatabaseManager {
                         ));
                         return;
                     }
-
-                    assert task.getResult() != null;
-                    listener.onResult(new Result<>(task.getResult().exists()));
+                    if (task.getResult() == null) {  // document does not exist
+                        listener.onResult(new Result<>(Boolean.FALSE));
+                    } else {
+                        listener.onResult(new Result<>(task.getResult().exists()));
+                    }
                 });
     }
 
@@ -68,7 +77,8 @@ public class PlayerManager extends DatabaseManager {
                     Schema.getPlayerAccountDocumentName(player.getUsername()));
             // Prevent overwrites
             if (transaction.get(playerRef).exists()) {
-                return null;
+                throw new FirebaseFirestoreException(
+                        "Player with same name already exists!", FirebaseFirestoreException.Code.ABORTED);
             }
             // Insert the player
             transaction.set(playerRef, player.toHashMap());

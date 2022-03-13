@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "93527741653",
+    "project_id": "qrcode-quest-github",
+    "storage_bucket": "qrcode-quest-github.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:93527741653:android:ef0b41cd04498afcd87e5c",
+        "android_client_info": {
+          "package_name": "com.qrcode_quest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "93527741653-t386t6ji14sff7ukd6m0aahr29f1cl1v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeVtAc27buLYd3Q_2r-4_DrWa8PbMbZ3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "93527741653-t386t6ji14sff7ukd6m0aahr29f1cl1v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
