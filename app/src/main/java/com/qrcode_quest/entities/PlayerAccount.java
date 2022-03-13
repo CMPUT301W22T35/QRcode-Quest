@@ -4,6 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.qrcode_quest.database.PlayerManager;
+import com.qrcode_quest.database.Schema;
+
+import java.util.HashMap;
+
 /**
  * Represents a player's account data.
  * This provides a local copy of the player's data and changes will not automatically be
@@ -120,6 +126,37 @@ public class PlayerAccount implements Parcelable {
     public @NonNull String getPhoneNumber() {
         return phone;
     }
+
+    /**
+     * Builds a PlayerAccount from a DocumentSnapshot.
+     */
+    public static PlayerAccount fromDocument(DocumentSnapshot document){
+        String username = document.getString(Schema.PLAYER_NAME);
+        String email = document.getString(Schema.PLAYER_EMAIL);
+        String phone = document.getString(Schema.PLAYER_PHONE);
+        Boolean isOwner = document.getBoolean(Schema.PLAYER_IS_OWNER);
+        Boolean isDeleted = document.getBoolean(Schema.PLAYER_IS_DELETED);
+
+        assert username != null && email != null && phone != null
+                && isOwner != null && isDeleted != null;
+
+        return new PlayerAccount( username, email, phone, isDeleted, isOwner );
+    }
+
+    /**
+     * Builds a HashMap out of a PlayerAccount
+     */
+    public HashMap<String, Object> toHashMap(){
+        HashMap<String, Object> playerMap = new HashMap<>();
+        playerMap.put(Schema.PLAYER_NAME, this.getUsername());
+        playerMap.put(Schema.PLAYER_EMAIL, this.getEmail());
+        playerMap.put(Schema.PLAYER_PHONE, this.getPhoneNumber());
+        playerMap.put(Schema.PLAYER_IS_OWNER, this.isOwner());
+        playerMap.put(Schema.PLAYER_IS_DELETED, this.isDeleted());
+        // TODO implement QRCodes
+        playerMap.put(Schema.PLAYER_LOGIN_QRCODE, "");
+        playerMap.put(Schema.PLAYER_PROFILE_QRCODE, "");
+        return playerMap;
 
     /**
      * Implement a creator to build PlayerAccounts from Parcels
