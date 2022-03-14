@@ -67,9 +67,42 @@ public class MainViewModel extends AndroidViewModel {
                 return;
             }
 
+
             Log.d(CLASS_TAG, "Loading authed user: " + username + "... done.");
             // Store the user
             currentPlayer.setValue(result.unwrap());
+        });
+    }
+
+
+
+    /**
+     * Gets a list containing all the players.
+     */
+    public LiveData<ArrayList<PlayerAccount>> getPlayers(){
+        if (players == null){
+            players = new MutableLiveData<>();
+            loadPlayers();
+        }
+
+        return players;
+    }
+    private MutableLiveData<ArrayList<PlayerAccount>> players;
+
+
+    /**
+     * Loads the player list into `players`
+     */
+    private void loadPlayers(){
+        Log.d("MainViewModel", "Loading players...");
+        new PlayerManager().getPlayerList(result -> {
+            // Catch errors
+            if (!result.isSuccess()) {
+                Log.e(CLASS_TAG, "Failed to load player list");
+                return;
+            }
+            // Store the list
+            players.setValue(result.unwrap());
         });
     }
 }

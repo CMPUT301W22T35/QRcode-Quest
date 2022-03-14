@@ -1,9 +1,11 @@
 package com.qrcode_quest.entities;
 
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.qrcode_quest.database.PlayerManager;
