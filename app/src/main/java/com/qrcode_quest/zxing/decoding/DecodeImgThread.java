@@ -18,9 +18,9 @@ import java.util.Vector;
 public class DecodeImgThread extends Thread {
 
 
-    /*图片路径*/
+    
     private String imgPath;
-    /*回调*/
+    
     private DecodeImgCallback callback;
     private Bitmap scanBitmap;
 
@@ -42,32 +42,30 @@ public class DecodeImgThread extends Thread {
         Bitmap scanBitmap = getBitmap(imgPath, 400, 400);
 
         MultiFormatReader multiFormatReader = new MultiFormatReader();
-        // 解码的参数
+      
         Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(2);
-        // 可以解析的编码类型
+   
         Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
 
 
-        // 扫描的类型  一维码和二维码
+        
         decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
         decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
         decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
 
         hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
-        // 设置解析的字符编码格式为UTF8
-        //  hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
-        // 设置解析配置参数
+        
         multiFormatReader.setHints(hints);
-        // 开始对图像资源解码
+    
         Result rawResult = null;
         try {
             rawResult = multiFormatReader.decodeWithState(new BinaryBitmap(new HybridBinarizer(new BitmapLuminanceSource(scanBitmap))));
 
-            Log.i("解析结果", rawResult.getText());
+            Log.i("decoderesult", rawResult.getText());
 
         } catch (Exception e) {
             e.printStackTrace();
-              Log.i("解析的图片结果","失败");
+              Log.i("decoderesult","fail");
         }
 
         if (rawResult != null) {
@@ -80,14 +78,7 @@ public class DecodeImgThread extends Thread {
     }
 
 
-    /**
-     * 根据路径获取图片
-     *
-     * @param filePath  文件路径
-     * @param maxWidth  图片最大宽度
-     * @param maxHeight 图片最大高度
-     * @return bitmap
-     */
+   
     private static Bitmap getBitmap(final String filePath, final int maxWidth, final int maxHeight) {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
