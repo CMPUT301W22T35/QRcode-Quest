@@ -10,6 +10,7 @@
     <string name="login_scan_button_label">Scan Login Code</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="title_home">Home</string>
+
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 </resources>
