@@ -42,11 +42,7 @@ public class QRShot {
      * @param codeHash The hash of the code this shot is referring to
      */
     public QRShot(@NonNull String owner, @NonNull String codeHash){
-        this.name = generateName();
-        this.ownerName = owner;
-        this.codeHash = codeHash;
-        this.photo = null;
-        this.location = null;
+        this(owner, codeHash, null, null);
     }
 
     /**
@@ -55,9 +51,9 @@ public class QRShot {
      * @see QRShot#QRShot(String, String)
      */
     public QRShot(@NonNull String owner, @NonNull String codeHash, Bitmap photo, Geolocation location){
-        this.name = generateName();
         this.ownerName = owner;
         this.codeHash = codeHash;
+        this.name = generateName();
         this.photo = photo;
         this.location = location;
     }
