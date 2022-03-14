@@ -1,5 +1,9 @@
 package com.qrcode_quest.entities;
 
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+
 /**
  * Represents a geolocation (longitude, latitude) on earth
  * @author tianming
@@ -81,5 +85,12 @@ public class Geolocation {
         // get central angle
         double diffRad = Math.acos(temp);
         return EARTH_RADIUS * Math.abs(diffRad);
+    }
+
+    @SuppressLint("DefaultLocale")
+    @NonNull
+    @Override
+    public String toString(){
+        return String.format("%f, %f", this.latitude, this.longitude);
     }
 }
