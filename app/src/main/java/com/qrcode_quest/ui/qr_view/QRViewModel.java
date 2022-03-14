@@ -6,10 +6,13 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.google.common.collect.ArrayTable;
 import com.qrcode_quest.database.QRManager;
+import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Fetches and caches data for QRViewFragment usages.
@@ -61,6 +64,63 @@ public class QRViewModel extends ViewModel {
             else{
                 Log.d(CLASS_TAG, String.format("Loading QRShot [%s, %s]...failed (does not exist)", owner, hash));
             }
+        });
+    }
+
+    /**
+     * Gets a list containing all of the QRShots
+     */
+    public LiveData<ArrayList<QRShot>> getShots(){
+        if (qrShots == null){
+            qrShots = new MutableLiveData<>();
+            updateQRShots();
+        }
+        return qrShots;
+    }
+    private MutableLiveData<ArrayList<QRShot>> qrShots;
+
+    /**
+     * Forces a refresh of the QRShots
+     */
+    public void updateQRShots(){
+        Log.d("MainViewModel", "Loading QRShots...");
+        new QRManager().getAllQRShots(result ->{
+            if (!result.isSuccess()){
+                Log.e(CLASS_TAG, "Failed to load QRShots");
+                return;
+            }
+
+            Log.d(CLASS_TAG, "Loading QRShots...done.");
+            qrShots.setValue(result.unwrap());
+        });
+    }
+
+    /**
+     * Gets a list containing all of the QRCodes
+     */
+    public LiveData<HashMap<String, QRCode>> getCodes(){
+        if (qrCodes == null){
+            qrCodes = new MutableLiveData<>();
+            updateQRCodes();
+        }
+
+        return qrCodes;
+    }
+    private MutableLiveData<HashMap<String, QRCode>> qrCodes;
+
+    /**
+     * Forces a refresh of the QRCodes
+     */
+    public void updateQRCodes(){
+        Log.d(CLASS_TAG, "Loading QRCodes...");
+        new QRManager().getAllQRCodesAsMap(result ->{
+            if (!result.isSuccess()){
+                Log.e(CLASS_TAG, "Failed to load QR codes");
+                return;
+            }
+
+            Log.d(CLASS_TAG, "Loading QRCodes...done.");
+            qrCodes.setValue(result.unwrap());
         });
     }
 }

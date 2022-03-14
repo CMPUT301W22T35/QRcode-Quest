@@ -24,6 +24,9 @@ import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Players.
+ *
+ * @author ageolleg
+ * @version 0.1
  */
 public class PlayerListFragment extends Fragment {
     ListView playerList;

@@ -51,21 +51,29 @@ public class PlayerQRListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
+        // Load the player argument
         PlayerAccount player = PlayerQRListFragmentArgs.fromBundle(getArguments()).getPlayer();
 
+        // Grab the action bar from MainActivity
+        AppCompatActivity main = (AppCompatActivity) this.getActivity();
+        ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
+        // Hide the back arrow because its broken garbage juice
+        actionBar.setDisplayHomeAsUpEnabled(false);
+        // Set custom title
+        actionBar.setTitle(String.format("%s's Captures", player.getUsername()));
+
+        // Load the view models
         PlayerQRListViewModel viewModel =
                 new ViewModelProvider(this).get(PlayerQRListViewModel.class);
 
-        MainViewModel mainViewModel =
-                new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
-
+        // Grab the view binding
         binding = FragmentPlayerQrShotsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
 
+        // Display the loading spinner and hide the list
         binding.playerQrlistProgress.setVisibility(View.VISIBLE);
         binding.playerQrlistRecyclerview.setVisibility(View.INVISIBLE);
 
-        // Set the adapter
+        // Set up the RecyclerView
         RecyclerView recyclerView = binding.playerQrlistRecyclerview;
         Context context = recyclerView.getContext();
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -76,26 +84,18 @@ public class PlayerQRListFragment extends Fragment {
 
         // Load QRShot/QRCode data into the RecyclerView
         viewModel.getPlayerShots(player.getUsername()).observe(getViewLifecycleOwner(), shots ->{
-            mainViewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
+            viewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
                 recyclerView.setAdapter(new PlayerQRShotViewAdapter(shots, codes, this::transitionTo));
-
+                // Use the data to load the stats card
                 setStats(shots, codes);
 
+                // Hide the loading spinner and display the List
                 binding.playerQrlistProgress.setVisibility(View.INVISIBLE);
                 binding.playerQrlistRecyclerview.setVisibility(View.VISIBLE);
             });
         });
 
-        // Grab the action bar from MainActivity
-        AppCompatActivity main = (AppCompatActivity) this.getActivity();
-        ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
-
-        // Hide the back arrow because its broken garbage juice
-        actionBar.setDisplayHomeAsUpEnabled(false);
-        // Set custom title
-        actionBar.setTitle(String.format("%s's Captures", player.getUsername()));
-
-        return root;
+        return binding.getRoot();
     }
 
     @Override
@@ -104,6 +104,11 @@ public class PlayerQRListFragment extends Fragment {
         binding = null;
     }
 
+    /**
+     * Takes the QRShot information to build user stats
+     * @param shots The QRShots for the player
+     * @param codes The list of QRCodes (containing at minimum the shots)
+     */
     @SuppressLint("DefaultLocale")
     private void setStats(ArrayList<QRShot> shots, HashMap<String, QRCode> codes){
         // Handle empty stats
@@ -115,17 +120,22 @@ public class PlayerQRListFragment extends Fragment {
             return;
         }
 
+        // Init stat variables
         int score = 0; int max = 0; int min = Integer.MAX_VALUE;
+
+        // Iterate through the QRShots, grabbing the score from its relevant code
         for (QRShot shot : shots) {
             QRCode qrCode = codes.get(shot.getCodeHash());
             if (qrCode == null) { continue; }
             int codeScore = qrCode.getScore();
 
+            // Update stats
             score += codeScore;
             max = Math.max(max, codeScore);
             min = Math.min(min, codeScore);
         }
 
+        // Update the View with the newly calculated info
         binding.playerQrlistLowest.setText(String.format("%d", min));
         binding.playerQrlistHighest.setText(String.format("%d", max));
         binding.playerQrlistScore.setText(String.format("%d", score));

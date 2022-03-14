@@ -15,6 +15,10 @@ import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.ArrayList;
 
+/**
+ * @author ageolleg
+ * @version 0.1
+ */
 public class CustomPlayerList extends ArrayAdapter<PlayerAccount> {
     private ArrayList<PlayerAccount> players;
     // private PlayerManager playerManager;
@@ -34,7 +38,7 @@ public class CustomPlayerList extends ArrayAdapter<PlayerAccount> {
         //return super.getView(position, convertView, parent);
 
         View view = convertView;if(view == null){
-            view = LayoutInflater.from(context).inflate(R.layout.player_list_content, parent,false);
+            view = LayoutInflater.from(context).inflate(R.layout.player_item_view, parent,false);
         }
 
         PlayerAccount player = players.get(position);

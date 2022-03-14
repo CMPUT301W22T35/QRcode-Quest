@@ -16,13 +16,24 @@
     <string name="player_qrlist_score">Score</string>
     <string name="player_qrlist_total">Total</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="logging_in">Logging In…</string>
+    <string name="logging_in_message">Logging In…</string>
     <string name="login_or_text">or</string>
     <string name="register_button_label">Register</string>
     <string name="register_email_hint">email (optional)</string>
     <string name="register_username_hint">username</string>
     <string name="login_signup_prompt">Sign up</string>
     <string name="login_scan_button_label">Scan Login Code</string>
-    <string name="qrview_name_placeholder">QRShot</string>
+    <string name="qrview_name_placeholder">QR Code</string>
+    <string name="delete_label">Delete</string>
+    <string name="edit_label">Edit</string>
+    <string name="qrview_score">Score:</string>
+    <string name="qrview_geoloc">Geolocation:</string>
+    <string name="qrview_scanned_header">Times captured:</string>
+    <string name="view_players_label">View Players</string>
+    <string name="qrview_times_capped_placeholder">#</string>
+    <string name="view_comments_label">View Comments</string>
+    <string name="qrview_image_description">QR Capture Photo</string>
+    <string name="qrview_score_placeholder">#</string>
+    <string name="qrview_geoloc_placeholder">#, #</string>
 </resources>
 

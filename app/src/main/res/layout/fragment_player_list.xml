@@ -9,7 +9,7 @@
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".ui.leaderboard.PlayerListFragment"
-    tools:listitem="@layout/player_list_content"
+    tools:listitem="@layout/player_item_view"
     android:choiceMode="singleChoice"
     android:drawSelectorOnTop="true"
     android:listSelector="#6001796F"/>

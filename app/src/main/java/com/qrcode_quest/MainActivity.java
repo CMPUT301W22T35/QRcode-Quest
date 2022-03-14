@@ -14,6 +14,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.ActivityHomeBinding;
+import com.qrcode_quest.entities.QRShot;
 
 public class MainActivity extends AppCompatActivity {
     /** A constant tag used for logging */
@@ -39,9 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Do an initial pull of common data for faster loads in other fragments
         MainViewModel viewModel = new ViewModelProvider(this).get(MainViewModel.class);
-        viewModel.getCodes();
         viewModel.getCurrentPlayer();
-        viewModel.getPlayers();
     }
 
 }
