@@ -44,4 +44,17 @@ public class QRShotTest {
         shot.setPhoto(null);
         assertEquals(shot.getPhoto(), null);
     }
+
+     @Test
+    public void testGenerateName(){
+
+        QRShot dadShot = new QRShot("Dad", "abcdef");
+        QRShot momShot = new QRShot("Mom", "abcdef");
+
+        String dadString = dadShot.getName();
+        String momString = momShot.getName();
+
+        assertNotEquals(dadString, momString);
+
+    }
 }

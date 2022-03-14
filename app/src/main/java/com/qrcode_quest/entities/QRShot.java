@@ -4,6 +4,9 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Random;
+
 /**
  * Represents a user's capture of a QRCode.
  * Multiple QRShots can be associated with the same underlying QRCode.
@@ -66,9 +69,29 @@ public class QRShot {
      * @return A pseudo-random name
      */
     private String generateName(){
-        // TODO generate a name
-        //  It may be wise to make a utility class for this
-        return "placeholder";
+
+        Double sum = 0.0;
+        Random rand = new Random();
+
+        byte[] bytes = new byte[0];
+        try {
+            bytes = this.codeHash.getBytes("US-ASCII");
+
+
+        for (int i=0; i < bytes.length; i++)
+        {
+            sum = sum + (int)bytes[i];
+        }
+
+        sum = sum * rand.nextInt(11);
+
+        String name = sum.toString();
+
+         } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return name;
     }
 
     /**
