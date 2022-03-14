@@ -29,7 +29,7 @@ final class AutoFocusCallback implements Camera.AutoFocusCallback {
 
   private static final String TAG = AutoFocusCallback.class.getSimpleName();
 
-  /*聚焦间隔*/
+  
   private static final long AUTO_FOCUS_INTERVAL_MS = 1000L;
   private static final Collection<String> FOCUS_MODES_CALLING_AF;
 
