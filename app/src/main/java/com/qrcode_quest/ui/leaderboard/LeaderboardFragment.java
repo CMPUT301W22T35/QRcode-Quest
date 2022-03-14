@@ -12,10 +12,13 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.qrcode_quest.PlayerListFragment;
 import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.FragmentLeaderboardBinding;
 
+/**
+ * @author ageolleg
+ * @version 0.1
+ */
 public class LeaderboardFragment extends Fragment {
     Fragment playerListFragment;
     // Integer rLayoutId
@@ -35,7 +38,7 @@ public class LeaderboardFragment extends Fragment {
         leaderboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
 
-        String[] players = {"QRHUNTER12", "PLAYER1", "PLAYER2"}; // replace with firebase later
+        String[] players = {"QRHUNTER12", "testman", "bob"}; // replace with firebase later
         playerListFragment = PlayerListFragment.newInstance(players);
 
         FragmentManager fragmentManager = getChildFragmentManager();

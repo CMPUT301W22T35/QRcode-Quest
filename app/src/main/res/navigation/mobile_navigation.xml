@@ -15,12 +15,58 @@
         android:id="@+id/navigation_leaderboard"
         android:name="com.qrcode_quest.ui.leaderboard.LeaderboardFragment"
         android:label="@string/title_leaderboard"
-        tools:layout="@layout/fragment_leaderboard" />
+        tools:layout="@layout/fragment_leaderboard" >
+        <action
+            android:id="@+id/action_navigation_leaderboard_to_navigation_player_qrlist"
+            app:destination="@id/navigation_player_qrlist"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/navigation_leaderboard">
+            <argument
+                android:name="player"
+                app:argType="com.qrcode_quest.entities.PlayerAccount" />
+        </action>
+    </fragment>
+
 
     <fragment
         android:id="@+id/navigation_account"
         android:name="com.qrcode_quest.ui.account.AccountFragment"
         android:label="@string/title_account"
         tools:layout="@layout/fragment_account" />
-</navigation>
 
+    <fragment
+        android:label="Player's QR Captures"
+        android:id="@+id/navigation_player_qrlist"
+        android:name="com.qrcode_quest.ui.playerQR.PlayerQRListFragment"
+        tools:layout="@layout/fragment_qrshot_list" >
+        <argument
+            android:name="player"
+            app:argType="com.qrcode_quest.entities.PlayerAccount" />
+        <action
+            android:id="@+id/action_player_qrlist_to_qrshot"
+            app:destination="@id/navigation_qrshot"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <fragment
+        android:label="QR Capture"
+        android:id="@+id/navigation_qrshot"
+        android:name="com.qrcode_quest.ui.qr_view.QRViewFragment"
+        tools:layout="@layout/fragment_qr_view" >
+        <argument
+            android:name="shot_owner"
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="shot_hash"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
+
+</navigation>

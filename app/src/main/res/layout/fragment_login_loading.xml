@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="@string/logging_in" />
+        android:text="@string/logging_in_message" />
 
     <ProgressBar
         android:id="@+id/loginLoadingSpinner"
