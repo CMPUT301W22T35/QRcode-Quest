@@ -53,10 +53,7 @@ final class FlashlightManager {
   private FlashlightManager() {
   }
 
-  /**
-   * 控制相机闪光灯开关
-   */
-  //FIXME
+ 
   static void enableFlashlight() {
     setFlashlight(false);
   }
