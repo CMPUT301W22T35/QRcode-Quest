@@ -1,9 +1,8 @@
 package com.qrcode_quest.entities;
 
-import android.os.Build;
+
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -131,7 +130,6 @@ public class PlayerAccount implements Parcelable {
         return phone;
     }
 
-
     /**
      * Builds a PlayerAccount from a DocumentSnapshot.
      */
@@ -151,7 +149,7 @@ public class PlayerAccount implements Parcelable {
     /**
      * Builds a HashMap out of a PlayerAccount
      */
-    public HashMap<String, Object> toHashMap(){
+    public HashMap<String, Object> toHashMap() {
         HashMap<String, Object> playerMap = new HashMap<>();
         playerMap.put(Schema.PLAYER_NAME, this.getUsername());
         playerMap.put(Schema.PLAYER_EMAIL, this.getEmail());

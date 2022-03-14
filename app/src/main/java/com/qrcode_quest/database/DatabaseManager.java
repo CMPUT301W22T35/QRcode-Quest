@@ -46,8 +46,13 @@ public class DatabaseManager {
                 } else {
                     // successful task, process the result
                     DocumentType doc = task.getResult();
-                    Result<T> result = retriever.retrieveResultFrom(doc);;
-                    listener.onResult(result);
+                    if (doc == null) {
+                        Result<T> result = new Result<T>((T) null);
+                        listener.onResult(result);
+                    } else {
+                        Result<T> result = retriever.retrieveResultFrom(doc);
+                        listener.onResult(result);
+                    }
                 }
             }
         });
