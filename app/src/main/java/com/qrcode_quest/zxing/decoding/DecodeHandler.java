@@ -63,10 +63,6 @@ final class DecodeHandler extends Handler {
     }
   }
 
-  /**
-   *
-   * 解码
-   */
   private void decode(byte[] data, int width, int height) {
 
     Result rawResult = null;
@@ -93,7 +89,7 @@ final class DecodeHandler extends Handler {
         rawResult = multiFormatReader.decodeWithState(bitmap);
       } catch (ReaderException re) {
 
-        //Log.i("解码异常",re.toString());
+        
       } finally {
         multiFormatReader.reset();
       }
