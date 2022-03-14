@@ -19,8 +19,6 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
     /** A tag to be used for logging */
     private static final String CLASS_TAG = "LoginActivity";
 
-    private PlayerManager playerManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (getSupportActionBar() != null) { getSupportActionBar().hide(); }
@@ -35,7 +33,6 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
                     .commit();
         }
 
-        playerManager = new PlayerManager();
         SharedPreferences sharedPrefs = this.getApplicationContext()
                 .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
 
@@ -65,7 +62,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         transitionToLoading();
 
         // Check the database for a device session
-        playerManager.validatePlayerSession(deviceUID, username, result ->{
+        new PlayerManager().validatePlayerSession(deviceUID, username, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to authenticate players");
                 Toast.makeText(this, "Database call failed.", Toast.LENGTH_SHORT).show();
