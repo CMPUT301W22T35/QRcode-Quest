@@ -70,28 +70,22 @@ public class QRShot {
      */
     private String generateName(){
 
-        Double sum = 0.0;
         Random rand = new Random();
+        StringBuilder sb = new StringBuilder();
 
-        byte[] bytes = new byte[0];
-        try {
-            bytes = this.codeHash.getBytes("US-ASCII");
+        String name;
 
-
-        for (int i=0; i < bytes.length; i++)
+        for (int i = 0; i < this.codeHash.length(); i++)
         {
-            sum = sum + (int)bytes[i];
+            int randInt = rand.nextInt(this.codeHash.length());
+            char randChar = codeHash.charAt(randInt);
+            sb.append(randChar);
         }
 
-        sum = sum * rand.nextInt(11);
-
-        String name = sum.toString();
-
-         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        name = sb.toString();
 
         return name;
+//
     }
 
     /**
