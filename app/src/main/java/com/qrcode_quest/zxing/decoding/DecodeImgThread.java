@@ -64,13 +64,12 @@ public class DecodeImgThread extends Thread {
             Log.i("decoderesult", rawResult.getText());
 
 
-
-        if (rawResult != null) {
-            callback.onImageDecodeSuccess(rawResult);
-        } else {
-            callback.onImageDecodeFailed();
+            if (rawResult != null) {
+                callback.onImageDecodeSuccess(rawResult);
+            } else {
+                callback.onImageDecodeFailed();
+            }
         }
-
 
     }
 
