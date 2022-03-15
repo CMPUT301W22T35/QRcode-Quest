@@ -35,5 +35,6 @@
     <string name="qrview_image_description">QR Capture Photo</string>
     <string name="qrview_score_placeholder">#</string>
     <string name="qrview_geoloc_placeholder">#, #</string>
-</resources>
 
+    <string name="scan_text">Scan</string>
+</resources>
