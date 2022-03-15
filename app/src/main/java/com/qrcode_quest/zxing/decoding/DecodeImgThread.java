@@ -63,7 +63,7 @@ public class DecodeImgThread extends Thread {
             e.printStackTrace();
             Log.i("decoderesult", rawResult.getText());
 
-        
+
 
         if (rawResult != null) {
             callback.onImageDecodeSuccess(rawResult);
