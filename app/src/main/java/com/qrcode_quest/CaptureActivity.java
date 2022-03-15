@@ -124,7 +124,6 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
             initCamera(surfaceHolder);
         } else {
-            // 重置callback，等待surfaceCreated()来初始化camera
             surfaceHolder.addCallback(this);
         }
 
@@ -170,7 +169,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
-            case KeyEvent.KEYCODE_CAMERA:// ��������
+            case KeyEvent.KEYCODE_CAMERA:
                 return true;
         }
         return super.onKeyDown(keyCode, event);

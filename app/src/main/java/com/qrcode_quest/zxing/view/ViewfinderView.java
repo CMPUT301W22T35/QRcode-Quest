@@ -48,15 +48,15 @@ public final class ViewfinderView extends View {
 	private CameraManager cameraManager;
 	private Paint paint, scanLinePaint, reactPaint, frameLinePaint;
 	private Bitmap resultBitmap;
-	private int maskColor; // 取景框外的背景颜色
-	private int resultColor;// result Bitmap的颜色
-	private int reactColor;//四个角的颜色
-	private int scanLineColor;//扫描线的颜色
-	private int frameLineColor = -1;//边框线的颜色
+	private int maskColor; 
+	private int resultColor;
+	private int reactColor;
+	private int scanLineColor;
+	private int frameLineColor = -1;
 
 
 	private List<ResultPoint> possibleResultPoints;
-	// 扫描线移动的y
+	
 	private int scanLineTop;
 
 	private ValueAnimator valueAnimator;
@@ -98,13 +98,13 @@ public final class ViewfinderView extends View {
 	private void initPaint() {
 		paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-		/*四个角的画笔*/
+		
 		reactPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		reactPaint.setColor(reactColor);
 		reactPaint.setStyle(Paint.Style.FILL);
 		reactPaint.setStrokeWidth(dp2px(1));
 
-		/*边框线画笔*/
+		
 
 		if (frameLineColor != -1) {
 			frameLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -176,7 +176,7 @@ public final class ViewfinderView extends View {
 			return;
 		}
 
-		// frame为取景框
+		
 		frame = cameraManager.getFramingRect();
 		Rect previewFrame = cameraManager.getFramingRectInPreview();
 		if (frame == null || previewFrame == null) {
@@ -187,10 +187,10 @@ public final class ViewfinderView extends View {
 		int width = canvas.getWidth();
 		int height = canvas.getHeight();
 
-		/*绘制遮罩*/
+	
 		drawMaskView(canvas, frame, width, height);
 
-		/*绘制取景框边框*/
+		
 		drawFrameBounds(canvas, frame);
 
 		if (resultBitmap != null) {
@@ -208,16 +208,16 @@ public final class ViewfinderView extends View {
 
 	private void drawMaskView(Canvas canvas, Rect frame, int width, int height) {
 		// Draw the exterior (i.e. outside the framing rect) darkened
-		// 绘制取景框外的暗灰色的表面，分四个矩形绘制
+		
 		paint.setColor(resultBitmap != null ? resultColor : maskColor);
-		/*上面的框*/
+		
 		canvas.drawRect(0, 0, width, frame.top, paint);
-		/*绘制左边的框*/
+		
 		canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
-		/*绘制右边的框*/
+	
 		canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1,
 				paint);
-		/*绘制下面的框*/
+		
 		canvas.drawRect(0, frame.bottom + 1, width, height, paint);
 
 
@@ -225,20 +225,19 @@ public final class ViewfinderView extends View {
 
 
 	/**
-	 * 绘制取景框边框
 	 *
 	 * @param canvas
 	 * @param frame
 	 */
 	private void drawFrameBounds(Canvas canvas, Rect frame) {
 
-		/*扫描框的边框线*/
+		
 		if (frameLineColor != -1) {
 			canvas.drawRect(frame, frameLinePaint);
 		}
 
 
-		/*四个角的长度和宽度*/
+		
 		int width = frame.width();
 		int corLength = (int) (width * 0.07);
 		int corWidth = (int) (corLength * 0.2);
@@ -246,23 +245,22 @@ public final class ViewfinderView extends View {
 		corWidth = corWidth > 15 ? 15 : corWidth;
 
 
-		/*角在线外*/
-		// 左上角
+		
 		canvas.drawRect(frame.left - corWidth, frame.top, frame.left, frame.top
 				+ corLength, reactPaint);
 		canvas.drawRect(frame.left - corWidth, frame.top - corWidth, frame.left
 				+ corLength, frame.top, reactPaint);
-		// 右上角
+		
 		canvas.drawRect(frame.right, frame.top, frame.right + corWidth,
 				frame.top + corLength, reactPaint);
 		canvas.drawRect(frame.right - corLength, frame.top - corWidth,
 				frame.right + corWidth, frame.top, reactPaint);
-		// 左下角
+		
 		canvas.drawRect(frame.left - corWidth, frame.bottom - corLength,
 				frame.left, frame.bottom, reactPaint);
 		canvas.drawRect(frame.left - corWidth, frame.bottom, frame.left
 				+ corLength, frame.bottom + corWidth, reactPaint);
-		// 右下角
+		
 		canvas.drawRect(frame.right, frame.bottom - corLength, frame.right
 				+ corWidth, frame.bottom, reactPaint);
 		canvas.drawRect(frame.right - corLength, frame.bottom, frame.right
@@ -271,7 +269,6 @@ public final class ViewfinderView extends View {
 
 
 	/**
-	 * 绘制移动扫描线
 	 *
 	 * @param canvas
 	 * @param frame

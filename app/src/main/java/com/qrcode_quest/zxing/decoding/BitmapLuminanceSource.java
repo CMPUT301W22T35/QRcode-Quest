@@ -4,10 +4,7 @@ import android.graphics.Bitmap;
 
 import com.google.zxing.LuminanceSource;
 
-/**
- *
- * 解析Bitmap LuminanceSource
- */
+
 public class BitmapLuminanceSource extends LuminanceSource {
 
     private byte bitmapPixels[];
@@ -27,13 +24,11 @@ public class BitmapLuminanceSource extends LuminanceSource {
 
     @Override
     public byte[] getMatrix() {
-      
         return bitmapPixels;
     }
 
     @Override
     public byte[] getRow(int y, byte[] row) {
-
         System.arraycopy(bitmapPixels, y * getWidth(), row, 0, getWidth());
         return row;
     }

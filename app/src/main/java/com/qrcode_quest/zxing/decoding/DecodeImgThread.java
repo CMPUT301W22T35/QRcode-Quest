@@ -18,8 +18,10 @@ import java.util.Vector;
 public class DecodeImgThread extends Thread {
 
 
-    private String imgPath;
 
+
+    private String imgPath;
+    
     private DecodeImgCallback callback;
     private Bitmap scanBitmap;
 
@@ -43,6 +45,9 @@ public class DecodeImgThread extends Thread {
         MultiFormatReader multiFormatReader = new MultiFormatReader();
         Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(2);
         Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
+
+
+        
         decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
         decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
         decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
@@ -56,7 +61,9 @@ public class DecodeImgThread extends Thread {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
+            Log.i("decoderesult", rawResult.getText());
+
+        
 
         if (rawResult != null) {
             callback.onImageDecodeSuccess(rawResult);
@@ -66,7 +73,6 @@ public class DecodeImgThread extends Thread {
 
 
     }
-
 
 
     private static Bitmap getBitmap(final String filePath, final int maxWidth, final int maxHeight) {
