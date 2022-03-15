@@ -25,9 +25,7 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.BatteryManager;
 
-/**
- * Finishes an activity after a period of inactivity.
- */
+
 public final class InactivityTimer {
 
 
@@ -87,11 +85,6 @@ public final class InactivityTimer {
       cancel();
     }
 
-    /**
-     * 电量状态receiver
-     * @author qichunjie
-     *
-     */
     private final class PowerStatusReceiver extends BroadcastReceiver {
       @Override
       public void onReceive(Context context, Intent intent) {
@@ -108,11 +101,6 @@ public final class InactivityTimer {
       }
     }
 
-    /**
-     * 设备休眠5分钟，关闭activity
-     * @author qichunjie
-     *
-     */
     private final class InactivityAsyncTask extends AsyncTask<Object, Object, Object> {
       @Override
       protected Object doInBackground(Object... objects) {
