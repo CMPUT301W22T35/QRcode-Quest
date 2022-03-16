@@ -16,9 +16,16 @@
 
 package com.qrcode_quest.zxing.decoding;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -26,10 +33,15 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
+import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.qrcode_quest.CaptureActivity;
 import com.qrcode_quest.zxing.Constant;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Map;
 
 final class DecodeHandler extends Handler {
@@ -64,7 +76,7 @@ final class DecodeHandler extends Handler {
   }
 
   private void decode(byte[] data, int width, int height) {
-
+    byte[] orginData = data;
     Result rawResult = null;
 
     byte[] rotatedData = new byte[data.length];
@@ -101,6 +113,12 @@ final class DecodeHandler extends Handler {
     if (rawResult != null) {
 
       if (handler != null) {
+        Bitmap bitmap = getBitmapFromByte(orginData,width,height);
+        if (bitmap!=null){
+          Log.e("zzz",bitmap.toString());
+          saveBitmap(bitmap);
+        }
+
         Message message = Message.obtain(handler,
                 Constant.DECODE_SUCCEEDED, rawResult);
         message.sendToTarget();
@@ -112,6 +130,39 @@ final class DecodeHandler extends Handler {
       }
     }
   }
+  public Bitmap getBitmapFromByte(byte[] temp, int width, int height){
+    if(temp != null){
+      BitmapFactory.Options options = new BitmapFactory.Options();
+      options.inJustDecodeBounds = true;
+      YuvImage yuvImage = new YuvImage(temp, ImageFormat.NV21,width,height,null);
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      yuvImage.compressToJpeg(new Rect(0,0,width,height),100,baos);
+      byte[] datas = baos.toByteArray();
+      BitmapFactory.Options options2 = new BitmapFactory.Options();
+      options2.inPreferredConfig = Bitmap.Config.RGB_565;
+      Bitmap bitmap = BitmapFactory.decodeByteArray(datas, 0, datas.length,options2);
+      return bitmap;
+    }else{
+      return null;
+    }
+  }
+   void saveBitmap(Bitmap bm) {
+    String path = activity.getCacheDir() + "/images/";
+     File saveFile = new File(path, "qr.png");
+     File file=new File(path);
+     if (!file.exists()){
+       file.mkdirs();
 
+     }
+     Log.e("zzz",file.getAbsolutePath());
+     try {
+       FileOutputStream saveImgOut = new FileOutputStream(saveFile);
+       bm.compress(Bitmap.CompressFormat.JPEG, 80, saveImgOut);
+       saveImgOut.flush();
+       saveImgOut.close();
+     } catch (IOException ex) {
+       ex.printStackTrace();
+     }
+  }
 
 }

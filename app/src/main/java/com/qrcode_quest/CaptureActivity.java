@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -202,7 +203,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
     }
 
     private boolean doAfterScan(String verify_code) {
-
+        Log.e("zzz",verify_code);
         //TODO
         return false;
     }

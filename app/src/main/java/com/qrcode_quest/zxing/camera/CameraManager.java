@@ -181,12 +181,6 @@ public final class CameraManager {
   }
 
   /**
-   * A single preview frame will be returned to the handler supplied. The data
-   * will arrive as byte[] in the message.obj field, with width and height
-   * encoded as message.arg1 and message.arg2, respectively.
-   *
-   * @param handler The handler to send the message to.
-   * @param message The what field of the message to be sent.
    */
   public synchronized void requestPreviewFrame(Handler handler, int message) {
     Camera theCamera = camera;
@@ -197,7 +191,6 @@ public final class CameraManager {
   }
 
 
-  /*取景框*/
   public synchronized Rect getFramingRect() {
     if (framingRect == null) {
       if (camera == null) {
@@ -215,7 +208,6 @@ public final class CameraManager {
       int height = width;
 
 
-      /*水平居中  偏上显示*/
       int leftOffset = (screenResolution.x - width) / 2;
       int topOffset = (int) ((screenResolution.y - height) / 2.7);
 
@@ -229,10 +221,6 @@ public final class CameraManager {
 
   /**
    * Like {@link #getFramingRect} but coordinates are in terms of the preview
-   * frame, not UI / screen.
-   *
-   * @return {@link Rect} expressing barcode scan area in terms of the preview
-   * size
    */
   public synchronized Rect getFramingRectInPreview() {
     if (framingRectInPreview == null) {
@@ -248,7 +236,6 @@ public final class CameraManager {
         return null;
       }
 
-      /******************** 竖屏更改1(cameraResolution.x/y互换) ************************/
       rect.left = rect.left * cameraResolution.y / screenResolution.x;
       rect.right = rect.right * cameraResolution.y / screenResolution.x;
       rect.top = rect.top * cameraResolution.x / screenResolution.y;
