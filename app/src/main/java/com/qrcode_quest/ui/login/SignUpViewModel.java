@@ -12,9 +12,13 @@ import com.qrcode_quest.entities.PlayerAccount;
 import java.util.ArrayList;
 
 public class SignUpViewModel extends ViewModel {
+    /** A tag used for logging */
     private static final String CLASS_TAG = "SignUpViewModel";
 
-    private MutableLiveData<ArrayList<PlayerAccount>> players;
+
+    /**
+     * Retrieves the player list from the view model.
+     */
     public LiveData<ArrayList<PlayerAccount>> getPlayers(){
         if (players == null){
             players = new MutableLiveData<>();
@@ -23,8 +27,12 @@ public class SignUpViewModel extends ViewModel {
 
         return players;
     }
+    private MutableLiveData<ArrayList<PlayerAccount>> players;
 
 
+    /**
+     * Loads the player list from the database into the view model
+     */
     private void loadPlayers(){
         new PlayerManager().getPlayerList(result -> {
             if (!result.isSuccess()){
