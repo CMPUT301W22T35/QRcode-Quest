@@ -1,4 +1,4 @@
-package com.qrcode_quest.ui.login.sign_up;
+package com.qrcode_quest.ui.login;
 
 
 import static android.content.Context.MODE_PRIVATE;
@@ -12,6 +12,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,7 +28,9 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.qrcode_quest.R;
 import com.qrcode_quest.database.PlayerManager;
+import com.qrcode_quest.databinding.FragmentSignUpBinding;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
 import java.util.UUID;
 
@@ -53,15 +56,8 @@ public class SignUpFragment extends Fragment {
     /** A tag constant used for logging */
     private static final String CLASS_TAG = "SignUpFragment";
 
-    private TextInputEditText usernameField;
-    private TextInputLayout usernameLayout;
-    private TextInputEditText emailField;
-    private TextInputLayout emailLayout;
-    private Button scanLoginButton;
-    private Button registerButton;
-
-    private PlayerManager playerManager;
-
+    private SignUpViewModel viewModel;
+    private FragmentSignUpBinding binding;
     private SharedPreferences sharedPrefs;
 
     public SignUpFragment(){}
@@ -72,14 +68,20 @@ public class SignUpFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        playerManager = new PlayerManager();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        binding = FragmentSignUpBinding.inflate(inflater, container, false);
+
+        // Preload the players list for fast username testing
+        viewModel =  new ViewModelProvider(this).get(SignUpViewModel.class);
+        viewModel.getPlayers();
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_sign_up, container, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -90,46 +92,39 @@ public class SignUpFragment extends Fragment {
         sharedPrefs = this.getActivity().getApplicationContext()
                 .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
 
-        // Grab the view objects from the newly created fragment view
-        usernameField = view.findViewById(R.id.login_signup_username);
-        usernameLayout = view.findViewById(R.id.login_signup_username_layout);
-        emailField = view.findViewById(R.id.login_signup_email);
-        emailLayout = view.findViewById(R.id.login_signup_email_layout);
-        scanLoginButton = view.findViewById(R.id.login_signup_scan_button);
-        registerButton = view.findViewById(R.id.login_signup_register_button);
 
         // Set a click listener for scan to login button
-        scanLoginButton.setOnClickListener(v -> {
+        binding.loginSignupScanButton.setOnClickListener(v -> {
             // TODO Implement scanning login codes
             Toast.makeText(this.getContext(), "Feature not implemented.", Toast.LENGTH_SHORT)
                     .show();
         });
 
         // Set a click listener for register button
-        registerButton.setOnClickListener(v->this.onRegisterClicked());
+        binding.loginSignupRegisterButton.setOnClickListener(v->this.onRegisterClicked());
 
         // Add a listener to the username field to clear errors
-        usernameField.addTextChangedListener(new TextWatcher() {
+        binding.loginSignupUsername.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
             public void afterTextChanged(Editable editable) {}
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                usernameLayout.setErrorEnabled(false);
+                binding.loginSignupUsernameLayout.setErrorEnabled(false);
             }
         });
 
         // Add a listener to email field to clear errors
-        emailField.addTextChangedListener(new TextWatcher() {
+        binding.loginSignupEmail.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2){}
             public void afterTextChanged(Editable editable){}
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 String email = charSequence.toString();
-                if (emailLayout.isErrorEnabled()){
+                if (binding.loginSignupEmailLayout.isErrorEnabled()){
                     if (Patterns.EMAIL_ADDRESS.matcher(email).matches() || email.trim().isEmpty()) {
-                        emailLayout.setErrorEnabled(false);
+                        binding.loginSignupEmailLayout.setErrorEnabled(false);
                     }
                 }
             }
@@ -140,54 +135,61 @@ public class SignUpFragment extends Fragment {
      * Validates user input and creates a new player/session.
      */
     void onRegisterClicked() {
+        PlayerManager playerManager = new PlayerManager();
+
         // Ensure that if the user entered an email it is valid
-        String chosenEmail = requireNonNull(emailField.getText()).toString().trim();
+        String chosenEmail = requireNonNull(binding.loginSignupEmail.getText()).toString().trim();
         if (!chosenEmail.isEmpty() && !Patterns.EMAIL_ADDRESS.matcher(chosenEmail).matches()){
-            emailLayout.setError("Invalid email address");
+            binding.loginSignupEmailLayout.setError("Invalid email address");
         }
         else {
-            emailLayout.setErrorEnabled(false);
+            binding.loginSignupEmailLayout.setErrorEnabled(false);
         }
 
         // Check the user actually entered a username
-        String chosenUsername = requireNonNull(usernameField.getText()).toString();
+        String chosenUsername = requireNonNull(binding.loginSignupUsername.getText()).toString();
         if (chosenUsername.trim().isEmpty()) {
-            usernameLayout.setError("Username is required");
+            binding.loginSignupUsernameLayout.setError("Username is required");
         }
         else if (!chosenUsername.trim().equals(chosenUsername)){
-            usernameLayout.setError("No leading/trailing whitespace");
+            binding.loginSignupUsernameLayout.setError("No leading/trailing whitespace");
         }
 
         // Prevent a database request while a username error exists
-        if (usernameLayout.isErrorEnabled()) { return; }
+        if (binding.loginSignupUsernameLayout.isErrorEnabled()) { return; }
 
         // Prevent the user from spamming calls
-        registerButton.setEnabled(false);
+        binding.loginSignupRegisterButton.setEnabled(false);
+        binding.loginSignupMainContainer.setVisibility(View.GONE);
+        binding.loginSignupProgress.setVisibility(View.VISIBLE);
 
-        playerManager.checkUserExists(chosenUsername, existsResult -> {
+        viewModel.getPlayers().observe(getViewLifecycleOwner(), players-> {
             // Unlock the button again
-            registerButton.setEnabled(true);
+            binding.loginSignupRegisterButton.setEnabled(true);
+            showLoading(true);
 
-            // Check for database call errors
-            if (!existsResult.isSuccess()){
-                Log.e(CLASS_TAG, "Failed to check username existence");
-                Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
-                return;
+            // Scan players to see if username is taken
+            boolean isTaken = false;
+            for (PlayerAccount p : players){
+                if (p.getUsername().equals(chosenUsername)){
+                    isTaken = true;
+                    break;
+                }
             }
 
-            Boolean isTaken = existsResult.unwrap();
-            assert isTaken != null;
-
+            // Allow user creation
             if (!isTaken){
                 // Prevent registration while there are errors
-                if (usernameLayout.isErrorEnabled() || emailLayout.isErrorEnabled()){ return; }
+                if (binding.loginSignupUsernameLayout.isErrorEnabled() ||
+                    binding.loginSignupEmailLayout.isErrorEnabled()) { return; }
 
                 // Username is free, we can add the user
                 PlayerAccount newPlayer = new PlayerAccount(chosenUsername, chosenEmail, "");
-                playerManager.addPlayer(newPlayer, addResult -> {
+                new PlayerManager().addPlayer(newPlayer, addResult -> {
                     if (!addResult.isSuccess()){
                         Log.e(CLASS_TAG, "Failed to add user.");
                         Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                        showLoading(false);
                         return;
                     }
                     Log.i(CLASS_TAG, "New user registered: " + chosenUsername);
@@ -215,8 +217,10 @@ public class SignUpFragment extends Fragment {
                     });
                 });
             }
+            // Handle username taken
             else {
-                usernameLayout.setError("Username taken");
+                showLoading(false);
+                binding.loginSignupUsernameLayout.setError("Username taken");
             }
         });
     }
@@ -234,5 +238,16 @@ public class SignUpFragment extends Fragment {
         prefEditor.apply();
 
         return deviceUID;
+    }
+
+    private void showLoading(boolean state){
+        if (state){
+            binding.loginSignupMainContainer.setVisibility(View.GONE);
+            binding.loginSignupProgress.setVisibility(View.VISIBLE);
+        }
+        else{
+            binding.loginSignupMainContainer.setVisibility(View.VISIBLE);
+            binding.loginSignupProgress.setVisibility(View.GONE);
+        }
     }
 }
