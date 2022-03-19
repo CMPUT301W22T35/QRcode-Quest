@@ -8,28 +8,33 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainActivity;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.R;
-import com.qrcode_quest.ui.login.sign_up.SignUpFragment;
+import com.qrcode_quest.databinding.ActivityLoginBinding;
 
 public class LoginActivity extends AppCompatActivity implements SignUpFragment.RegisterHandler {
     /** A tag to be used for logging */
     private static final String CLASS_TAG = "LoginActivity";
-
+    private ActivityLoginBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (getSupportActionBar() != null) { getSupportActionBar().hide(); }
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+
+        binding.loginFragmentContainer.setVisibility(View.GONE);
+        binding.loginProgress.setVisibility(View.VISIBLE);
 
         // Set initial fragment to the loading spinner
         if (savedInstanceState == null){
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
-                    .add(R.id.fragmentContainerView, LoginLoadingFragment.class, null)
+                    .add(R.id.login_fragment_container, SignUpFragment.class, null)
                     .commit();
         }
 
@@ -48,6 +53,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         else{
             transitionToRegistration();
         }
+
+        setContentView(binding.getRoot());
     }
 
     /**
@@ -59,7 +66,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
      */
     @Override
     public void onRegistered(String deviceUID, String username) {
-        transitionToLoading();
+        binding.loginFragmentContainer.setVisibility(View.GONE);
+        binding.loginProgress.setVisibility(View.VISIBLE);
 
         // Check the database for a device session
         new PlayerManager().validatePlayerSession(deviceUID, username, result ->{
@@ -91,23 +99,13 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
      * Switches the view to the registration page.
      */
     private void transitionToRegistration(){
+        binding.loginFragmentContainer.setVisibility(View.VISIBLE);
+        binding.loginProgress.setVisibility(View.GONE);
+
         this.getSupportFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
-                .replace(R.id.fragmentContainerView, SignUpFragment.class, null)
+                .replace(R.id.login_fragment_container, SignUpFragment.class, null)
                 .commit();
     }
-
-    /**
-     * Switches to a view of a login spinner
-     */
-    private void transitionToLoading(){
-        this.getSupportFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(R.id.fragmentContainerView, LoginLoadingFragment.class, null)
-                .commit();
-    }
-
-
 }
