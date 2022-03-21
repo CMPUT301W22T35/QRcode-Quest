@@ -157,9 +157,6 @@ public class PlayerAccount implements Parcelable {
         playerMap.put(Schema.PLAYER_PHONE, this.getPhoneNumber());
         playerMap.put(Schema.PLAYER_IS_OWNER, this.isOwner());
         playerMap.put(Schema.PLAYER_IS_DELETED, this.isDeleted());
-        // TODO implement QRCodes
-        playerMap.put(Schema.PLAYER_LOGIN_QRCODE, "");
-        playerMap.put(Schema.PLAYER_PROFILE_QRCODE, "");
         return playerMap;
     }
 

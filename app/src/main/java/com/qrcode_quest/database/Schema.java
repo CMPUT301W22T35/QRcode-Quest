@@ -17,8 +17,6 @@ public class Schema {
         return playerName;
     }
     public static final String PLAYER_NAME = "playerName";
-    public static final String PLAYER_PROFILE_QRCODE = "profileQRcode";
-    public static final String PLAYER_LOGIN_QRCODE = "loginQRcode";
     public static final String PLAYER_EMAIL = "email";
     public static final String PLAYER_PHONE = "phone";
     public static final String PLAYER_IS_DELETED = "isDeleted";
@@ -68,11 +66,6 @@ public class Schema {
 
   PlayerAccount
   *playerName: a string, a unique id that is also the displayed name of the player
-  -profileQRcode: a string, generated at account creation and is shared on the screen when the
-  user wants to display the profile of the player on
-  another device
-  -loginQRcode: a string, generated at account creation, and is shared on the screen when
-  the user wants to login from another device
   -email: a string, email of the player
   -phone: a string, phone number of the player
   -isDeleted: a boolean, true if the account has been deleted by the owner
