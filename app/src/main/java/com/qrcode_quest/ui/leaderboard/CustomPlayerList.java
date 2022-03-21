@@ -13,10 +13,10 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 
 import com.qrcode_quest.R;
+import com.qrcode_quest.database.SchemaResultHelper;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
-import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,20 +73,9 @@ public class CustomPlayerList extends ArrayAdapter<PlayerScore> {
      */
     public void onSourceDataUpdate(ArrayList<PlayerAccount> accounts,
                                    ArrayList<QRShot> shots) {
-        HashMap<String, ArrayList<QRShot>> shotMap = new HashMap<>();
-        HashMap<String, QRCode> codeMap = new HashMap<>();
-        for (PlayerAccount account: accounts) {
-            shotMap.put(account.getUsername(), new ArrayList<>());
-        }
-        for(QRShot shot: shots) {
-            if(shotMap.containsKey(shot.getOwnerName())) {
-                Objects.requireNonNull(shotMap.get(shot.getOwnerName())).add(shot);
-            }
-            String qrHash = shot.getCodeHash();
-            if(!codeMap.containsKey(qrHash)) {
-                codeMap.put(qrHash, new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash)));
-            }
-        }
+        HashMap<String, ArrayList<QRShot>> shotMap =
+                SchemaResultHelper.getOwnerNameToShotArrayMapFromJoin(accounts, shots);
+        HashMap<String, QRCode> codeMap = SchemaResultHelper.getQrHashToCodeMapFromShots(shots);
 
         ArrayList<PlayerScore> playerScores = new ArrayList<>();
         for (PlayerAccount account: accounts) {
