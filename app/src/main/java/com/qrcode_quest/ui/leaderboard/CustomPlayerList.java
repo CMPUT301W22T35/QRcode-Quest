@@ -1,8 +1,6 @@
 package com.qrcode_quest.ui.leaderboard;
 
 import android.content.Context;
-import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,97 +9,121 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 
 import com.qrcode_quest.R;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.entities.QRCode;
+import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * @author ageolleg, tianming
  * @version 0.2
  */
-public class CustomPlayerList extends ArrayAdapter<CustomPlayerList.PlayerScore> {
+public class CustomPlayerList extends ArrayAdapter<PlayerScore> {
 
-    /**
-     * contains information for an item in the player leaderboard
-     */
-    public static class PlayerScore {
-        public PlayerScore(PlayerAccount account, int score) {
-            this.account = account;
-            this.score = score;
-        }
+    private final ArrayList<PlayerScore> playerScores;
+    private boolean isDataDummy;
 
-        public PlayerAccount getAccount() {
-            return account;
-        }
-
-        public void setAccount(PlayerAccount account) {
-            this.account = account;
-        }
-
-        public int getScore() {
-            return score;
-        }
-
-        public void setScore(int score) {
-            this.score = score;
-        }
-
-        PlayerAccount account;
-        int score;
-    }
-
-    private ArrayList<PlayerScore> players;
-    private Context context;
-
-    public CustomPlayerList(Context context, ArrayList<PlayerScore> players) {
-        super(context, 0, players);
-        this.players = players;
-        this.context = context;
+    public CustomPlayerList(Context context, ArrayList<PlayerScore> playerScores) {
+        super(context, 0, playerScores);
+        this.playerScores = playerScores;
+        this.isDataDummy = false;
     }
 
     static public CustomPlayerList getInstanceWithPlaceholderData(Context context) {
         ArrayList<PlayerScore> mockPlayers = new ArrayList<>();
-        int curScore = 1;
+        int curScore = 100;
         for(int i = 0; i < 10; i++) {
             String indexStr = Integer.toString(i);
             PlayerAccount account = new PlayerAccount(
                     "player" + i, "email" + i, "phone" + i,
                     false, true);
             PlayerScore player = new PlayerScore(account, curScore);
-            curScore = (curScore * 7) % 10;
+            curScore = curScore - 10;
             mockPlayers.add(player);
         }
-        return new CustomPlayerList(context, mockPlayers);
+        CustomPlayerList list = new CustomPlayerList(context, mockPlayers);
+        list.isDataDummy = true;
+        return list;
     }
 
-    public void setPlayers(ArrayList<PlayerScore> players) {
+    public boolean isDataPlaceHolder() { return isDataDummy; }
+
+    /**
+     * update the leaderboard data
+     * @param playerScores a list of player account-score pairs
+     */
+    public void updatePlayerScores(ArrayList<PlayerScore> playerScores) {
         // TODO: implement sorting by cloning the players and then call .sort with a defined comparator
-        this.players.clear();
-        this.players.addAll(players);
+        this.playerScores.clear();
+        this.playerScores.addAll(playerScores);
         notifyDataSetChanged();
+        this.isDataDummy = false;
+    }
+
+    /**
+     * recompute the leaderboard data when the source data changes
+     */
+    public void onSourceDataUpdate(ArrayList<PlayerAccount> accounts,
+                                   ArrayList<QRShot> shots) {
+        HashMap<String, ArrayList<QRShot>> shotMap = new HashMap<>();
+        HashMap<String, QRCode> codeMap = new HashMap<>();
+        for (PlayerAccount account: accounts) {
+            shotMap.put(account.getUsername(), new ArrayList<>());
+        }
+        for(QRShot shot: shots) {
+            if(shotMap.containsKey(shot.getOwnerName())) {
+                Objects.requireNonNull(shotMap.get(shot.getOwnerName())).add(shot);
+            }
+            String qrHash = shot.getCodeHash();
+            if(!codeMap.containsKey(qrHash)) {
+                codeMap.put(qrHash, new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash)));
+            }
+        }
+
+        ArrayList<PlayerScore> playerScores = new ArrayList<>();
+        for (PlayerAccount account: accounts) {
+            int score = 0;
+            for (QRShot shot: Objects.requireNonNull(shotMap.get(account.getUsername()))) {
+                if (codeMap.containsKey(shot.getCodeHash())) {
+                    score += Objects.requireNonNull(codeMap.get(shot.getCodeHash())).getScore();
+                }
+            }
+            playerScores.add(new PlayerScore(account, score));
+        }
+        updatePlayerScores(playerScores);
+    }
+
+    public void setDataSources(LifecycleOwner owner,
+                               LiveData<ArrayList<PlayerAccount>> accountsLiveData,
+                               LiveData<ArrayList<QRShot>> shotsLiveData) {
+        accountsLiveData.observe(owner, playerAccounts ->
+                onSourceDataUpdate(playerAccounts, shotsLiveData.getValue()));
+        shotsLiveData.observe(owner, shots ->
+                onSourceDataUpdate(accountsLiveData.getValue(), shots));
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View view, @NonNull ViewGroup parent) {
-        //return super.getView(position, convertView, parent);
-
         if(view == null){
-            view = LayoutInflater.from(context).inflate(R.layout.player_item_view, parent,false);
+            view = LayoutInflater.from(this.getContext()).inflate(R.layout.player_item_view, parent,false);
         }
-
-        PlayerScore ps = players.get(position);
 
         TextView playerName = view.findViewById(R.id.player_text);
         TextView score_text = view.findViewById(R.id.score_text);
 
-        PlayerAccount player = ps.getAccount();
+        PlayerScore ps = playerScores.get(position);
+        PlayerAccount player = ps.m_account;
         playerName.setText(player.getUsername());
-        score_text.setText(Integer.toString(ps.getScore()));
+        score_text.setText(Integer.toString(ps.m_score));
 
         return view;
     }

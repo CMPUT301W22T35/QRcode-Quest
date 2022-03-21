@@ -6,12 +6,10 @@ import static com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections.*;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +17,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.R;
 import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PlayerManager;
@@ -42,7 +41,6 @@ import java.util.Objects;
 public class PlayerListFragment extends Fragment {
     ListView playerList;
     CustomPlayerList playerAdapter;
-    PlayerListViewModel viewModel;
 
     private static final String ARG_PLAYERS = "players";
 
@@ -64,8 +62,6 @@ public class PlayerListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(PlayerListViewModel.class);
-
         if (getArguments() != null) {}
     }
 
@@ -80,8 +76,11 @@ public class PlayerListFragment extends Fragment {
         playerAdapter = CustomPlayerList.getInstanceWithPlaceholderData(this.getContext());
         playerList.setAdapter(playerAdapter);
 
-        // setup the list data to observe the change in view model data
-        viewModel.getPlayerScoreList().observe(getViewLifecycleOwner(), playerScores -> playerAdapter.setPlayers(playerScores));
+        // pass data to the adapter
+        MainViewModel mainViewModel =
+                new ViewModelProvider(this.getActivity()).get(MainViewModel.class);
+        playerAdapter.setDataSources(getViewLifecycleOwner(),
+                mainViewModel.getPlayers(), mainViewModel.getQRShots());
 
         // retrieve player accounts, qr codes and scores then perform aggregation to compute the player-score pairs
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -106,7 +105,7 @@ public class PlayerListFragment extends Fragment {
                                     }
                                     HashMap<String, QRCode> codes = result2.unwrap();
 
-                                    ArrayList<CustomPlayerList.PlayerScore> playerScores = new ArrayList<>();
+                                    ArrayList<PlayerScore> playerScores = new ArrayList<>();
                                     for (PlayerAccount account: accounts) {
                                         int score = 0;
                                         for (QRShot shot: Objects.requireNonNull(shotMap.get(account.getUsername()))) {
@@ -114,12 +113,11 @@ public class PlayerListFragment extends Fragment {
                                                 score += Objects.requireNonNull(codes.get(shot.getCodeHash())).getScore();
                                             }
                                         }
-                                        CustomPlayerList.PlayerScore ps = new CustomPlayerList.PlayerScore(
+                                        PlayerScore ps = new PlayerScore(
                                                 account, score);
                                         playerScores.add(ps);
                                     }
 
-                                    viewModel.getPlayerScoreList().setValue(playerScores);
                                     // setup listener
                                     setupListener();
                                 } else {
@@ -150,12 +148,15 @@ public class PlayerListFragment extends Fragment {
 
     void setupListener() {
         playerList.setOnItemClickListener((adapterView, itemView, i, l) -> {
-            PlayerAccount player = ((CustomPlayerList.PlayerScore)adapterView.getItemAtPosition(i))
-                    .getAccount();
-            NavController navController = NavHostFragment.findNavController(this);
-            ActionNavigationLeaderboardToNavigationPlayerQrlist action =
-                    actionNavigationLeaderboardToNavigationPlayerQrlist(player);
-            navController.navigate(action);
+            if (!playerAdapter.isDataPlaceHolder()) {
+                PlayerScore playerScore = (PlayerScore) adapterView.getItemAtPosition(i);
+                PlayerAccount player = playerScore.m_account;
+
+                NavController navController = NavHostFragment.findNavController(this);
+                ActionNavigationLeaderboardToNavigationPlayerQrlist action =
+                        actionNavigationLeaderboardToNavigationPlayerQrlist(player);
+                navController.navigate(action);
+            }
         });
     }
 }
