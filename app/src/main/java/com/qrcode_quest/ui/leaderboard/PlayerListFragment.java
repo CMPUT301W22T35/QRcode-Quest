@@ -81,67 +81,7 @@ public class PlayerListFragment extends Fragment {
                 new ViewModelProvider(this.getActivity()).get(MainViewModel.class);
         playerAdapter.setDataSources(getViewLifecycleOwner(),
                 mainViewModel.getPlayers(), mainViewModel.getQRShots());
-
-        // retrieve player accounts, qr codes and scores then perform aggregation to compute the player-score pairs
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        new PlayerManager(db).getPlayerList(result -> {
-            if (result.isSuccess()) {
-                new QRManager(db).getAllQRShots(result1 -> {
-                    if(result.isSuccess()) {
-                        new QRManager(db).getAllQRCodesAsMap(new ManagerResult.Listener<HashMap<String, QRCode>>() {
-                            @Override
-                            public void onResult(Result<HashMap<String, QRCode>> result2) {
-                                if(result2.isSuccess()) {
-                                    ArrayList<PlayerAccount> accounts = result.unwrap();
-                                    ArrayList<QRShot> shots = result1.unwrap();
-                                    HashMap<String, ArrayList<QRShot>> shotMap = new HashMap<>();
-                                    for (PlayerAccount account: accounts) {
-                                        shotMap.put(account.getUsername(), new ArrayList<>());
-                                    }
-                                    for(QRShot shot: shots) {
-                                        if(shotMap.containsKey(shot.getOwnerName())) {
-                                            Objects.requireNonNull(shotMap.get(shot.getOwnerName())).add(shot);
-                                        }
-                                    }
-                                    HashMap<String, QRCode> codes = result2.unwrap();
-
-                                    ArrayList<PlayerScore> playerScores = new ArrayList<>();
-                                    for (PlayerAccount account: accounts) {
-                                        int score = 0;
-                                        for (QRShot shot: Objects.requireNonNull(shotMap.get(account.getUsername()))) {
-                                            if (codes.containsKey(shot.getCodeHash())) {
-                                                score += Objects.requireNonNull(codes.get(shot.getCodeHash())).getScore();
-                                            }
-                                        }
-                                        PlayerScore ps = new PlayerScore(
-                                                account, score);
-                                        playerScores.add(ps);
-                                    }
-
-                                    // setup listener
-                                    setupListener();
-                                } else {
-                                    Toast toast = Toast.makeText(getActivity(),
-                                            "Retrieve qr codes failed with error " + result2.getError().getMessage(),
-                                            Toast.LENGTH_SHORT);
-                                    toast.show();
-                                }
-                            }
-                        });
-                    } else {
-                        Toast toast = Toast.makeText(getActivity(),
-                                "Retrieve scores failed with error " + result1.getError().getMessage(),
-                                Toast.LENGTH_SHORT);
-                        toast.show();
-                    }
-                });
-            } else {
-                Toast toast = Toast.makeText(getActivity(),
-                        "Retrieve player list failed with error " + result.getError().getMessage(),
-                        Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
+        setupListener();
 
         return view;
     }
