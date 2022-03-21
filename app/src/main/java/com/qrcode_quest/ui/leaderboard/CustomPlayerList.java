@@ -54,6 +54,11 @@ public class CustomPlayerList extends ArrayAdapter<PlayerScore> {
         return list;
     }
 
+    /**
+     * check if current data is created by the placeholder constructor;
+     * can be used to avoid click events on placeholder data
+     * @return true if leaderboard data is filled with placeholder data
+     */
     public boolean isDataPlaceHolder() { return isDataDummy; }
 
     /**

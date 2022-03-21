@@ -168,26 +168,6 @@ public class ManagerResult {
         return new Result<>(shot);
     }
 
-    public static class QRShotListRetriever implements
-            Retriever<ArrayList<QRShot>, QuerySnapshot> {
-        @Override
-        public Result<ArrayList<QRShot>> retrieveResultFrom(QuerySnapshot querySnapshot) {
-            assert querySnapshot != null;
-            List<DocumentSnapshot> documents = querySnapshot.getDocuments();
-            ArrayList<QRShot> shots = new ArrayList<>();
-            for (DocumentSnapshot document: documents) {
-                // retrieve fields in the document
-                Result<QRShot> shotResult = getQRShotFromDocumentSnapshot(document);
-                if (shotResult.isSuccess())
-                    shots.add(shotResult.unwrap());
-                else
-                    return new Result<>(shotResult.getError());
-            }
-
-            return new Result<>(shots);
-        }
-    }
-
     public static class QRCodeListRetriever implements
             Retriever<ArrayList<QRCode>, QuerySnapshot> {
         @Override
