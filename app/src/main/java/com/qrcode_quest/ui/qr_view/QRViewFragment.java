@@ -72,8 +72,6 @@ public class QRViewFragment extends Fragment {
         // Grab the action bar
         AppCompatActivity main = (AppCompatActivity) this.getActivity();
         ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
-        // Hide the broken garbage stupid back arrow
-        actionBar.setDisplayHomeAsUpEnabled(false);
 
         QRViewModel viewModel = new ViewModelProvider(this).get(QRViewModel.class);
         MainViewModel mainViewModel =
