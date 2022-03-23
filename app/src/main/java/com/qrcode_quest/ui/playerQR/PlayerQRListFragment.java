@@ -1,7 +1,6 @@
 package com.qrcode_quest.ui.playerQR;
 
-import static com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.actionPlayerQrlistToQrshot;
-
+import static com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.actionPlayerqrsToQrview;
 import static java.util.Objects.requireNonNull;
 
 import androidx.appcompat.app.ActionBar;
@@ -16,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,16 +24,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
-import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.ActionPlayerQrlistToQrshot;
+import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.ActionPlayerqrsToQrview;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 
 /**
@@ -57,8 +55,6 @@ public class PlayerQRListFragment extends Fragment {
         // Grab the action bar from MainActivity
         AppCompatActivity main = (AppCompatActivity) this.getActivity();
         ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
-        // Hide the back arrow because its broken garbage juice
-        actionBar.setDisplayHomeAsUpEnabled(false);
         // Set custom title
         actionBar.setTitle(String.format("%s's Captures", player.getUsername()));
 
@@ -149,8 +145,8 @@ public class PlayerQRListFragment extends Fragment {
     public void transitionTo(QRShot shot){
         // Navigate to the QRView of the clicked shot
         NavController navController = NavHostFragment.findNavController(this);
-        ActionPlayerQrlistToQrshot action =
-                actionPlayerQrlistToQrshot(shot.getOwnerName(), shot.getCodeHash());
+        ActionPlayerqrsToQrview action =
+                actionPlayerqrsToQrview(shot.getOwnerName(), shot.getCodeHash());
         navController.navigate(action);
     }
 }

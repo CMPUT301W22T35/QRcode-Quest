@@ -1,90 +1,77 @@
 package com.qrcode_quest.ui.leaderboard;
 
+import static com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.actionLeaderboardToPlayerqrs;
+import static com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.actionPlayerqrsToQrview;
 
-import static com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections.*;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
-import com.qrcode_quest.R;
+import com.qrcode_quest.databinding.FragmentPlayerListBinding;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections;
-import com.qrcode_quest.ui.leaderboard.LeaderboardFragmentDirections.ActionNavigationLeaderboardToNavigationPlayerQrlist;
+import com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.ActionLeaderboardToPlayerqrs;
+import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
- * A fragment representing a list of Players.
+ * A view to display or select an arbitrary list of players
  *
- * @author ageolleg
- * @version 0.1
+ * @author jdumouch
+ * @version 1.0
  */
 public class PlayerListFragment extends Fragment {
-    ListView playerList;
-    ArrayAdapter<PlayerAccount> playerAdapter;
-    ArrayList<PlayerAccount> playerDataList;
 
-    private static final String ARG_PLAYERS = "players";
-    private String[] players;
-
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public PlayerListFragment() {
-
+    public enum ViewMode {
+        LEADERBOARD,
     }
 
-    public static PlayerListFragment newInstance(String[] players) {
-        PlayerListFragment fragment = new PlayerListFragment();
-        Bundle args = new Bundle();
-        args.putStringArray(ARG_PLAYERS, players);
-        fragment.setArguments(args);
-        return fragment;
+    private PlayerListViewModel viewModel;
+    private FragmentPlayerListBinding binding;
+
+    public static PlayerListFragment newInstance() {
+        return new PlayerListFragment();
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            players = getArguments().getStringArray(ARG_PLAYERS);
-        }
-
+        viewModel = new ViewModelProvider(this).get(PlayerListViewModel.class);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_player_list, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentPlayerListBinding.inflate(inflater, container, false);
 
-        playerList = view.findViewById(R.id.player_list);
-        playerDataList = new ArrayList<>();
 
-        for (int i=0;i<players.length;i++){
-            playerDataList.add(new PlayerAccount(players[i]));
-        }
-
-        playerAdapter = new CustomPlayerList(this.getContext(), playerDataList);
-        playerList.setAdapter(playerAdapter);
-
-        playerList.setOnItemClickListener((adapterView, itemView, i, l) -> {
-            PlayerAccount player = (PlayerAccount)adapterView.getItemAtPosition(i);
-            NavController navController = NavHostFragment.findNavController(this);
-            ActionNavigationLeaderboardToNavigationPlayerQrlist action =
-                    actionNavigationLeaderboardToNavigationPlayerQrlist(player);
-            navController.navigate(action);
-        });
-
-        return view;
+        RecyclerView recyclerView = binding.playerlistRecycler;
+        PlayerViewAdapter viewAdapter = new PlayerViewAdapter(
+                Arrays.asList(new PlayerAccount("bob")), p->{
+                    NavController navController = NavHostFragment.findNavController(this);
+                    ActionLeaderboardToPlayerqrs action =
+                            actionLeaderboardToPlayerqrs(p);
+                    navController.navigate(action);
+                }
+        );
+        Context context = recyclerView.getContext();
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setAdapter(viewAdapter);
+        return binding.getRoot();
     }
+
 }
