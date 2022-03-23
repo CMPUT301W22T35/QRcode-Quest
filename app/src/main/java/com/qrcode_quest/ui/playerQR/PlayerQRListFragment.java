@@ -57,8 +57,6 @@ public class PlayerQRListFragment extends Fragment {
         // Grab the action bar from MainActivity
         AppCompatActivity main = (AppCompatActivity) this.getActivity();
         ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
-        // Hide the back arrow because its broken garbage juice
-        actionBar.setDisplayHomeAsUpEnabled(false);
         // Set custom title
         actionBar.setTitle(String.format("%s's Captures", player.getUsername()));
 
