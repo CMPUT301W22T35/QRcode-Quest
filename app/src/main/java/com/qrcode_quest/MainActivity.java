@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityHomeBinding binding;
 
+    private NavController navController;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_leaderboard, R.id.navigation_home, R.id.navigation_account)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_home);
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_home);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
@@ -43,4 +45,8 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getCurrentPlayer();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        return navController.navigateUp();
+    }
 }

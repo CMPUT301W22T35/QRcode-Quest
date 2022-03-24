@@ -35,5 +35,9 @@
     <string name="qrview_image_description">QR Capture Photo</string>
     <string name="qrview_score_placeholder">#</string>
     <string name="qrview_geoloc_placeholder">#, #</string>
+    <string name="scan_text">Scan</string>
+    <string name="leaderboard_label">Leaderboard</string>
+    <string name="players_score_header">Score</string>
+    <string name="players_username_header">Username</string>
+    <string name="my_rankings_header">My Rankings:</string>
 </resources>
-
