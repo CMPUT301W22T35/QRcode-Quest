@@ -223,7 +223,10 @@ public class PlayerListFragment extends Fragment {
         for (QRShot shot : shots){
             // Grab the required objects to calculate stats
             QRCode code = requireNonNull(codes.get(shot.getCodeHash()));
-            Stats current = requireNonNull(stats.get(shot.getOwnerName()));
+            Stats current = stats.get(shot.getOwnerName());
+
+            // Skip codes of deleted players
+            if (current == null) { continue; }
 
             // Update stats
             current.totalScore += code.getScore();
