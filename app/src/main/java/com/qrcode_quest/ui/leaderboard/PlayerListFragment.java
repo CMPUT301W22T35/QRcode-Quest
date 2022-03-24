@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.databinding.FragmentPlayerListBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
@@ -75,12 +76,14 @@ public class PlayerListFragment extends Fragment {
     }
 
     private PlayerListViewModel viewModel;
+    private MainViewModel mainViewModel;
     private FragmentPlayerListBinding binding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(PlayerListViewModel.class);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
     }
 
     @Override
@@ -97,10 +100,10 @@ public class PlayerListFragment extends Fragment {
         binding.playerlistLoadingContainer.setVisibility(View.VISIBLE);
         binding.playerlistMainContainer.setVisibility(View.GONE);
 
-        // Load requisite data. This would be faster pipelined..
-        viewModel.getCodes().observe(getViewLifecycleOwner(), codes->{
-            viewModel.getShots().observe(getViewLifecycleOwner(), shots->{
-                viewModel.getPlayers().observe(getViewLifecycleOwner(), players->{
+        // Create listeners for the relevant data
+        mainViewModel.getCodes().observe(getViewLifecycleOwner(), codes->{
+            mainViewModel.getShots().observe(getViewLifecycleOwner(), shots->{
+                mainViewModel.getPlayers().observe(getViewLifecycleOwner(), players->{
                     // Calculate each player's scores
                     HashMap<String, Stats> stats = calculatePlayerScores(players,codes,shots);
                     setRanking(stats);

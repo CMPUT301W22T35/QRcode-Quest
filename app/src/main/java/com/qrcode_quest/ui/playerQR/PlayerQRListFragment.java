@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.R;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.entities.PlayerAccount;
@@ -49,6 +50,7 @@ public class PlayerQRListFragment extends Fragment {
     /** A tag used in logging */
     private static final String CLASS_TAG = "PlayerQRListFragment";
 
+    private MainViewModel mainViewModel;
     private FragmentPlayerQrShotsBinding binding;
     private PlayerAccount player;
 
@@ -68,7 +70,7 @@ public class PlayerQRListFragment extends Fragment {
         PlayerQRListViewModel viewModel =
                 new ViewModelProvider(this).get(PlayerQRListViewModel.class);
 
-        MainViewModel mainViewModel =
+        mainViewModel =
                 new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         // Grab the view binding
@@ -87,7 +89,7 @@ public class PlayerQRListFragment extends Fragment {
 
         // Load QRShot/QRCode data into the RecyclerView
         viewModel.getPlayerShots(player.getUsername()).observe(getViewLifecycleOwner(), shots ->{
-            viewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
+            mainViewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
                 recyclerView.setAdapter(new PlayerQRShotViewAdapter(shots, codes, this::transitionTo));
                 // Use the data to load the stats card
                 setStats(shots, codes);
@@ -132,6 +134,8 @@ public class PlayerQRListFragment extends Fragment {
                 binding.playerQrlistProgress.setVisibility(View.GONE);
                 return;
             }
+
+            mainViewModel.loadPlayers();
 
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();
