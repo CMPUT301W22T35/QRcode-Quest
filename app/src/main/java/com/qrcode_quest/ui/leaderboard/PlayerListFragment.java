@@ -53,7 +53,7 @@ public class PlayerListFragment extends Fragment {
     private static final String CLASS_TAG = "PlayerListFragment";
 
     /**
-     * A data structure for calculating and storing player stats
+     * A data structure for storing player stats
      */
     private class Stats {
         public final String username;
@@ -74,28 +74,28 @@ public class PlayerListFragment extends Fragment {
         LEADERBOARD,
     }
 
-
     private PlayerListViewModel viewModel;
     private FragmentPlayerListBinding binding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         viewModel = new ViewModelProvider(this).get(PlayerListViewModel.class);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // Grab the view's bindings
         binding = FragmentPlayerListBinding.inflate(inflater, container, false);
 
-
+        // Init the recycler view to be empty
         RecyclerView recyclerView = binding.playerlistRecycler;
-        PlayerViewAdapter viewAdapter = new PlayerViewAdapter(new ArrayList<>(), u->{});
-        Context context = recyclerView.getContext();
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(viewAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+        recyclerView.setAdapter(new PlayerViewAdapter(new ArrayList<>(), null));
+
+        binding.playerlistLoadingContainer.setVisibility(View.VISIBLE);
+        binding.playerlistMainContainer.setVisibility(View.GONE);
 
         // Load requisite data. This would be faster pipelined..
         viewModel.getCodes().observe(getViewLifecycleOwner(), codes->{
@@ -115,6 +115,9 @@ public class PlayerListFragment extends Fragment {
 
                     // Load the list into the View
                     recyclerView.setAdapter(new PlayerViewAdapter(listItems, this::transitionToQRList));
+
+                    binding.playerlistLoadingContainer.setVisibility(View.GONE);
+                    binding.playerlistMainContainer.setVisibility(View.VISIBLE);
                 });
             });
         });
@@ -142,6 +145,10 @@ public class PlayerListFragment extends Fragment {
         });
     }
 
+    /**
+     * Calculates and displays the logged in users ranking relative to the other players.
+     * @param stats The hashmap of user stats
+     */
     @SuppressLint("DefaultLocale")
     private void setRanking(HashMap<String, Stats> stats){
         // Grab the loaded user
