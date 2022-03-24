@@ -22,27 +22,41 @@ import java.util.List;
  */
 public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.ViewHolder> {
     /**
+     * A data model class for displaying a PlayerAccount in the list
+     */
+    public static class PlayerItem {
+        public final String username;
+        public final int score;
+
+        public PlayerItem(String username, int score){
+            this.username = username;
+            this.score = score;
+        }
+    }
+
+    /**
      * Provides a callback interface for an item press event
      */
     public interface ItemClickHandler {
         /**
          * A handler for a user tapping an item.
          *
-         * @param player The PlayerAccount pressed
+         * @param username The username of the player item clicked
          */
-        void onItemClick(PlayerAccount player);
+        void onItemClick(String username);
     }
 
-    private final List<PlayerAccount> players;
+    private final List<PlayerItem> items;
     private final ItemClickHandler onClickListener;
 
     /**
      * Create a new ViewAdapter using the passed lists to build item data.
      *
+     * @param items The items to display in the list
      * @param onClickListener The listener to handle on click events
      */
-    public PlayerViewAdapter(List<PlayerAccount> items, ItemClickHandler onClickListener) {
-        this.players = items;
+    public PlayerViewAdapter(List<PlayerItem> items, ItemClickHandler onClickListener) {
+        this.items = items;
         this.onClickListener = onClickListener;
     }
 
@@ -58,19 +72,20 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     @SuppressLint("DefaultLocale")
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        PlayerAccount player = players.get(position);
+        PlayerItem item = items.get(position);
 
-        holder.player = player;
-        holder.nameText.setText(player.getUsername());
+        holder.player = item;
+        holder.nameText.setText(item.username);
+        holder.scoreText.setText(String.format("%d", item.score));
 
         holder.itemView.setOnClickListener(v -> {
-            onClickListener.onItemClick(player);
+            onClickListener.onItemClick(item.username);
         });
     }
 
     @Override
     public int getItemCount() {
-        return players.size();
+        return items.size();
     }
 
     /**
@@ -79,12 +94,10 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView nameText;
         public final TextView scoreText;
-        public PlayerAccount player;
+        public PlayerItem player;
 
         /**
          * Constructs a ViewHolder and binds the View to the data
-         *
-         * @param binding
          */
         public ViewHolder(@NonNull PlayerItemViewBinding binding) {
             super(binding.getRoot());
