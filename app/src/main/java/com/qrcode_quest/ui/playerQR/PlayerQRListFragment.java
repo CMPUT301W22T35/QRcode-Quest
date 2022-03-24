@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -20,10 +21,14 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
@@ -45,12 +50,13 @@ public class PlayerQRListFragment extends Fragment {
     private static final String CLASS_TAG = "PlayerQRListFragment";
 
     private FragmentPlayerQrShotsBinding binding;
+    private PlayerAccount player;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         // Load the player argument
-        PlayerAccount player = PlayerQRListFragmentArgs.fromBundle(getArguments()).getPlayer();
+        player = PlayerQRListFragmentArgs.fromBundle(getArguments()).getPlayer();
 
         // Grab the action bar from MainActivity
         AppCompatActivity main = (AppCompatActivity) this.getActivity();
@@ -61,6 +67,9 @@ public class PlayerQRListFragment extends Fragment {
         // Load the view models
         PlayerQRListViewModel viewModel =
                 new ViewModelProvider(this).get(PlayerQRListViewModel.class);
+
+        MainViewModel mainViewModel =
+                new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         // Grab the view binding
         binding = FragmentPlayerQrShotsBinding.inflate(inflater, container, false);
@@ -90,6 +99,21 @@ public class PlayerQRListFragment extends Fragment {
             });
         });
 
+        // Enable the delete user button for privileged users
+        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), authedUser -> {
+            if (authedUser.isOwner()){
+                binding.playerQrlistDeleteplayerButton.setVisibility(View.VISIBLE);
+                binding.playerQrlistDeleteplayerButton.setOnClickListener(v->{
+                    if (!authedUser.getUsername().equals(player.getUsername())){
+                        deleteSelectedUser();
+                    }
+                    else {
+                        Toast.makeText(getContext(), "Cannot delete yourself!", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
         return binding.getRoot();
     }
 
@@ -97,6 +121,21 @@ public class PlayerQRListFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    private void deleteSelectedUser(){
+        binding.playerQrlistProgress.setVisibility(View.VISIBLE);
+        new PlayerManager().setDeletedPlayer(player.getUsername(), true, result ->{
+            if (!result.isSuccess()){
+                Toast.makeText(getContext(), "Failed to delete player", Toast.LENGTH_SHORT).show();
+                Log.e(CLASS_TAG, "Player delete call failed: " + result.getError().getMessage());
+                binding.playerQrlistProgress.setVisibility(View.GONE);
+                return;
+            }
+
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.popBackStack();
+        });
     }
 
     /**
