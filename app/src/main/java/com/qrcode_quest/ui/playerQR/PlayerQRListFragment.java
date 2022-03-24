@@ -34,6 +34,7 @@ import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.ActionPlayerqrsToQrview;
 
 import java.util.ArrayList;
@@ -83,22 +84,20 @@ public class PlayerQRListFragment extends Fragment {
         Context context = recyclerView.getContext();
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(
-                new PlayerQRShotViewAdapter(new ArrayList<>(), new HashMap<>(), s->{})
+                new PlayerQRShotViewAdapter(new ArrayList<>(), s->{})
         );
-        setStats(null, null);
+        setStats(null);
 
         // Load QRShot/QRCode data into the RecyclerView
         viewModel.getPlayerShots(player.getUsername()).observe(getViewLifecycleOwner(), shots ->{
-            mainViewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
-                recyclerView.setAdapter(new PlayerQRShotViewAdapter(shots, codes, this::transitionTo));
-                // Use the data to load the stats card
-                setStats(shots, codes);
+            recyclerView.setAdapter(new PlayerQRShotViewAdapter(shots, this::transitionTo));
+            // Use the data to load the stats card
+            setStats(shots);
 
-                // Hide the loading spinner and display the List (or no capture label
-                binding.playerQrlistProgress.setVisibility(View.GONE);
-                binding.playerQrlistNocaptures.setVisibility(shots.size() > 0 ? View.GONE : View.VISIBLE);
-                binding.playerQrlistRecyclerview.setVisibility(shots.size() == 0 ? View.GONE : View.VISIBLE);
-            });
+            // Hide the loading spinner and display the List (or no capture label
+            binding.playerQrlistProgress.setVisibility(View.GONE);
+            binding.playerQrlistNocaptures.setVisibility(shots.size() > 0 ? View.GONE : View.VISIBLE);
+            binding.playerQrlistRecyclerview.setVisibility(shots.size() == 0 ? View.GONE : View.VISIBLE);
         });
 
         // Enable the delete user button for privileged users
@@ -119,12 +118,6 @@ public class PlayerQRListFragment extends Fragment {
         return binding.getRoot();
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
-
     private void deleteSelectedUser(){
         binding.playerQrlistProgress.setVisibility(View.VISIBLE);
         new PlayerManager().setDeletedPlayer(player.getUsername(), true, result ->{
@@ -135,6 +128,7 @@ public class PlayerQRListFragment extends Fragment {
                 return;
             }
 
+            // Force a reload on players so that the view model reflects changes
             mainViewModel.loadPlayers();
 
             NavController navController = NavHostFragment.findNavController(this);
@@ -145,10 +139,9 @@ public class PlayerQRListFragment extends Fragment {
     /**
      * Takes the QRShot information to build user stats
      * @param shots The QRShots for the player
-     * @param codes The list of QRCodes (containing at minimum the shots)
      */
     @SuppressLint("DefaultLocale")
-    private void setStats(ArrayList<QRShot> shots, HashMap<String, QRCode> codes){
+    private void setStats(ArrayList<QRShot> shots){
         // Handle empty stats
         if (shots == null || shots.size() == 0){
             binding.playerQrlistLowest.setText("--");
@@ -163,9 +156,7 @@ public class PlayerQRListFragment extends Fragment {
 
         // Iterate through the QRShots, grabbing the score from its relevant code
         for (QRShot shot : shots) {
-            QRCode qrCode = codes.get(shot.getCodeHash());
-            if (qrCode == null) { continue; }
-            int codeScore = qrCode.getScore();
+            int codeScore = RawQRCode.getScoreFromHash(shot.getCodeHash());
 
             // Update stats
             score += codeScore;

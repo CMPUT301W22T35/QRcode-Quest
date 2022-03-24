@@ -12,27 +12,41 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.database.QRManager;
+import com.qrcode_quest.database.Result;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * A central view model for all fragments in MainActivity.
+ * caches some database data that are commonly shared among the fragments (lists of players, QR
+ * codes and so on). The cached lists are initialized as empty so we can assume they are non-null
  *
- * @author jdumouch
- * @version 1.0
+ * @author jdumouch, tianming
+ * @version 1.1
  */
 public class MainViewModel extends AndroidViewModel {
     /** A tag used for logging */
     private static final String CLASS_TAG = "MainViewModel";
 
-    public MainViewModel(@NonNull Application application) {
+    private final FirebaseFirestore db;
+    private final FirebaseStorage storage;
+    private final QRManager.PhotoEncoding photoEncoding;
+
+    public MainViewModel(@NonNull Application application){
         super(application);
+        db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
+        photoEncoding = new QRManager.PhotoEncoding();
     }
 
     /**
@@ -43,10 +57,42 @@ public class MainViewModel extends AndroidViewModel {
             currentPlayer = new MutableLiveData<>();
             loadCurrentPlayer();
         }
-
         return currentPlayer;
     }
+
+    /**
+     * Gets a list containing all the players.
+     */
+    public LiveData<ArrayList<PlayerAccount>> getPlayers(){
+        if (players == null){
+            players = new MutableLiveData<>(new ArrayList<>());
+            loadPlayers();
+        }
+
+        return players;
+    }
+
+    /**
+     * Gets a list containing all the QR codes
+     */
+    public LiveData<ArrayList<QRCode>> getQRCodes(){
+        ensureQRCodesAndShotsInitialized();
+        return allQRCodes;
+    }
+
+    /**
+     * Gets a list containing all the QR codes
+     */
+    public LiveData<ArrayList<QRShot>> getQRShots(){
+        ensureQRCodesAndShotsInitialized();
+        return allQRShots;
+    }
     private MutableLiveData<PlayerAccount> currentPlayer;
+    private MutableLiveData<ArrayList<PlayerAccount>> players;
+    private MutableLiveData<ArrayList<QRCode>> allQRCodes;
+    private MutableLiveData<ArrayList<QRShot>> allQRShots;
+
+
     /**
      * Uses the authenticated username preference to load the PlayerAccount from the database.
      */
@@ -66,33 +112,18 @@ public class MainViewModel extends AndroidViewModel {
                 return;
             }
 
-
             Log.d(CLASS_TAG, "Loading authed user: " + username + "... done.");
             // Store the user
             currentPlayer.setValue(result.unwrap());
         });
     }
 
-
-
     /**
-     * Gets a list containing all the players.
-     */
-    public LiveData<ArrayList<PlayerAccount>> getPlayers(){
-        if (players == null){
-            players = new MutableLiveData<>();
-            loadPlayers();
-        }
-
-        return players;
-    }
-    private MutableLiveData<ArrayList<PlayerAccount>> players;
-    /**
-     * Loads the player list into `players`
+     * Loads the player list into `players` from database
      */
     public void loadPlayers(){
-        Log.d(CLASS_TAG, "Loading players...");
-        new PlayerManager().getPlayerList(result -> {
+        Log.d("MainViewModel", "Loading players...");
+        new PlayerManager(db).getPlayerList(result -> {
             // Catch errors
             if (!result.isSuccess()) {
                 Log.e(CLASS_TAG, "Failed to load player list");
@@ -103,66 +134,42 @@ public class MainViewModel extends AndroidViewModel {
         });
     }
 
-
-
     /**
-     * Gets a list containing all the players.
+     * loads the QR codes and shots lists from database
      */
-    public LiveData<HashMap<String, QRCode>> getCodes(){
-        if (codes == null){
-            codes = new MutableLiveData<>();
-            loadCodes();
-        }
-
-        return codes;
-    }
-    private MutableLiveData<HashMap<String,QRCode>> codes;
-
-    /**
-     * Loads the QR code list into `codes`
-     */
-    public void loadCodes(){
-        Log.d(CLASS_TAG, "Loading QR codes...");
-        new QRManager().getAllQRCodesAsMap(result -> {
-            // Catch errors
-            if (!result.isSuccess()) {
-                Log.e(CLASS_TAG, "Failed to load QR Code list");
-                return;
+    public void loadQRCodesAndShots(){
+        Log.d(CLASS_TAG, "Loading QR codes and shots...");
+        new QRManager(db, storage, photoEncoding).getAllQRShots(new ManagerResult.Listener<ArrayList<QRShot>>() {
+            @Override
+            public void onResult(Result<ArrayList<QRShot>> result) {
+                if (!result.isSuccess()) {
+                    Log.e(CLASS_TAG, "Failed to load qr codes/shots");
+                    return;
+                }
+                ArrayList<QRShot> shots = result.unwrap();
+                HashMap<String, QRCode> codes = new HashMap<>();
+                for (QRShot shot: shots) {
+                    if(!codes.containsKey(shot.getCodeHash())) {
+                        String qrHash = shot.getCodeHash();
+                        QRCode newCode = new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash));
+                        codes.put(qrHash, newCode);
+                    }
+                }
+                allQRCodes.setValue(new ArrayList<>(codes.values()));
+                allQRShots.setValue(shots);
             }
-            // Store the list
-            codes.setValue(result.unwrap());
         });
     }
 
-
-
-
     /**
-     * Gets a list containing all the players.
+     * initialize the QRCodes and QRShots lists if they have not already been
+     * both lists are always updated at the same time
      */
-    public LiveData<ArrayList<QRShot>> getShots(){
-        if (shots == null){
-            shots = new MutableLiveData<>();
-            loadShots();
+    private void ensureQRCodesAndShotsInitialized(){
+        if (allQRCodes == null || allQRShots == null) {
+            allQRCodes = new MutableLiveData<>(new ArrayList<>());
+            allQRShots = new MutableLiveData<>(new ArrayList<>());
+            loadQRCodesAndShots();
         }
-
-        return shots;
-    }
-    private MutableLiveData<ArrayList<QRShot>> shots;
-
-    /**
-     * Loads the QR shot list into `shots`
-     */
-    public void loadShots(){
-        Log.d(CLASS_TAG, "Loading QR shot...");
-        new QRManager().getAllQRShots(result -> {
-            // Catch errors
-            if (!result.isSuccess()) {
-                Log.e(CLASS_TAG, "Failed to load QR Shot list");
-                return;
-            }
-            // Store the list
-            shots.setValue(result.unwrap());
-        });
     }
 }

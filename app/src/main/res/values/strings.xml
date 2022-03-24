@@ -24,7 +24,7 @@
     <string name="login_signup_prompt">Sign up</string>
     <string name="login_scan_button_label">Scan Login Code</string>
     <string name="qrview_name_placeholder">QR Code</string>
-    <string name="delete_label">Delete</string>
+    <string name="delete_qrcode">Delete Capture</string>
     <string name="edit_label">Edit</string>
     <string name="qrview_score">Score:</string>
     <string name="qrview_geoloc">Geolocation:</string>

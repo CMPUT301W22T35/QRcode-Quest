@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.qrcode_quest.databinding.PlayerItemViewBinding;
-import com.qrcode_quest.databinding.QrshotItemViewBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.List;
@@ -21,18 +20,6 @@ import java.util.List;
  * @version 1.0
  */
 public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.ViewHolder> {
-    /**
-     * A data model class for displaying a PlayerAccount in the list
-     */
-    public static class PlayerItem {
-        public final String username;
-        public final int score;
-
-        public PlayerItem(String username, int score){
-            this.username = username;
-            this.score = score;
-        }
-    }
 
     /**
      * Provides a callback interface for an item press event
@@ -46,7 +33,14 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
         void onItemClick(String username);
     }
 
-    private final List<PlayerItem> items;
+    /**
+     * Provides a callback when any of the source live data updates
+     */
+    public interface SourceUpdateHandler {
+        void onSourceUpdate();
+    }
+
+    private final List<PlayerViewItem> items;
     private final ItemClickHandler onClickListener;
 
     /**
@@ -55,7 +49,7 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
      * @param items The items to display in the list
      * @param onClickListener The listener to handle on click events
      */
-    public PlayerViewAdapter(List<PlayerItem> items, ItemClickHandler onClickListener) {
+    public PlayerViewAdapter(List<PlayerViewItem> items, ItemClickHandler onClickListener) {
         this.items = items;
         this.onClickListener = onClickListener;
     }
@@ -72,7 +66,7 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     @SuppressLint("DefaultLocale")
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        PlayerItem item = items.get(position);
+        PlayerViewItem item = items.get(position);
 
         holder.player = item;
         holder.nameText.setText(item.username);
@@ -94,7 +88,7 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView nameText;
         public final TextView scoreText;
-        public PlayerItem player;
+        public PlayerViewItem player;
 
         /**
          * Constructs a ViewHolder and binds the View to the data

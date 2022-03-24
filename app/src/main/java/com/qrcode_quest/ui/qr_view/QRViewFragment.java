@@ -17,21 +17,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
-import com.qrcode_quest.R;
 import com.qrcode_quest.database.QRManager;
-import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.databinding.FragmentQrViewBinding;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * A fragment for displaying a QR code's data.
@@ -54,6 +49,8 @@ public class QRViewFragment extends Fragment {
     /** The hash of the QRShot captured (fragment parameter) */
     private String shotHash;
 
+    private MainViewModel mainViewModel;
+
     /** Required empty constructor */
     public QRViewFragment() {}
 
@@ -69,53 +66,27 @@ public class QRViewFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Grab the action bar
-        AppCompatActivity main = (AppCompatActivity) this.getActivity();
-        ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
 
-        QRViewModel viewModel = new ViewModelProvider(this).get(QRViewModel.class);
-        MainViewModel mainViewModel =
-                new ViewModelProvider(this.getActivity()).get(MainViewModel.class);
-
+        mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
         binding = FragmentQrViewBinding.inflate(inflater, container, false);
 
         // Default to the loading spinner screen
-        binding.qrviewMainLayout.setVisibility(View.INVISIBLE);
+        binding.qrviewMainLayout.setVisibility(View.GONE);
         binding.qrviewLoadingLayout.setVisibility(View.VISIBLE);
 
         // Fetch and load the data into the fragment
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player -> {
-            if (player == null) { return; }
+            mainViewModel.getQRShots().observe(getViewLifecycleOwner(), shots -> {
+                    // Load the data into the fragment
+                    loadQRShot(shots, player);
 
-            viewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
-                if (codes == null) {
-                    return;
-                }
-                assert codes.containsKey(shotHash);
-                viewModel.getShots().observe(getViewLifecycleOwner(), shots -> {
-                    if (shots == null) { return; }
-
-                    viewModel.getQRShot(shotOwner, shotHash).observe(getViewLifecycleOwner(), qrShot -> {
-                        // Welcome to the 7th circle of callback hell.
-                        if (qrShot == null) {
-                            return;
-                        }
-
-                        // Load the data into the fragment
-                        loadQRShot(qrShot, codes, shots, player);
-
-                        // Make the fragment visible
-                        binding.qrviewMainLayout.setVisibility(View.VISIBLE);
-                        binding.qrviewLoadingLayout.setVisibility(View.INVISIBLE);
-                    });
-                });
+                    // Make the fragment visible
+                    binding.qrviewMainLayout.setVisibility(View.VISIBLE);
+                    binding.qrviewLoadingLayout.setVisibility(View.GONE);
             });
         });
 
-        binding.qrviewEditButton.setOnClickListener(view ->{
-            // TODO implement Edit
-            Toast.makeText(this.getActivity(), "Edit not implemented", Toast.LENGTH_SHORT).show();
-        });
+        // Hook up button listeners
         binding.qrviewOtherScansButton.setOnClickListener(view ->{
             // TODO implement View Players
             Toast.makeText(this.getActivity(), "View players not implemented", Toast.LENGTH_SHORT).show();
@@ -131,52 +102,58 @@ public class QRViewFragment extends Fragment {
 
     /**
      * Loads QRCode/QRShot data into the view
-     * @param shot The QRShot to load
-     * @param codes A HashMap of all the QRCodes
      * @param shots A list of all the QRShots
      * @param authedPlayer The player viewing the QRCode
      */
     @SuppressLint("DefaultLocale")
-    private void loadQRShot(QRShot shot, HashMap<String, QRCode> codes,
-                            ArrayList<QRShot> shots, PlayerAccount authedPlayer){
+    private void loadQRShot(ArrayList<QRShot> shots, PlayerAccount authedPlayer){
         AppCompatActivity main = requireNonNull((AppCompatActivity) this.getActivity());
 
-        if (shot == null || !codes.containsKey(shot.getCodeHash())) {
-            Log.e(CLASS_TAG, "Failed to populate as QRCode was null.");
+        // Count the total captures, as well as find our target shot
+        int timesCaptured = 0;
+        QRShot shot = null;
+        for (QRShot testShot : shots){
+            // Check if this is a shared shot
+            if (testShot.getCodeHash().equals(shotHash)){
+                timesCaptured++;
+
+                // Check if this is the exact shot
+                if (testShot.getOwnerName().equals(shotOwner)){
+                    shot = testShot;
+                }
+            }
+        }
+        // Ensure we actually found the shot (given database integrity is sound, it will)
+        if (shot == null) {
+            Log.e(CLASS_TAG, "Failed to find QRShot in shot list.");
             return;
         }
 
-        QRCode thisCode = requireNonNull(codes.get(shot.getCodeHash()));
+        String hash = shot.getCodeHash();
+        int score = RawQRCode.getScoreFromHash(hash);
 
-        // TODO use QR code name instead of hash
-        binding.qrviewName.setText(shot.getCodeHash());
-        binding.qrviewScore.setText(String.format("%d", thisCode.getScore()));
-
-        int timesCaptured = 0;
-        for (QRShot testShot : shots){
-            if (testShot.getCodeHash().equals(shot.getCodeHash())){
-                timesCaptured++;
-            }
-        }
+        // Load given data
+        binding.qrviewName.setText(hash.substring(hash.length()-5));
+        binding.qrviewScore.setText(String.format("%d", score));
         binding.qrviewOtherScans.setText(String.format("%d", timesCaptured));
 
         // Try to load the image
         if (shot.getPhoto() != null){
-            //binding.qrviewPhoto.setImageBitmap(shot.getPhoto());
+            binding.qrviewPhoto.setImageBitmap(shot.getPhoto());
             binding.qrviewPhoto.setVisibility(View.VISIBLE);
         }
 
         // Try to load the geolocation
         if (shot.getLocation() != null ){
-            //binding.qrviewGeoloc.setText(shot.getLocation().toString());
+            binding.qrviewGeoloc.setText(shot.getLocation().toString());
             binding.qrviewGeolocContainer.setVisibility(View.VISIBLE);
         }
 
         // Show the owner buttons if privileged
         if (authedPlayer.getUsername().equals(shot.getOwnerName()) || authedPlayer.isOwner()){
-            binding.qrviewOwnerButtonContainer.setVisibility(View.VISIBLE);
+            binding.qrviewDeleteButton.setVisibility(View.VISIBLE);
             binding.qrviewDeleteButton.setOnClickListener(view -> {
-                binding.qrviewMainLayout.setVisibility(View.INVISIBLE);
+                binding.qrviewMainLayout.setVisibility(View.GONE);
                 binding.qrviewLoadingLayout.setVisibility(View.VISIBLE);
                 this.deleteQR();
             });
@@ -195,6 +172,10 @@ public class QRViewFragment extends Fragment {
                         .show();
             }
 
+            // Force a refresh on the QR codes
+            mainViewModel.loadQRCodesAndShots();
+
+            // Navigate backwards
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();
         });

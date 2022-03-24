@@ -7,10 +7,11 @@ import static com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.actio
 
 import static java.util.Objects.requireNonNull;
 
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -28,18 +29,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.qrcode_quest.MainViewModel;
-import com.qrcode_quest.databinding.FragmentPlayerListBinding;
+import com.qrcode_quest.database.SchemaResultHelper;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
-import com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.ActionLeaderboardToPlayerqrs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
+
+import com.qrcode_quest.databinding.FragmentPlayerListBinding;
+import com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.ActionLeaderboardToPlayerqrs;
+
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -50,34 +51,16 @@ import java.util.List;
  * @version 1.0
  */
 public class PlayerListFragment extends Fragment {
+    private static final String ARG_PLAYERS = "players";
+
     /** A tag used for logging */
     private static final String CLASS_TAG = "PlayerListFragment";
 
-    /**
-     * A data structure for storing player stats
-     */
-    private class Stats {
-        public final String username;
-        public int highestCode;
-        public int totalScore;
-        public int totalCodes;
-
-        public Stats(String user) {
-            this.username = user;
-            this.highestCode = 0; this.totalCodes = 0; this.totalScore = 0;
-        }
-    }
-
-    private PlayerListViewModel viewModel;
-    private MainViewModel mainViewModel;
     private FragmentPlayerListBinding binding;
+    MainViewModel mainViewModel;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(PlayerListViewModel.class);
-        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-    }
+    /** Empty constructor for android to use */
+    public PlayerListFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -93,30 +76,38 @@ public class PlayerListFragment extends Fragment {
         binding.playerlistLoadingContainer.setVisibility(View.VISIBLE);
         binding.playerlistMainContainer.setVisibility(View.GONE);
 
-        // Create listeners for the relevant data
-        mainViewModel.getCodes().observe(getViewLifecycleOwner(), codes->{
-            mainViewModel.getShots().observe(getViewLifecycleOwner(), shots->{
-                mainViewModel.getPlayers().observe(getViewLifecycleOwner(), players->{
-                    // Calculate each player's scores
-                    HashMap<String, Stats> stats = calculatePlayerScores(players,codes,shots);
-                    setRanking(stats);
+        // Connect the LiveData sources
+        mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
 
-                    // Use those scores to build a displayable list
-                    ArrayList<PlayerViewAdapter.PlayerItem> listItems = new ArrayList<>();
-                    for (String username : stats.keySet()){
-                        int score = requireNonNull(stats.get(username)).totalScore;
-                        listItems.add(new PlayerViewAdapter.PlayerItem(username, score));
-                    }
-                    Collections.sort(listItems, (a,b)->b.score-a.score);
+        LifecycleOwner owner = getViewLifecycleOwner();
+        LiveData<ArrayList<PlayerAccount>> allAccounts = mainViewModel.getPlayers();
+        LiveData<ArrayList<QRShot>> allShots = mainViewModel.getQRShots();
 
-                    // Load the list into the View
-                    recyclerView.setAdapter(new PlayerViewAdapter(listItems, this::transitionToQRList));
+        // define update callback
+        PlayerViewAdapter.SourceUpdateHandler updateHandler = () -> {
+            ArrayList<PlayerAccount> players = allAccounts.getValue();
+            ArrayList<QRShot> shots = allShots.getValue();
+            HashMap<String, PlayerStats> stats = calculatePlayerScores(players, shots);
+            setRanking(stats);
 
-                    binding.playerlistLoadingContainer.setVisibility(View.GONE);
-                    binding.playerlistMainContainer.setVisibility(View.VISIBLE);
-                });
-            });
-        });
+            // Use those scores to build a displayable list
+            ArrayList<PlayerViewItem> listItems = new ArrayList<>();
+            for (String username : stats.keySet()){
+                int score = requireNonNull(stats.get(username)).totalScore;
+                listItems.add(new PlayerViewItem(username, score));
+            }
+            Collections.sort(listItems, (a,b)->b.score-a.score);
+
+            // Load the list into the View
+            recyclerView.setAdapter(new PlayerViewAdapter(listItems, PlayerListFragment.this::transitionToQRList));
+
+            binding.playerlistLoadingContainer.setVisibility(View.GONE);
+            binding.playerlistMainContainer.setVisibility(View.VISIBLE);
+        };
+
+        // When any of the sources change, update the leaderboard
+        allAccounts.observe(owner, playerAccounts -> updateHandler.onSourceUpdate());
+        allShots.observe(owner, playerAccounts -> updateHandler.onSourceUpdate());
 
         return binding.getRoot();
     }
@@ -126,7 +117,7 @@ public class PlayerListFragment extends Fragment {
      * @param username The player's username to view QR codes of
      */
     private void transitionToQRList(String username) {
-        viewModel.getPlayers().observe(getViewLifecycleOwner(), players->{
+        mainViewModel.getPlayers().observe(getViewLifecycleOwner(), players->{
             for (PlayerAccount player : players){
                 if (player.getUsername().equals(username)){
                     NavController navController = NavHostFragment.findNavController(this);
@@ -146,21 +137,25 @@ public class PlayerListFragment extends Fragment {
      * @param stats The hashmap of user stats
      */
     @SuppressLint("DefaultLocale")
-    private void setRanking(HashMap<String, Stats> stats){
+    private void setRanking(HashMap<String, PlayerStats> stats){
         // Grab the loaded user
         SharedPreferences prefs = this.requireActivity().getApplicationContext()
                 .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
         String currentUser = prefs.getString(AUTHED_USERNAME_PREF, "");
 
         // Grab the loaded users stats
-        Stats userStats = requireNonNull(stats.get(currentUser));
-        List<Stats> statList = new ArrayList<>(stats.values());
+        PlayerStats userStats = stats.get(currentUser);
+        // In case the currentUser and global user list is not in sync
+        if (userStats == null)
+            return;
+
+        List<PlayerStats> statList = new ArrayList<>(stats.values());
 
         // Create a hash set for each category (to account for ties)
         HashSet<Integer> totalCodeSet = new HashSet<>();
         HashSet<Integer> totalScoreSet = new HashSet<>();
         HashSet<Integer> bestCaptureSet = new HashSet<>();
-        for (Stats stat : stats.values()){
+        for (PlayerStats stat : stats.values()){
             totalCodeSet.add(stat.totalCodes);
             totalScoreSet.add(stat.totalScore);
             bestCaptureSet.add(stat.highestCode);
@@ -203,36 +198,30 @@ public class PlayerListFragment extends Fragment {
     /**
      * Builds a HashMap containing calculated player stats
      * @param players The list of players
-     * @param codes The hashmap of QRCodes
      * @param shots The list of QRShots
      * @return The calculated stats
      */
-    private HashMap<String, Stats> calculatePlayerScores(ArrayList<PlayerAccount> players,
-                                       HashMap<String, QRCode> codes,
-                                       ArrayList<QRShot> shots) {
+    private HashMap<String, PlayerStats> calculatePlayerScores(ArrayList<PlayerAccount> players,
+                                                               ArrayList<QRShot> shots) {
+        HashMap<String, ArrayList<QRCode>> playerToCodes =
+                SchemaResultHelper.getOwnerNameToCodeArrayMapFromJoin(players, shots);
 
-        // Create a zeroed score list
-        HashMap<String, Stats> stats = new HashMap<>();
+        HashMap<String, PlayerStats> stats = new HashMap<>();
         for (PlayerAccount player : players){
             String username = player.getUsername();
-            stats.put(username , new Stats(username));
-        }
+            PlayerStats current = new PlayerStats(username);  // Create a zeroed score list of stats
 
-        // Sum all the scores off all available shots
-        for (QRShot shot : shots){
-            // Grab the required objects to calculate stats
-            QRCode code = requireNonNull(codes.get(shot.getCodeHash()));
-            Stats current = stats.get(shot.getOwnerName());
+            ArrayList<QRCode> ownedCodes = playerToCodes.get(username);
+            assert ownedCodes != null;
+            for(QRCode code: ownedCodes) {
+                // Update stats
+                current.totalScore += code.getScore();
+                current.totalCodes++;
+                current.highestCode = Math.max(current.highestCode, code.getScore());
+            }
 
-            // Skip codes of deleted players
-            if (current == null) { continue; }
-
-            // Update stats
-            current.totalScore += code.getScore();
-            current.totalCodes++;
-            current.highestCode = Math.max(current.highestCode, code.getScore());
             // Store back into the hashmap
-            stats.put(shot.getOwnerName(), current);
+            stats.put(username , current);
         }
 
         return stats;

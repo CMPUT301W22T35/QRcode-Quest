@@ -14,6 +14,7 @@ import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.QrshotItemViewBinding;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,20 +39,15 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
     }
 
     private final List<QRShot> shots;
-    private final HashMap<String, QRCode> codes;
     private final ItemClickHandler onClickListener;
 
     /**
      * Create a new ViewAdapter using the passed lists to build item data.
-     *
      * @param items           The QRShots to display
-     * @param codes           The HashMap containing AT LEAST the relevant hashes, may include all hashes.
      * @param onClickListener The listener to handle on click events
      */
-    public PlayerQRShotViewAdapter(List<QRShot> items, HashMap<String, QRCode> codes,
-                                   ItemClickHandler onClickListener) {
+    public PlayerQRShotViewAdapter(List<QRShot> items, ItemClickHandler onClickListener) {
         this.shots = items;
-        this.codes = codes;
         this.onClickListener = onClickListener;
     }
 
@@ -72,15 +68,15 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
         if (shot == null) {
             return;
         }
-        QRCode code = codes.get(shot.getCodeHash());
-        if (code == null) {
-            return;
-        }
 
-        // Load them into the ViewHolders
+        // Grab relevant info
+        String hash = shot.getCodeHash();
+        int score = RawQRCode.getScoreFromHash(hash);
+
+        // Load the data into the ViewHolder
         holder.shot = shot;
-        holder.qrName.setText(shot.getCodeHash());
-        holder.qrScore.setText(String.format("%d", code.getScore()));
+        holder.qrName.setText(hash.substring(hash.length()-5));
+        holder.qrScore.setText(String.format("%d", score));
 
         holder.itemView.setOnClickListener(v -> {
             onClickListener.onItemClick(shot);
