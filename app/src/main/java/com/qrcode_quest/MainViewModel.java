@@ -42,10 +42,11 @@ public class MainViewModel extends AndroidViewModel {
     private final FirebaseFirestore db;
     private final PhotoStorage photoStorage;
 
-    public MainViewModel(@NonNull Application application){
+    public MainViewModel(@NonNull Application application,
+                         FirebaseFirestore db, PhotoStorage photoStorage){
         super(application);
-        db = FirebaseFirestore.getInstance();
-        photoStorage = new PhotoStorage();
+        this.db = db;
+        this.photoStorage = photoStorage;
     }
 
     /**

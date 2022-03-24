@@ -23,10 +23,15 @@ public class MainActivity extends AppCompatActivity {
     private ActivityHomeBinding binding;
 
     private NavController navController;
+    private MainViewModelFactory viewModelFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (viewModelFactory == null) {
+            viewModelFactory = new MainViewModelFactory(getApplication());
+        }
 
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -41,12 +46,18 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
 
         // Do an initial pull of common data for faster loads in other fragments
-        MainViewModel viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        MainViewModel viewModel = new ViewModelProvider(this, viewModelFactory).get(MainViewModel.class);
         viewModel.getCurrentPlayer();
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         return navController.navigateUp();
+    }
+
+    public void setViewModelFactory(MainViewModelFactory viewModelFactory) {
+        // enforce the method to never be called after onCreate()
+        assert this.viewModelFactory == null;
+        this.viewModelFactory = viewModelFactory;
     }
 }
