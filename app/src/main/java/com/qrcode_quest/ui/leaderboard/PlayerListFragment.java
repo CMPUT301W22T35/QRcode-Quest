@@ -44,7 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * A view to display or select an arbitrary list of players
+ * A view to display the global leaderboard
  *
  * @author jdumouch
  * @version 1.0
@@ -66,13 +66,6 @@ public class PlayerListFragment extends Fragment {
             this.username = user;
             this.highestCode = 0; this.totalCodes = 0; this.totalScore = 0;
         }
-    }
-
-    /**
-     * States for a player list to display in
-     */
-    public enum ViewMode {
-        LEADERBOARD,
     }
 
     private PlayerListViewModel viewModel;
@@ -178,7 +171,8 @@ public class PlayerListFragment extends Fragment {
         Collections.sort(totalCodes, (a,b)->b-a);
         for (int i = 0; i < totalCodes.size(); i++){
             if (totalCodes.get(i) == userStats.totalCodes){
-                binding.playerlistTotalcaptures.setText(String.format("%d", i+1));
+                binding.playerlistTotalcaptures.setText(
+                        String.format("%d%s", i+1, getOrdinalAffix(i+1)));
                 break;
             }
         }
@@ -188,7 +182,8 @@ public class PlayerListFragment extends Fragment {
         Collections.sort(totalScore, (a,b)->b-a);
         for (int i = 0; i < totalScore.size(); i++){
             if (totalScore.get(i) == userStats.totalScore){
-                binding.playerlistTotalscore.setText(String.format("%d", i+1));
+                binding.playerlistTotalscore.setText(
+                        String.format("%d%s", i+1, getOrdinalAffix(i+1)));
                 break;
             }
         }
@@ -198,7 +193,8 @@ public class PlayerListFragment extends Fragment {
         Collections.sort(bestCapture, (a,b)->b-a);
         for (int i = 0; i < bestCapture.size(); i++){
             if (bestCapture.get(i) == userStats.highestCode){
-                binding.playerlistBestcapture.setText(String.format("%d", i+1));
+                binding.playerlistBestcapture.setText(
+                        String.format("%d%s", i+1, getOrdinalAffix(i+1)));
                 break;
             }
         }
@@ -240,5 +236,22 @@ public class PlayerListFragment extends Fragment {
         }
 
         return stats;
+    }
+
+    /**
+     * Finds the correct ordinal affix (#st, #nd, #rd) for english numerals
+     * @param number The number to find the affix for
+     * @return The ordinal affix as a string
+     */
+    private String getOrdinalAffix(int number){
+        int lastDigit = number % 10;
+        switch (lastDigit){
+            case 3:
+                return "rd";
+            case 2:
+                return "nd";
+            default:
+                return "st";
+        }
     }
 }
