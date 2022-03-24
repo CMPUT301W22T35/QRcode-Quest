@@ -159,7 +159,11 @@ public class PlayerListFragment extends Fragment {
         String currentUser = prefs.getString(AUTHED_USERNAME_PREF, "");
 
         // Grab the loaded users stats
-        PlayerStats userStats = requireNonNull(stats.get(currentUser));
+        PlayerStats userStats = stats.get(currentUser);
+        // In case the currentUser and global user list is not in sync
+        if (userStats == null)
+            return;
+
         List<PlayerStats> statList = new ArrayList<>(stats.values());
 
         // Create a hash set for each category (to account for ties)
@@ -217,9 +221,7 @@ public class PlayerListFragment extends Fragment {
         HashMap<String, PlayerStats> stats = new HashMap<>();
         for (PlayerAccount player : players){
             String username = player.getUsername();
-            PlayerStats current = new PlayerStats(username);
-
-            stats.put(username , new PlayerStats(username));  // Create a zeroed score list of stats
+            PlayerStats current = new PlayerStats(username);  // Create a zeroed score list of stats
 
             ArrayList<QRCode> ownedCodes = playerToCodes.get(username);
             assert ownedCodes != null;
@@ -229,8 +231,8 @@ public class PlayerListFragment extends Fragment {
                 current.totalCodes++;
                 current.highestCode = Math.max(current.highestCode, code.getScore());
                 // Store back into the hashmap
-                stats.put(username, current);
             }
+            stats.put(username , current);
         }
 
         return stats;
