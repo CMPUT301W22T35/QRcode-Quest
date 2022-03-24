@@ -15,6 +15,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.qrcode_quest.database.ManagerResult;
+import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.database.Result;
@@ -39,14 +40,12 @@ public class MainViewModel extends AndroidViewModel {
     private static final String CLASS_TAG = "MainViewModel";
 
     private final FirebaseFirestore db;
-    private final FirebaseStorage storage;
-    private final QRManager.PhotoEncoding photoEncoding;
+    private final PhotoStorage photoStorage;
 
     public MainViewModel(@NonNull Application application){
         super(application);
         db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
-        photoEncoding = new QRManager.PhotoEncoding();
+        photoStorage = new PhotoStorage();
     }
 
     /**
@@ -139,25 +138,22 @@ public class MainViewModel extends AndroidViewModel {
      */
     private void loadQRCodesAndShots(){
         Log.d("MainViewModel", "Loading QR codes and shots...");
-        new QRManager(db, storage, photoEncoding).getAllQRShots(new ManagerResult.Listener<ArrayList<QRShot>>() {
-            @Override
-            public void onResult(Result<ArrayList<QRShot>> result) {
-                if (!result.isSuccess()) {
-                    Log.e(CLASS_TAG, "Failed to load qr codes/shots");
-                    return;
-                }
-                ArrayList<QRShot> shots = result.unwrap();
-                HashMap<String, QRCode> codes = new HashMap<>();
-                for (QRShot shot: shots) {
-                    if(!codes.containsKey(shot.getCodeHash())) {
-                        String qrHash = shot.getCodeHash();
-                        QRCode newCode = new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash));
-                        codes.put(qrHash, newCode);
-                    }
-                }
-                allQRCodes.setValue(new ArrayList<>(codes.values()));
-                allQRShots.setValue(shots);
+        new QRManager(db, photoStorage).getAllQRShots(result -> {
+            if (!result.isSuccess()) {
+                Log.e(CLASS_TAG, "Failed to load qr codes/shots");
+                return;
             }
+            ArrayList<QRShot> shots = result.unwrap();
+            HashMap<String, QRCode> codes = new HashMap<>();
+            for (QRShot shot: shots) {
+                if(!codes.containsKey(shot.getCodeHash())) {
+                    String qrHash = shot.getCodeHash();
+                    QRCode newCode = new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash));
+                    codes.put(qrHash, newCode);
+                }
+            }
+            allQRCodes.setValue(new ArrayList<>(codes.values()));
+            allQRShots.setValue(shots);
         });
     }
 

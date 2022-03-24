@@ -1,13 +1,10 @@
 package com.qrcode_quest.database;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -25,8 +22,6 @@ import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.RawQRCode;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,42 +30,25 @@ import java.util.Objects;
 /**
  * Interfaces to query and update QRShot objects in the Firestore database
  * @author tianming, jdumouch
- * @version 1.0
+ * @version 1.1
  * @see com.qrcode_quest.entities.QRCode
  * @see com.qrcode_quest.entities.QRShot
  */
 public class QRManager extends DatabaseManager {
     final static long MAX_FILE_SIZE = 16 * 1024;  // 16KB = 128Kb
 
-    public static class PhotoEncoding {
-        public byte[] encodeToBytes(Bitmap photo) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            return baos.toByteArray();
-        }
-
-        public Bitmap decodeFromBytes(byte[] bytes) {
-            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-            return BitmapFactory.decodeStream(bais);
-        }
-    }
-
-    FirebaseStorage firebaseStorage;  // for uploading the photos
-    PhotoEncoding encoding;
+    PhotoStorage photoStorage;  // for uploading the photos
     public QRManager() {
         super();
-        this.firebaseStorage = FirebaseStorage.getInstance();
-        this.encoding = new PhotoEncoding();
+        this.photoStorage = new PhotoStorage();
     }
     public QRManager(FirebaseFirestore db) {
         super(db);
-        this.firebaseStorage = FirebaseStorage.getInstance();
-        this.encoding = new PhotoEncoding();
+        this.photoStorage = new PhotoStorage();
     }
-    public QRManager(FirebaseFirestore db, FirebaseStorage firebaseStorage, PhotoEncoding encoding) {
+    public QRManager(FirebaseFirestore db, PhotoStorage photoStorage) {
         super(db);
-        this.firebaseStorage = firebaseStorage;
-        this.encoding = encoding;
+        this.photoStorage = photoStorage;
     }
 
     public void retrieveQRShotsWithPhotos(Task<QuerySnapshot> task, Listener<ArrayList<QRShot>> listener) {
@@ -105,7 +83,7 @@ public class QRManager extends DatabaseManager {
 
             // open all download tasks at once
             for (String path: photoPathToShot.keySet()) {
-                StorageReference photoRef = firebaseStorage.getReference(path);
+                StorageReference photoRef = photoStorage.getStorage().getReference(path);
                 photoRef.getBytes(MAX_FILE_SIZE).addOnCompleteListener(taskLoadPhoto -> {
                     // first we want to make sure this function is executed no more than #photos times
                     // then the listener has not been executed (as the point of loading photos is to
@@ -124,7 +102,7 @@ public class QRManager extends DatabaseManager {
                     }
                     byte[] photoBytes = taskLoadPhoto.getResult();
                     if (photoBytes != null) {
-                        Bitmap reconstructedPhoto = encoding.decodeFromBytes(photoBytes);
+                        Bitmap reconstructedPhoto = photoStorage.decodeFromBytes(photoBytes);
                         Objects.requireNonNull(photoPathToShot.get(path)).setPhoto(reconstructedPhoto);
                     }
 
@@ -318,8 +296,8 @@ public class QRManager extends DatabaseManager {
                     // transaction is basically completed, we upload the photo if applicable
                     // TODO: move this to a wrapper on onCompleteListener to guarantee execute upload after transaction complete
                     // see: https://firebase.google.com/docs/storage/android/upload-files
-                    StorageReference photoRef = firebaseStorage.getReference(path);
-                    UploadTask uploadTask = photoRef.putBytes(encoding.encodeToBytes(photo));
+                    StorageReference photoRef = photoStorage.getStorage().getReference(path);
+                    UploadTask uploadTask = photoRef.putBytes(photoStorage.encodeToBytes(photo));
                     retrieveResultByTask(uploadTask, onImageUploadListener, new ManagerResult.TaskSnapshotRetriever());
                 }
 
@@ -350,7 +328,7 @@ public class QRManager extends DatabaseManager {
                     for (QRShot shot : shots) {
                         if (shot.getPhoto() != null) {
                             String photoPath = Schema.getPhotoPathOnCloudStorage(shot.getCodeHash(), shot.getOwnerName());
-                            StorageReference ref = firebaseStorage.getReference(photoPath);
+                            StorageReference ref = photoStorage.getStorage().getReference(photoPath);
                             ref.delete().addOnCompleteListener(task1 -> { });  // addCompleteListener to make unit tests work
                         }
                     }

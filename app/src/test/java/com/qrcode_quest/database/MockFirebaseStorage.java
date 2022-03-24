@@ -26,9 +26,12 @@ import java.util.Objects;
 
 public class MockFirebaseStorage {
 
-    static public QRManager.PhotoEncoding createMockEncoding() {
-        QRManager.PhotoEncoding encoding = mock(QRManager.PhotoEncoding.class);
-        when(encoding.encodeToBytes(any())).thenCallRealMethod();
+    static public PhotoStorage createMockEncoding(FirebaseStorage storage) {
+        PhotoStorage encoding = mock(PhotoStorage.class);
+        PhotoStorage.PhotoEncoding realEncoding = new PhotoStorage.PhotoEncoding();
+        when(encoding.getStorage()).thenReturn(storage);
+        when(encoding.encodeToBytes(any())).thenAnswer(
+                (Answer<byte[]>) invocation -> realEncoding.encodeToBytes((Bitmap)invocation.getArgument(0)));
         when(encoding.decodeFromBytes(any(byte[].class))).thenAnswer(
                 (Answer<Bitmap>) invocation -> createMockBitmap(invocation.getArgument(0)));
         return encoding;
