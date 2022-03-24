@@ -64,6 +64,8 @@ public class PlayerQRListFragment extends Fragment {
 
         // Grab the view binding
         binding = FragmentPlayerQrShotsBinding.inflate(inflater, container, false);
+        binding.playerQrlistProgress.setVisibility(View.VISIBLE);
+        binding.playerQrlistRecyclerview.setVisibility(View.GONE);
 
         // Set up the RecyclerView
         RecyclerView recyclerView = binding.playerQrlistRecyclerview;
