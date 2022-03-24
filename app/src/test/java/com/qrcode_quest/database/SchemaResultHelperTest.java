@@ -45,6 +45,9 @@ public class SchemaResultHelperTest {
         assertEquals(0, map3.size());
         HashMap<String, ArrayList<QRShot>> map4 = SchemaResultHelper.getQrHashToShotArrayMap(new ArrayList<>());
         assertEquals(0, map4.size());
+        HashMap<String, ArrayList<QRCode>> map5 =
+                SchemaResultHelper.getOwnerNameToCodeArrayMapFromJoin(new ArrayList<>(), new ArrayList<>());
+        assertEquals(0, map5.size());
     }
 
     @Test
