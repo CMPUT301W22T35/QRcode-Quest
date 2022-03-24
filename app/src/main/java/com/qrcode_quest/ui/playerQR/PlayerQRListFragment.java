@@ -65,10 +65,6 @@ public class PlayerQRListFragment extends Fragment {
         // Grab the view binding
         binding = FragmentPlayerQrShotsBinding.inflate(inflater, container, false);
 
-        // Display the loading spinner and hide the list
-        binding.playerQrlistProgress.setVisibility(View.VISIBLE);
-        binding.playerQrlistRecyclerview.setVisibility(View.INVISIBLE);
-
         // Set up the RecyclerView
         RecyclerView recyclerView = binding.playerQrlistRecyclerview;
         Context context = recyclerView.getContext();
@@ -85,9 +81,10 @@ public class PlayerQRListFragment extends Fragment {
                 // Use the data to load the stats card
                 setStats(shots, codes);
 
-                // Hide the loading spinner and display the List
-                binding.playerQrlistProgress.setVisibility(View.INVISIBLE);
-                binding.playerQrlistRecyclerview.setVisibility(View.VISIBLE);
+                // Hide the loading spinner and display the List (or no capture label
+                binding.playerQrlistProgress.setVisibility(View.GONE);
+                binding.playerQrlistNocaptures.setVisibility(shots.size() > 0 ? View.GONE : View.VISIBLE);
+                binding.playerQrlistRecyclerview.setVisibility(shots.size() == 0 ? View.GONE : View.VISIBLE);
             });
         });
 
