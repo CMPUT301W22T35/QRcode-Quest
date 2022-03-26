@@ -31,10 +31,8 @@ import android.widget.SearchView;
 
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.database.SchemaResultHelper;
-<<<<<<< HEAD
 import com.qrcode_quest.databinding.FragmentPlayerListBinding;
-=======
->>>>>>> main
+
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
@@ -42,10 +40,6 @@ import com.qrcode_quest.entities.QRShot;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-<<<<<<< HEAD
-=======
-import com.qrcode_quest.databinding.FragmentPlayerListBinding;
->>>>>>> main
 import com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.ActionLeaderboardToPlayerqrs;
 
 import java.util.Collections;
@@ -86,7 +80,6 @@ public class PlayerListFragment extends Fragment {
         binding.playerlistLoadingContainer.setVisibility(View.VISIBLE);
         binding.playerlistMainContainer.setVisibility(View.GONE);
 
-<<<<<<< HEAD
         // Connect the LiveData sources
         mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
 
