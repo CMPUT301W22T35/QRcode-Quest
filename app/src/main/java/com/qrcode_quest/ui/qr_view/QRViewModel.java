@@ -17,7 +17,7 @@ import java.util.HashMap;
 /**
  * Fetches and caches data for QRViewFragment usages.
  *
- * @author jdumouch
+ * @author jdumouch, tianming
  * @version 1.0
  */
 public class QRViewModel extends ViewModel {
@@ -27,6 +27,7 @@ public class QRViewModel extends ViewModel {
     private String shotOwner;
     private String shotHash;
     private MutableLiveData<QRShot> qrShot;
+    private QRManager qrManager;
 
     /**
      * Fetches a QRShot for a specific user.
@@ -48,7 +49,7 @@ public class QRViewModel extends ViewModel {
      */
     private void loadQRShot(String owner, String hash){
         Log.d(CLASS_TAG, String.format("Loading QRShot [%s, %s]...", owner, hash));
-        new QRManager().getPlayerShotByHash(owner, hash, result -> {
+        qrManager.getPlayerShotByHash(owner, hash, result -> {
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load player QRShots");
                 return;
@@ -84,7 +85,7 @@ public class QRViewModel extends ViewModel {
      */
     public void updateQRShots(){
         Log.d("MainViewModel", "Loading QRShots...");
-        new QRManager().getAllQRShots(result ->{
+        qrManager.getAllQRShots(result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load QRShots");
                 return;
@@ -113,7 +114,7 @@ public class QRViewModel extends ViewModel {
      */
     public void updateQRCodes(){
         Log.d(CLASS_TAG, "Loading QRCodes...");
-        new QRManager().getAllQRCodesAsMap(result ->{
+        qrManager.getAllQRCodesAsMap(result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load QR codes");
                 return;

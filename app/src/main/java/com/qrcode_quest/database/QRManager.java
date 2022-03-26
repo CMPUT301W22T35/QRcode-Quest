@@ -38,14 +38,7 @@ public class QRManager extends DatabaseManager {
     final static long MAX_FILE_SIZE = 16 * 1024;  // 16KB = 128Kb
 
     PhotoStorage photoStorage;  // for uploading the photos
-    public QRManager() {
-        super();
-        this.photoStorage = new PhotoStorage();
-    }
-    public QRManager(FirebaseFirestore db) {
-        super(db);
-        this.photoStorage = new PhotoStorage();
-    }
+    
     public QRManager(FirebaseFirestore db, PhotoStorage photoStorage) {
         super(db);
         this.photoStorage = photoStorage;

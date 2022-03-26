@@ -11,8 +11,10 @@ import android.graphics.Bitmap;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.qrcode_quest.MockDb;
 import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.MockFirebaseStorage;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +58,7 @@ public class QRManagerTest {
         FirebaseStorage firebaseStorage = MockFirebaseStorage.createMockFirebaseStorage(pathToPhotos);
 
         db = MockDb.createMockDatabase(new HashMap<>());
-        storage = MockFirebaseStorage.createMockEncoding(firebaseStorage);  // avoid creating real bitmaps
+        storage = MockFirebaseStorage.createMockPhotoStorage(firebaseStorage);  // avoid creating real bitmaps
         manager = new QRManager(db, storage);
     }
 

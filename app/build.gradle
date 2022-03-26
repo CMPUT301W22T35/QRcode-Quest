@@ -29,6 +29,18 @@ android {
     buildFeatures {
         viewBinding true
     }
+
+    // From StackOverflow, by Sandro Machado
+    // url: https://stackoverflow.com/questions/30627749/sharing-code-between-android-instrumentation-tests-and-unit-tests-in-android-stu
+    sourceSets {
+        String dir = "src/sharedTest/java"
+        test {
+            java.srcDirs += dir
+        }
+        androidTest {
+            java.srcDirs += dir
+        }
+    }
 }
 
 dependencies {

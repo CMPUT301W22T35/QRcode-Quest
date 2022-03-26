@@ -17,6 +17,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
+
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
 
@@ -32,6 +34,9 @@ public class MainActivityTest {
     public void setupBeforeTests() {
         // get the application object so we can provide mock db and other dependencies to it
         QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
+        app.getContainer().setDb(
+                MockDb.createMockDatabase(new HashMap<>())
+        );
     }
 
     @Test

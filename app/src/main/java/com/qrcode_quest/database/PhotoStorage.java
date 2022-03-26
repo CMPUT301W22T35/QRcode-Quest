@@ -12,10 +12,6 @@ public class PhotoStorage {
     FirebaseStorage storage;
     PhotoEncoding encoding;
 
-    public PhotoStorage() {
-        storage = FirebaseStorage.getInstance();
-        encoding = new PhotoEncoding();
-    }
     public PhotoStorage(FirebaseStorage storage, PhotoEncoding encoding) {
         assert storage != null;
         assert encoding != null;

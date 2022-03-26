@@ -3,6 +3,7 @@ package com.qrcode_quest.database;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.qrcode_quest.MockDb;
 
 import org.junit.Test;
 

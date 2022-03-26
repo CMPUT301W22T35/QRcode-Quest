@@ -25,7 +25,9 @@ public class AppContainer {
 
     public PhotoStorage getStorage() {
         if (storage == null)
-            storage = new PhotoStorage();
+            storage = new PhotoStorage(
+                    FirebaseStorage.getInstance(),
+                    new PhotoStorage.PhotoEncoding());
         return storage;
     }
 
