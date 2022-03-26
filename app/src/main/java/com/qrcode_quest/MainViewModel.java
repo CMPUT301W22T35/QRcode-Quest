@@ -123,7 +123,7 @@ public class MainViewModel extends AndroidViewModel {
     /**
      * Loads the player list into `players` from database
      */
-    private void loadPlayers(){
+    public void loadPlayers(){
         Log.d("MainViewModel", "Loading players...");
         new PlayerManager(db).getPlayerList(result -> {
             // Catch errors
@@ -139,24 +139,27 @@ public class MainViewModel extends AndroidViewModel {
     /**
      * loads the QR codes and shots lists from database
      */
-    private void loadQRCodesAndShots(){
-        Log.d("MainViewModel", "Loading QR codes and shots...");
-        new QRManager(db, photoStorage).getAllQRShots(result -> {
-            if (!result.isSuccess()) {
-                Log.e(CLASS_TAG, "Failed to load qr codes/shots");
-                return;
-            }
-            ArrayList<QRShot> shots = result.unwrap();
-            HashMap<String, QRCode> codes = new HashMap<>();
-            for (QRShot shot: shots) {
-                if(!codes.containsKey(shot.getCodeHash())) {
-                    String qrHash = shot.getCodeHash();
-                    QRCode newCode = new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash));
-                    codes.put(qrHash, newCode);
+    public void loadQRCodesAndShots(){
+        Log.d(CLASS_TAG, "Loading QR codes and shots...");
+        new QRManager(db, photoStorage).getAllQRShots(new ManagerResult.Listener<ArrayList<QRShot>>() {
+            @Override
+            public void onResult(Result<ArrayList<QRShot>> result) {
+                if (!result.isSuccess()) {
+                    Log.e(CLASS_TAG, "Failed to load qr codes/shots");
+                    return;
                 }
+                ArrayList<QRShot> shots = result.unwrap();
+                HashMap<String, QRCode> codes = new HashMap<>();
+                for (QRShot shot: shots) {
+                    if(!codes.containsKey(shot.getCodeHash())) {
+                        String qrHash = shot.getCodeHash();
+                        QRCode newCode = new QRCode(qrHash, RawQRCode.getScoreFromHash(qrHash));
+                        codes.put(qrHash, newCode);
+                    }
+                }
+                allQRCodes.setValue(new ArrayList<>(codes.values()));
+                allQRShots.setValue(shots);
             }
-            allQRCodes.setValue(new ArrayList<>(codes.values()));
-            allQRShots.setValue(shots);
         });
     }
 

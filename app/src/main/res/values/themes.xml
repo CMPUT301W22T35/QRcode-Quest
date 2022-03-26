@@ -1,35 +1,41 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.QRcodequest" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
         <item name="colorPrimary">@color/pine</item>
         <item name="colorPrimaryVariant">@color/pine</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/blue_green</item>
         <item name="colorSecondaryVariant">@color/blue_green</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/pine</item>
-        <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/dark</item>
         <item name="android:textColor">@color/white</item>
         <item name="colorError">@color/vermilion</item>
+
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:textColorSecondaryInverse">@color/white</item>
+        <item name="android:textColorHighlight">@color/vermilion</item>
+        <item name="android:textColorHighlightInverse">@color/vermilion</item>
     </style>
+
     <style name="Theme.NOBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
         <item name="colorPrimary">@color/pine</item>
         <item name="colorPrimaryVariant">@color/pine</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/blue_green</item>
         <item name="colorSecondaryVariant">@color/blue_green</item>
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/pine</item>
-        <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/dark</item>
         <item name="android:textColor">@color/white</item>
         <item name="colorError">@color/vermilion</item>
+
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:textColorSecondaryInverse">@color/white</item>
+        <item name="android:textColorHighlight">@color/vermilion</item>
+        <item name="android:textColorHighlightInverse">@color/vermilion</item>
     </style>
 </resources>
