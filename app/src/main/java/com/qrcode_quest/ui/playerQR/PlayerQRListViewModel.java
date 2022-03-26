@@ -14,7 +14,8 @@ import java.util.HashMap;
 /**
  * A ViewModel for PlayerQRListFragment
  *
- * @author jdumouch
+ * @author jdumouch, tianming
+ * @version 1.1
  */
 public class PlayerQRListViewModel extends ViewModel {
     /** A tag to be used for logging */
@@ -22,6 +23,13 @@ public class PlayerQRListViewModel extends ViewModel {
 
     /** A player name to track which player's shots are loaded */
     private String loadedPlayerName;
+
+    /** Provides Firebase remote access */
+    private final QRManager qrManager;
+
+    public PlayerQRListViewModel(QRManager qrManager) {
+        this.qrManager = qrManager;
+    }
 
     /** A player's entire QRShot list */
     private MutableLiveData<ArrayList<QRShot>> playerShots;
@@ -41,7 +49,7 @@ public class PlayerQRListViewModel extends ViewModel {
      */
     private void loadPlayerShots(String playerName){
         Log.d(CLASS_TAG, String.format("Loading %s's QRShots...", playerName));
-        new QRManager().getPlayerShots(playerName, result -> {
+        qrManager.getPlayerShots(playerName, result -> {
             if (!result.isSuccess()) {
                 Log.e(CLASS_TAG, "Failed to get QRShots.");
                 return;
@@ -72,7 +80,7 @@ public class PlayerQRListViewModel extends ViewModel {
      */
     private void loadQRCodes(){
         Log.d(CLASS_TAG, "Loading QRCodes...");
-        new QRManager().getAllQRCodesAsMap(result ->{
+        qrManager.getAllQRCodesAsMap(result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load QR codes");
                 return;

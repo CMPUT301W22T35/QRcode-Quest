@@ -14,7 +14,7 @@ public class QRCodeQuestApp extends Application {
     private final AppContainer container;
 
     public QRCodeQuestApp() {
-        container = new AppContainer();
+        container = new AppContainer(this);
     }
 
     public AppContainer getContainer() {

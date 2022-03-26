@@ -15,6 +15,12 @@ public class SignUpViewModel extends ViewModel {
     /** A tag used for logging */
     private static final String CLASS_TAG = "SignUpViewModel";
 
+    /** Provides Firebase remote access */
+    private final PlayerManager playerManager;
+
+    public SignUpViewModel(PlayerManager playerManager) {
+        this.playerManager = playerManager;
+    }
 
     /**
      * Retrieves the player list from the view model.
@@ -34,7 +40,8 @@ public class SignUpViewModel extends ViewModel {
      * Loads the player list from the database into the view model
      */
     private void loadPlayers(){
-        new PlayerManager().getPlayerList(result -> {
+
+        playerManager.getPlayerList(result -> {
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load player list.");
                 return;

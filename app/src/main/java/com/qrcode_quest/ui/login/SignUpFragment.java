@@ -12,6 +12,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.text.Editable;
@@ -26,12 +27,16 @@ import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.R;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.databinding.FragmentSignUpBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -77,7 +82,19 @@ public class SignUpFragment extends Fragment {
         binding = FragmentSignUpBinding.inflate(inflater, container, false);
 
         // Preload the players list for fast username testing
-        viewModel =  new ViewModelProvider(this).get(SignUpViewModel.class);
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+        ViewModelProvider.Factory signUpViewModelFactory = new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> aClass) {
+                if (aClass.isAssignableFrom(SignUpViewModel.class))
+                    return Objects.requireNonNull(aClass.cast(new SignUpViewModel(
+                            new PlayerManager(appContainer.getDb()))));
+                else
+                    throw new IllegalArgumentException("Unexpected ViewModelClass type request received by the factory!");
+            }
+        };
+        viewModel =  new ViewModelProvider(this, signUpViewModelFactory).get(SignUpViewModel.class);
         viewModel.getPlayers();
 
         // Inflate the layout for this fragment
@@ -89,8 +106,8 @@ public class SignUpFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         assert this.getActivity() != null;
-        sharedPrefs = this.getActivity().getApplicationContext()
-                .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
+        AppContainer container = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
+        sharedPrefs = container.getPrivateDevicePrefs();
 
 
         // Set a click listener for scan to login button
@@ -135,7 +152,8 @@ public class SignUpFragment extends Fragment {
      * Validates user input and creates a new player/session.
      */
     void onRegisterClicked() {
-        PlayerManager playerManager = new PlayerManager();
+        AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+        PlayerManager playerManager = new PlayerManager(container.getDb());
 
         // Ensure that if the user entered an email it is valid
         String chosenEmail = requireNonNull(binding.loginSignupEmail.getText()).toString().trim();
@@ -185,7 +203,7 @@ public class SignUpFragment extends Fragment {
 
                 // Username is free, we can add the user
                 PlayerAccount newPlayer = new PlayerAccount(chosenUsername, chosenEmail, "");
-                new PlayerManager().addPlayer(newPlayer, addResult -> {
+                playerManager.addPlayer(newPlayer, addResult -> {
                     if (!addResult.isSuccess()){
                         Log.e(CLASS_TAG, "Failed to add user.");
                         Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();

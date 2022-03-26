@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
@@ -24,6 +25,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
@@ -32,6 +37,7 @@ import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.ActionPlayerq
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 
 /**
@@ -58,9 +64,22 @@ public class PlayerQRListFragment extends Fragment {
         // Set custom title
         actionBar.setTitle(String.format("%s's Captures", player.getUsername()));
 
+        AppContainer appContainer = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
+        ViewModelProvider.Factory playerQRListViewModelFactory = new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> aClass) {
+                if (aClass.isAssignableFrom(PlayerQRListViewModel.class))
+                    return Objects.requireNonNull(aClass.cast(new PlayerQRListViewModel(
+                            new QRManager(appContainer.getDb(), appContainer.getStorage()))));
+                else
+                    throw new IllegalArgumentException("Unexpected ViewModelClass type request received by the factory!");
+            }
+        };
+
         // Load the view models
         PlayerQRListViewModel viewModel =
-                new ViewModelProvider(this).get(PlayerQRListViewModel.class);
+                new ViewModelProvider(this, playerQRListViewModelFactory).get(PlayerQRListViewModel.class);
 
         // Grab the view binding
         binding = FragmentPlayerQrShotsBinding.inflate(inflater, container, false);

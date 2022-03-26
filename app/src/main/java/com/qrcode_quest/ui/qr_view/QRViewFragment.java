@@ -9,6 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -23,12 +26,16 @@ import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.R;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.QRManager;
+import com.qrcode_quest.database.SchemaResultHelper;
 import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.databinding.FragmentQrViewBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.ui.leaderboard.PlayerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +80,6 @@ public class QRViewFragment extends Fragment {
         AppCompatActivity main = (AppCompatActivity) this.getActivity();
         ActionBar actionBar = requireNonNull((requireNonNull(main)).getSupportActionBar());
 
-        QRViewModel viewModel = new ViewModelProvider(this).get(QRViewModel.class);
         MainViewModel mainViewModel =
                 new ViewModelProvider(this.getActivity()).get(MainViewModel.class);
 
@@ -84,33 +90,41 @@ public class QRViewFragment extends Fragment {
         binding.qrviewLoadingLayout.setVisibility(View.VISIBLE);
 
         // Fetch and load the data into the fragment
-        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player -> {
-            if (player == null) { return; }
+        LiveData<PlayerAccount> playerAccountLiveData = mainViewModel.getCurrentPlayer();
+        LiveData<ArrayList<QRShot>> shotsLiveData = mainViewModel.getQRShots();
+        PlayerViewAdapter.SourceUpdateHandler sourceUpdateHandler = () -> {
+            // every source data update will trigger this handler to run, has its drawbacks but
+            // avoids 7th circle of callback hell from nesting livedata.observe() calls
 
-            viewModel.getCodes().observe(getViewLifecycleOwner(), codes -> {
-                if (codes == null) {
-                    return;
+            PlayerAccount player = playerAccountLiveData.getValue();
+            if (player == null)
+                return;
+
+            // otherwise reload QRShot
+            ArrayList<QRShot> shots = shotsLiveData.getValue();
+            assert shots != null;
+            HashMap<String, QRCode> qrHashToCodesMap = SchemaResultHelper.getQrHashToCodeMapFromShots(shots);
+
+            QRShot curShot = null;
+            for (QRShot shot: shots) {
+                if (shot.getCodeHash().equals(shotHash) &&
+                        shot.getOwnerName().equals(shotOwner)) {
+                    curShot = shot;
                 }
-                assert codes.containsKey(shotHash);
-                viewModel.getShots().observe(getViewLifecycleOwner(), shots -> {
-                    if (shots == null) { return; }
+            }
+            if (curShot == null)
+                return;
 
-                    viewModel.getQRShot(shotOwner, shotHash).observe(getViewLifecycleOwner(), qrShot -> {
-                        // Welcome to the 7th circle of callback hell.
-                        if (qrShot == null) {
-                            return;
-                        }
+            loadQRShot(curShot, qrHashToCodesMap, shots, player);
 
-                        // Load the data into the fragment
-                        loadQRShot(qrShot, codes, shots, player);
+            // Make the fragment visible
+            binding.qrviewMainLayout.setVisibility(View.VISIBLE);
+            binding.qrviewLoadingLayout.setVisibility(View.INVISIBLE);
+        };
 
-                        // Make the fragment visible
-                        binding.qrviewMainLayout.setVisibility(View.VISIBLE);
-                        binding.qrviewLoadingLayout.setVisibility(View.INVISIBLE);
-                    });
-                });
-            });
-        });
+        LifecycleOwner lifeCycleOwner = getViewLifecycleOwner();
+        playerAccountLiveData.observe(lifeCycleOwner, player -> sourceUpdateHandler.onSourceUpdate());
+        shotsLiveData.observe(lifeCycleOwner, shots -> sourceUpdateHandler.onSourceUpdate());
 
         binding.qrviewEditButton.setOnClickListener(view ->{
             // TODO implement Edit
@@ -188,7 +202,8 @@ public class QRViewFragment extends Fragment {
      * This will occur even if the delete failed.
      */
     private void deleteQR(){
-        new QRManager().removeQRCode(shotHash, result ->{
+        AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+        new QRManager(container.getDb(), container.getStorage()).removeQRCode(shotHash, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to delete QRShot.");
                 Toast.makeText(this.getActivity(), "Failed to delete.", Toast.LENGTH_LONG)

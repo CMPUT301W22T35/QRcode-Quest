@@ -16,7 +16,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
-import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.ActivityHomeBinding;
 import com.qrcode_quest.entities.QRShot;
 
