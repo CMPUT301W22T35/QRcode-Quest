@@ -9,6 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -20,10 +23,16 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.R;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.QRManager;
+import com.qrcode_quest.database.SchemaResultHelper;
+import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.databinding.FragmentQrViewBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.ui.leaderboard.PlayerViewAdapter;
 import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.ArrayList;
@@ -165,7 +174,8 @@ public class QRViewFragment extends Fragment {
      * This will occur even if the delete failed.
      */
     private void deleteQR(){
-        new QRManager().removeQRCode(shotHash, result ->{
+        AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+        new QRManager(container.getDb(), container.getStorage()).removeQRCode(shotHash, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to delete QRShot.");
                 Toast.makeText(this.getActivity(), "Failed to delete.", Toast.LENGTH_LONG)

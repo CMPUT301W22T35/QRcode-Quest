@@ -11,9 +11,10 @@ import static org.mockito.Mockito.when;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Test;
+
+import com.qrcode_quest.MockDb;
 import com.qrcode_quest.entities.Comment;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 

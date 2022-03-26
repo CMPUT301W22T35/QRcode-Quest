@@ -14,7 +14,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.ManagerResult;
+import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.database.Result;
@@ -39,14 +42,13 @@ public class MainViewModel extends AndroidViewModel {
     private static final String CLASS_TAG = "MainViewModel";
 
     private final FirebaseFirestore db;
-    private final FirebaseStorage storage;
-    private final QRManager.PhotoEncoding photoEncoding;
+    private final PhotoStorage photoStorage;
 
-    public MainViewModel(@NonNull Application application){
+    public MainViewModel(@NonNull Application application,
+                         FirebaseFirestore db, PhotoStorage photoStorage) {
         super(application);
-        db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
-        photoEncoding = new QRManager.PhotoEncoding();
+        this.db = db;
+        this.photoStorage = photoStorage;
     }
 
     /**
@@ -98,14 +100,14 @@ public class MainViewModel extends AndroidViewModel {
      */
     private void loadCurrentPlayer(){
         // Grab the username of the authenticated player
-        SharedPreferences sharedPrefs = getApplication().getApplicationContext()
-                .getSharedPreferences(SHARED_PREF_PATH, Context.MODE_PRIVATE);
+        AppContainer container = ((QRCodeQuestApp) getApplication()).getContainer();
+        SharedPreferences sharedPrefs = container.getPrivateDevicePrefs();
         if (!sharedPrefs.contains(AUTHED_USERNAME_PREF)) { return; }
         String username = sharedPrefs.getString(AUTHED_USERNAME_PREF, "");
 
         // Load the players record
         Log.d(CLASS_TAG, "Loaded authed user: " + username + "...");
-        new PlayerManager().getPlayer(username, result -> {
+        new PlayerManager(db).getPlayer(username, result -> {
             // Catch errors/failure
             if (!result.isSuccess() || result.unwrap() == null) {
                 Log.e(CLASS_TAG, "Failed to load current player.");
@@ -139,7 +141,7 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void loadQRCodesAndShots(){
         Log.d(CLASS_TAG, "Loading QR codes and shots...");
-        new QRManager(db, storage, photoEncoding).getAllQRShots(new ManagerResult.Listener<ArrayList<QRShot>>() {
+        new QRManager(db, photoStorage).getAllQRShots(new ManagerResult.Listener<ArrayList<QRShot>>() {
             @Override
             public void onResult(Result<ArrayList<QRShot>> result) {
                 if (!result.isSuccess()) {

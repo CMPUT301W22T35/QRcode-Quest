@@ -2,9 +2,9 @@ package com.qrcode_quest.database;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.qrcode_quest.MockDb;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import org.junit.Before;

@@ -1,4 +1,4 @@
-package com.qrcode_quest.database;
+package com.qrcode_quest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;

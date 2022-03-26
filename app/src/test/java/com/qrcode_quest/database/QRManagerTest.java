@@ -11,8 +11,10 @@ import android.graphics.Bitmap;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.qrcode_quest.MockDb;
 import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.MockFirebaseStorage;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +29,8 @@ public class QRManagerTest {
 
     private HashMap<String, byte[]> pathToPhotos;
     private FirebaseFirestore db;
-    private FirebaseStorage storage;
+    private PhotoStorage storage;
     private QRManager manager;
-    private QRManager.PhotoEncoding encoding;
 
     public ArrayList<QRShot> createMockQRShots(int size, String qrHash) {
         ArrayList<QRShot> shots = new ArrayList<>();
@@ -54,11 +55,11 @@ public class QRManagerTest {
         // Note: the hashmap and the storage shares same data
         // modifying one will lead to changes in the other
         pathToPhotos = new HashMap<>();
-        storage = MockFirebaseStorage.createMockFirebaseStorage(pathToPhotos);
+        FirebaseStorage firebaseStorage = MockFirebaseStorage.createMockFirebaseStorage(pathToPhotos);
 
         db = MockDb.createMockDatabase(new HashMap<>());
-        encoding = MockFirebaseStorage.createMockEncoding();  // avoid creating real bitmaps
-        manager = new QRManager(db, storage, encoding);
+        storage = MockFirebaseStorage.createMockPhotoStorage(firebaseStorage);  // avoid creating real bitmaps
+        manager = new QRManager(db, storage);
     }
 
     @Test
@@ -79,7 +80,7 @@ public class QRManagerTest {
             assertEquals("13af", shot.getCodeHash());
             assertEquals("0", shot.getOwnerName());
             assertEquals("bitmap0",
-                    new String(encoding.encodeToBytes(shot.getPhoto()), StandardCharsets.UTF_8));
+                    new String(storage.encodeToBytes(shot.getPhoto()), StandardCharsets.UTF_8));
             Geolocation location = shot.getLocation();
             assertNotNull(location);
             assertEquals(0, location.getLatitude(), 0);
@@ -109,7 +110,7 @@ public class QRManagerTest {
                 assertEquals("13af", shot.getCodeHash());
                 assertEquals(indexStr, shot.getOwnerName());
                 assertEquals("bitmap" + indexStr,
-                        new String(encoding.encodeToBytes(shot.getPhoto()), StandardCharsets.UTF_8));
+                        new String(storage.encodeToBytes(shot.getPhoto()), StandardCharsets.UTF_8));
                 Geolocation location = shot.getLocation();
                 assertNotNull(location);
                 assertEquals(i, location.getLatitude(), 0.01);

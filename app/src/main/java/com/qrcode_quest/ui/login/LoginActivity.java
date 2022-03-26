@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainActivity;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.ActivityLoginBinding;
@@ -38,8 +40,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
                     .commit();
         }
 
-        SharedPreferences sharedPrefs = this.getApplicationContext()
-                .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
+        AppContainer container = ((QRCodeQuestApp) getApplication()).getContainer();
+        SharedPreferences sharedPrefs = container.getPrivateDevicePrefs();
 
         // Try to use a saved device id and username to authenticate
         String deviceUID, authedUsername;
@@ -70,7 +72,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         binding.loginProgress.setVisibility(View.VISIBLE);
 
         // Check the database for a device session
-        new PlayerManager().validatePlayerSession(deviceUID, username, result ->{
+        AppContainer container = ((QRCodeQuestApp) getApplication()).getContainer();
+        new PlayerManager(container.getDb()).validatePlayerSession(deviceUID, username, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to authenticate players");
                 Toast.makeText(this, "Database call failed.", Toast.LENGTH_SHORT).show();

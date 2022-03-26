@@ -1,4 +1,4 @@
-package com.qrcode_quest.database;
+package com.qrcode_quest;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -16,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.qrcode_quest.database.PhotoStorage;
 
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -26,9 +27,12 @@ import java.util.Objects;
 
 public class MockFirebaseStorage {
 
-    static public QRManager.PhotoEncoding createMockEncoding() {
-        QRManager.PhotoEncoding encoding = mock(QRManager.PhotoEncoding.class);
-        when(encoding.encodeToBytes(any())).thenCallRealMethod();
+    static public PhotoStorage createMockPhotoStorage(FirebaseStorage storage) {
+        PhotoStorage encoding = mock(PhotoStorage.class);
+        PhotoStorage.PhotoEncoding realEncoding = new PhotoStorage.PhotoEncoding();
+        when(encoding.getStorage()).thenReturn(storage);
+        when(encoding.encodeToBytes(any())).thenAnswer(
+                (Answer<byte[]>) invocation -> realEncoding.encodeToBytes((Bitmap)invocation.getArgument(0)));
         when(encoding.decodeFromBytes(any(byte[].class))).thenAnswer(
                 (Answer<Bitmap>) invocation -> createMockBitmap(invocation.getArgument(0)));
         return encoding;

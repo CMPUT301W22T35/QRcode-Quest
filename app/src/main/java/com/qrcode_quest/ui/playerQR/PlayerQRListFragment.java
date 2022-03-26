@@ -5,19 +5,17 @@ import static java.util.Objects.requireNonNull;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,17 +26,18 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
-import com.qrcode_quest.R;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.RawQRCode;
 import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.ActionPlayerqrsToQrview;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Objects;
 
 
 /**
@@ -67,9 +66,22 @@ public class PlayerQRListFragment extends Fragment {
         // Set custom title
         actionBar.setTitle(String.format("%s's Captures", player.getUsername()));
 
+        AppContainer appContainer = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
+        ViewModelProvider.Factory playerQRListViewModelFactory = new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> aClass) {
+                if (aClass.isAssignableFrom(PlayerQRListViewModel.class))
+                    return Objects.requireNonNull(aClass.cast(new PlayerQRListViewModel(
+                            new QRManager(appContainer.getDb(), appContainer.getStorage()))));
+                else
+                    throw new IllegalArgumentException("Unexpected ViewModelClass type request received by the factory!");
+            }
+        };
+
         // Load the view models
         PlayerQRListViewModel viewModel =
-                new ViewModelProvider(this).get(PlayerQRListViewModel.class);
+                new ViewModelProvider(this, playerQRListViewModelFactory).get(PlayerQRListViewModel.class);
 
         mainViewModel =
                 new ViewModelProvider(requireActivity()).get(MainViewModel.class);
@@ -119,8 +131,9 @@ public class PlayerQRListFragment extends Fragment {
     }
 
     private void deleteSelectedUser(){
+        AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         binding.playerQrlistProgress.setVisibility(View.VISIBLE);
-        new PlayerManager().setDeletedPlayer(player.getUsername(), true, result ->{
+        new PlayerManager(container.getDb()).setDeletedPlayer(player.getUsername(), true, result ->{
             if (!result.isSuccess()){
                 Toast.makeText(getContext(), "Failed to delete player", Toast.LENGTH_SHORT).show();
                 Log.e(CLASS_TAG, "Player delete call failed: " + result.getError().getMessage());
