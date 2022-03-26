@@ -11,6 +11,12 @@ import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.ArrayList;
 
+/**
+ * A view model for handling the SignUpFragment's state
+ *
+ * @author jdumouch
+ * @version 1.0
+ */
 public class SignUpViewModel extends ViewModel {
     /** A tag used for logging */
     private static final String CLASS_TAG = "SignUpViewModel";

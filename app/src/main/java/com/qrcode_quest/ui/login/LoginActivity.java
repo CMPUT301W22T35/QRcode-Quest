@@ -18,6 +18,12 @@ import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.ActivityLoginBinding;
 
+/**
+ * An activity for authenticating users, or onboarding new users.
+ *
+ * @author jdumouch
+ * @version 1.0
+ */
 public class LoginActivity extends AppCompatActivity implements SignUpFragment.RegisterHandler {
     /** A tag to be used for logging */
     private static final String CLASS_TAG = "LoginActivity";

@@ -1,5 +1,6 @@
 package com.qrcode_quest.ui.qr_view;
 
+import static com.qrcode_quest.ui.qr_view.QRViewFragmentDirections.actionQrshotToComments;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.SuppressLint;
@@ -34,6 +35,7 @@ import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.ui.leaderboard.PlayerViewAdapter;
 import com.qrcode_quest.entities.RawQRCode;
+import com.qrcode_quest.ui.qr_view.QRViewFragmentDirections.ActionQrshotToComments;
 
 import java.util.ArrayList;
 
@@ -100,13 +102,9 @@ public class QRViewFragment extends Fragment {
             // TODO implement View Players
             Toast.makeText(this.getActivity(), "View players not implemented", Toast.LENGTH_SHORT).show();
         });
-        binding.qrviewCommentsButton.setOnClickListener(view ->{
-            // TODO implement View comments
-            Toast.makeText(this.getActivity(), "View comments not implemented", Toast.LENGTH_SHORT).show();
-        });
+        binding.qrviewCommentsButton.setOnClickListener(view -> transitionToComments(shotHash));
 
         return binding.getRoot();
-
     }
 
     /**
@@ -167,6 +165,16 @@ public class QRViewFragment extends Fragment {
                 this.deleteQR();
             });
         }
+    }
+
+    /**
+     * Navigates to the comment view using the hash of the viewed shot
+     * @param qrHash The hash of the QR code to view comments for
+     */
+    private void transitionToComments(String qrHash){
+        NavController navController = NavHostFragment.findNavController(this);
+        ActionQrshotToComments action = actionQrshotToComments(qrHash);
+        navController.navigate(action);
     }
 
     /**

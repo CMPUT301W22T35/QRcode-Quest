@@ -50,7 +50,7 @@
     </fragment>
 
     <fragment
-        android:label="QR Capture"
+        android:label="@string/qrcapture_label"
         android:id="@+id/navigation_qrshot"
         android:name="com.qrcode_quest.ui.qr_view.QRViewFragment"
         tools:layout="@layout/fragment_qr_view" >
@@ -60,6 +60,20 @@
             app:nullable="false" />
         <argument
             android:name="shot_hash"
+            app:argType="string"
+            app:nullable="false" />
+        <action
+            android:id="@+id/action_qrshot_to_comments"
+            app:destination="@id/navigation_comments" />
+    </fragment>
+
+    <fragment
+        android:label="@string/comments_label"
+        android:id="@+id/navigation_comments"
+        android:name="com.qrcode_quest.ui.comments.CommentsFragment"
+        tools:layout="@layout/fragment_comments" >
+        <argument
+            android:name="qr_hash"
             app:argType="string"
             app:nullable="false" />
     </fragment>
