@@ -7,15 +7,12 @@ import static com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.actio
 
 import static java.util.Objects.requireNonNull;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -31,10 +28,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
-import android.widget.TextView;
 
 import com.qrcode_quest.MainViewModel;
-import com.qrcode_quest.R;
 import com.qrcode_quest.database.SchemaResultHelper;
 import com.qrcode_quest.databinding.FragmentPlayerListBinding;
 import com.qrcode_quest.entities.PlayerAccount;
