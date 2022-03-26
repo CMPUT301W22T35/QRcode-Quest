@@ -24,7 +24,6 @@ import java.util.List;
  */
 public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.ViewHolder>
     implements Filterable {
-
     /**
      * Provides a callback interface for an item press event
      */
