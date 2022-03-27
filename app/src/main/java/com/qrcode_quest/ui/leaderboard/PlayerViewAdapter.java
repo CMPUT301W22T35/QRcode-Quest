@@ -36,18 +36,10 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
         void onItemClick(String username);
     }
 
-    /**
-     * Provides a callback when any of the source live data updates
-     */
-    public interface SourceUpdateHandler {
-        void onSourceUpdate();
-    }
-
     private final ItemClickHandler onClickListener;
     private PlayerFilter filter;
     private List<PlayerViewItem> items;
     public List<PlayerViewItem> filteredItems;
-
 
     /**
      * Create a new ViewAdapter using the passed lists to build item data.
