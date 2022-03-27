@@ -83,6 +83,8 @@ public class MainActivityTest {
         });
     }
 
+    // From StackOverflow, by Aaron
+    // url: https://stackoverflow.com/questions/52818524/delay-test-in-espresso-android-without-freezing-main-thread
     public static ViewAction waitFor(long delay) {
         return new ViewAction() {
             @Override public Matcher<View> getConstraints() {
