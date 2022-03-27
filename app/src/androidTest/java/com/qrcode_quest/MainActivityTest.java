@@ -45,6 +45,7 @@ public class MainActivityTest {
     public ActivityScenarioRule<MainActivity> setupRule() {
         // get the application object so we can provide mock db and other dependencies to it
         QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
+        app.resetContainer();
         PlayerAccount testPlayer = new PlayerAccount("testPlayerName", "testplayer@gmail.com",
                 "123-456-7890", false, true);
         String deviceID = "";  // authentication is not important for MainActivity test, so leave blank
@@ -67,7 +68,6 @@ public class MainActivityTest {
         // stackoverflow by gosr
         // url:https://stackoverflow.com/questions/61953249/how-to-access-activity-from-activityscenariorule
         ActivityScenario<MainActivity> scenario = rule.getScenario();
-        Log.d("START TEST", scenario.getState().name());
 
         // for more about how to use Espresso
         // see doc: https://developer.android.com/training/testing/espresso/basics
@@ -76,6 +76,17 @@ public class MainActivityTest {
         onData(allOf(is(instanceOf(String.class)), is("This is home fragment")));
         onView(withId(R.id.playerlist_content_name))
                 .check(matches(withText(containsString("testPlayerName"))));
+        scenario.onActivity(new ActivityScenario.ActivityAction<MainActivity>() {
+            @Override
+            public void perform(MainActivity activity) {
+            }
+        });
+    }
+
+    @Test
+    public void testMainActivity2() {
+        ActivityScenario<MainActivity> scenario = rule.getScenario();
+        onView(withId(R.id.navigation_leaderboard)).perform(click());
         scenario.onActivity(new ActivityScenario.ActivityAction<MainActivity>() {
             @Override
             public void perform(MainActivity activity) {
