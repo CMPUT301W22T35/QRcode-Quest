@@ -113,9 +113,13 @@ public class PlayerListFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /**
+     * Loads player data into the ViewAdapter and updates all the stats.
+     */
     private void loadDataIntoView(){
         ArrayList<PlayerAccount> players = mainViewModel.getPlayers().getValue();
         ArrayList<QRShot> shots = mainViewModel.getQRShots().getValue();
+        if (shots == null || players == null) { return; }
 
         HashMap<String, PlayerStats> stats = calculatePlayerScores(players, shots);
         setRanking(stats);
