@@ -46,4 +46,5 @@
     <string name="post_label">post</string>
     <string name="qrcapture_label">QR Capture</string>
     <string name="comments_label">Comments</string>
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
 </resources>

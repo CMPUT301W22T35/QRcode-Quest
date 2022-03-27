@@ -75,10 +75,12 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     public void onBindViewHolder(final ViewHolder holder, int position) {
         PlayerViewItem item = items.get(position);
 
+        // Bind the data to the ViewHolder
         holder.player = item;
         holder.nameText.setText(item.username);
         holder.scoreText.setText(String.format("%d", item.score));
 
+        // Handle the user pressing the item
         holder.itemView.setOnClickListener(v -> {
             onClickListener.onItemClick(item.username);
         });
@@ -90,17 +92,13 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     }
 
 
-    /**
-     * ViewHolders serve as the binder between the View and the data.
-     */
+    /** ViewHolders serve as the binder between the View and the data. */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView nameText;
         public final TextView scoreText;
         public PlayerViewItem player;
 
-        /**
-         * Constructs a ViewHolder and binds the View to the data
-         */
+        /** Constructs a ViewHolder and bind the members to the view */
         public ViewHolder(@NonNull PlayerItemViewBinding binding) {
             super(binding.getRoot());
             nameText = binding.playerlistContentName;
@@ -121,9 +119,7 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
         return this.filter;
     }
 
-    /**
-     * Filter class implementation to sort by username
-     */
+    /** Filter class implementation to sort by username */
     public class PlayerFilter extends Filter {
         /**
          * Filters the player usernames case insensitively, retaining only usernames
@@ -152,9 +148,7 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
         }
 
 
-        /**
-         * Updates the list on a filter call.
-         */
+        /** Updates the list on a filter call. */
         @Override
         @SuppressLint("NotifyDataSetChanged")
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
