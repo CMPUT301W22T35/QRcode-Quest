@@ -11,6 +11,7 @@ import com.qrcode_quest.database.CommentManager;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Provides data handling for CommentsFragment.
@@ -24,13 +25,14 @@ public class CommentsViewModel extends ViewModel {
 
     /**
      * Gets an observable comment list for a specific hash
+     * Calls loadComments, if needed.
      * @param codeHash The hash to fetch the comments for.
      */
     public LiveData<ArrayList<Comment>> getComments(String codeHash){
         if (comments == null || !codeHash.equals(commentsHash)){
             comments = new MutableLiveData<>();
             commentsHash = codeHash;
-            loadComments(commentsHash);
+            loadComments();
         }
 
         return comments;
@@ -38,15 +40,25 @@ public class CommentsViewModel extends ViewModel {
     private MutableLiveData<ArrayList<Comment>> comments;
     private String commentsHash;
 
-    /** Performs the fetching for comment data */
-    private void loadComments(String codeHash){
-        new CommentManager(FirebaseFirestore.getInstance()).getQRComments(codeHash, results -> {
+    /**
+     * Performs the fetching for comment data
+     * Can be used to force a refresh on the comments. (if, for example, one is added)
+     *
+     * getComments() must be called first, or no hash will be selected to load.
+     */
+    public void loadComments(){
+        if (commentsHash == null) { return; }
+        new CommentManager(FirebaseFirestore.getInstance()).getQRComments(commentsHash, results -> {
             if (!results.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load comments from database.");
                 return;
             }
 
-            comments.setValue(results.unwrap());
+            // Sort with newest at top
+            ArrayList<Comment> commentResults = results.unwrap();
+            Collections.reverse(commentResults);
+
+            comments.setValue(commentResults);
         });
     }
 }

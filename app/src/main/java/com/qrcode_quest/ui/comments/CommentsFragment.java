@@ -1,9 +1,10 @@
 package com.qrcode_quest.ui.comments;
 
-import static java.util.Objects.requireNonNull;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,10 +13,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.database.CommentManager;
 import com.qrcode_quest.databinding.FragmentCommentsBinding;
-import com.qrcode_quest.entities.QRCode;
+import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;
 
@@ -26,12 +31,13 @@ import java.util.ArrayList;
  * @version 1.0
  */
 public class CommentsFragment extends Fragment {
-
     private CommentsViewModel viewModel;
+    private MainViewModel mainViewModel;
     private FragmentCommentsBinding binding;
     private CommentViewAdapter viewAdapter;
     private String qrHash;
 
+    /** Required empty constructor */
     public CommentsFragment() {}
 
     @Override
@@ -48,7 +54,9 @@ public class CommentsFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding = FragmentCommentsBinding.inflate(inflater, container, false);
 
+        // Grab the view models
         viewModel = new ViewModelProvider(this).get(CommentsViewModel.class);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         // Load the recycler view
         RecyclerView recyclerView = binding.commentsCommentList;
@@ -57,27 +65,90 @@ public class CommentsFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 
         // Hide the content views and show the progress spinner
-        binding.commentsCommentList.setVisibility(View.GONE);
-        binding.commentsNocommentsLabel.setVisibility(View.GONE);
-        binding.commentsProgress.setVisibility(View.VISIBLE);
+        setLoadingState(true);
 
         // Load and observe reloads to comments
         viewModel.getComments(qrHash).observe(getViewLifecycleOwner(), comments->{
             viewAdapter = new CommentViewAdapter(comments);
             recyclerView.setAdapter(viewAdapter);
 
-            // Display the appropriate view
-            binding.commentsCommentList.setVisibility(comments.size() == 0 ? View.GONE : View.VISIBLE);
-            binding.commentsNocommentsLabel.setVisibility(comments.size() == 0 ? View.VISIBLE : View.GONE);
-            binding.commentsProgress.setVisibility(View.GONE);
+            setLoadingState(false);
         });
 
-        binding.commentsPostButton.setOnClickListener(this::onPostClicked);
-
+        // Hook up listeners to post comments
+        binding.commentsPostButton.setOnClickListener(v->onPostClicked());
+        binding.commentsInput.setOnEditorActionListener((textView, i, keyEvent) -> {
+            onPostClicked();
+            return false;
+        });
         return binding.getRoot();
     }
 
-    private void onPostClicked(View view){
+    /**
+     * Sets visibility of components depending on the loading state of the view.
+     * @param loading A boolean denoting if the view is loading or not
+     */
+    private void setLoadingState(boolean loading){
+        if (loading) {
+            binding.commentsPostButton.setEnabled(false);
+            binding.commentsCommentList.setVisibility(View.GONE);
+            binding.commentsNocommentsLabel.setVisibility(View.GONE);
+            binding.commentsProgress.setVisibility(View.VISIBLE);
+        }
+        else{
+            binding.commentsPostButton.setEnabled(true);
+            binding.commentsCommentList.setVisibility(viewAdapter.getItemCount() == 0 ? View.GONE : View.VISIBLE);
+            binding.commentsNocommentsLabel.setVisibility(viewAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            binding.commentsProgress.setVisibility(View.GONE);
+        }
+    }
 
+    /**
+     * Handles the post button being clicked.
+     * Validation is performed on the comment and on success will be added to the database
+     *
+     * Closing the soft keyboard:
+     * https://stackoverflow.com/questions/3400028/close-virtual-keyboard-on-button-press
+     * Author: Paul Maserrat, Nov 21, 2011
+     * Accessed: March 26, 2022
+     */
+    private void onPostClicked(){
+        // Close their keyboard
+        AppCompatActivity parent = (AppCompatActivity) this.requireActivity();
+        if (parent.getCurrentFocus() != null) {
+            InputMethodManager inputManager =
+                    (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(
+                    parent.getCurrentFocus().getWindowToken(),
+                    InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+
+        // Grab the trimmed text entered by the user
+        String msg = binding.commentsInput.getText().toString().trim();
+
+        // Prevent empty messages
+        if (msg.isEmpty()) { return; }
+        setLoadingState(true);
+
+        // Add the comment to the database
+        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player-> {
+            new CommentManager(FirebaseFirestore.getInstance()).addComment(
+                    new Comment( player.getUsername(), msg, qrHash),
+                    result -> {
+                        // Handle comment addition failure
+                        if (!result.isSuccess()){
+                            Toast.makeText(this.getContext(),
+                                    "Failed to add comment.",
+                                    Toast.LENGTH_SHORT).show();
+
+                            setLoadingState(false);
+                        }
+
+                        // Handle addition success
+                        viewModel.loadComments();
+                        binding.commentsInput.setText("");
+                    }
+            );
+        });
     }
 }
