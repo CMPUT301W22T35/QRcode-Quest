@@ -92,16 +92,16 @@ public class GPSLocationLiveDataTest {
                         new Geolocation(3.0, 3.0),
                 };
                 double results[] = {0.0, 0.0};
-                Observer<Geolocation> latObserver = new Observer<Geolocation>() {
+                Observer<Location> latObserver = new Observer<Location>() {
                     @Override
-                    public void onChanged(Geolocation location) {
+                    public void onChanged(Location location) {
                         if (location != null)
                             results[0] = location.getLatitude();
                     }
                 };
-                Observer<Geolocation> lonObserver = new Observer<Geolocation>() {
+                Observer<Location> lonObserver = new Observer<Location>() {
                     @Override
-                    public void onChanged(Geolocation location) {
+                    public void onChanged(Location location) {
                         if (location != null)
                             results[1] = location.getLongitude();
                     }

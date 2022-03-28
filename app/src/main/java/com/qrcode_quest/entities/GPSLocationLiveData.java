@@ -3,6 +3,7 @@ package com.qrcode_quest.entities;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.util.Log;
@@ -21,7 +22,7 @@ import androidx.lifecycle.MutableLiveData;
  * @author tianming
  * @version 1.0
  */
-public class GPSLocationLiveData extends MutableLiveData<Geolocation> {
+public class GPSLocationLiveData extends MutableLiveData<Location> {
     /** used to check permission for GPS service */
     @NonNull private final Context context;
     /** the location manager provides location for the live data below */
@@ -49,9 +50,11 @@ public class GPSLocationLiveData extends MutableLiveData<Geolocation> {
         minDistanceM = 10;
 
         listener = location -> {
-            Geolocation newLocation = new Geolocation(
-                    location.getLatitude(), location.getLongitude());
-            GPSLocationLiveData.this.setValue(newLocation);
+//            Log.d("GPS_TIME", Long.toString(location.getTime()));
+//            Log.d("GPS_LON", Double.toString(location.getLongitude()));
+//            Log.d("GPS_LAT", Double.toString(location.getLatitude()));
+//            Log.d("GPS_ACC", Float.toString(location.getAccuracy()));
+            GPSLocationLiveData.this.setValue(location);
         };
     }
 
