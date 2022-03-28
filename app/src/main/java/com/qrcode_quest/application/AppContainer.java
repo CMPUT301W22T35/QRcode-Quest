@@ -4,6 +4,7 @@ import static com.qrcode_quest.Constants.SHARED_PREF_PATH;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -18,6 +19,7 @@ public class AppContainer {
     private FirebaseFirestore db;
     private PhotoStorage storage;
     private SharedPreferences privateDevicePrefs;
+    private LocationManager locationManager;
 
     public AppContainer(QRCodeQuestApp app) {
         this.app = app;
@@ -59,5 +61,18 @@ public class AppContainer {
     public void setPrivateDevicePrefs(SharedPreferences privateDevicePrefs) {
         assert this.privateDevicePrefs == null;  // prevent accidentally set twice
         this.privateDevicePrefs = privateDevicePrefs;
+    }
+
+    public LocationManager getLocationManager() {
+        if (locationManager == null) {
+            locationManager = (LocationManager) app.getApplicationContext()
+                    .getSystemService(Context.LOCATION_SERVICE);
+        }
+        return locationManager;
+    }
+
+    public void setLocationManager(LocationManager locationManager) {
+        assert this.locationManager == null;
+        this.locationManager = locationManager;
     }
 }

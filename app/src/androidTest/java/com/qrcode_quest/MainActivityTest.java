@@ -21,7 +21,6 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
-import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -67,12 +66,11 @@ public class MainActivityTest {
         // stackoverflow by gosr
         // url:https://stackoverflow.com/questions/61953249/how-to-access-activity-from-activityscenariorule
         ActivityScenario<MainActivity> scenario = rule.getScenario();
-        Log.d("START TEST", scenario.getState().name());
 
         // for more about how to use Espresso
         // see doc: https://developer.android.com/training/testing/espresso/basics
         onView(withId(R.id.navigation_leaderboard)).perform(click());
-        onView(isRoot()).perform(waitFor(3000));  // example of wait
+        onView(isRoot()).perform(EspressoHelper.waitFor(3000));  // example of wait
         onData(allOf(is(instanceOf(String.class)), is("This is home fragment")));
         onView(withId(R.id.playerlist_content_name))
                 .check(matches(withText(containsString("testPlayerName"))));
@@ -81,21 +79,5 @@ public class MainActivityTest {
             public void perform(MainActivity activity) {
             }
         });
-    }
-
-    public static ViewAction waitFor(long delay) {
-        return new ViewAction() {
-            @Override public Matcher<View> getConstraints() {
-                return ViewMatchers.isRoot();
-            }
-
-            @Override public String getDescription() {
-                return "wait for " + delay + "milliseconds";
-            }
-
-            @Override public void perform(UiController uiController, View view) {
-                uiController.loopMainThreadForAtLeast(delay);
-            }
-        };
     }
 }
