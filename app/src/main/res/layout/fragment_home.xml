@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment"
-    android:paddingBottom="?android:attr/actionBarSize">
+    tools:context=".ui.home.HomeFragment">
 
     <TextView
         android:id="@+id/text_home"

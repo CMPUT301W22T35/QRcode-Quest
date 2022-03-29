@@ -16,12 +16,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_leaderboard"
-        android:name="com.qrcode_quest.ui.leaderboard.LeaderboardFragment"
-        android:label="@string/title_leaderboard"
-        tools:layout="@layout/fragment_leaderboard" />
-
-    <fragment
         android:id="@+id/navigation_account"
         android:name="com.qrcode_quest.ui.account.AccountFragment"
         android:label="@string/title_account"
@@ -36,5 +30,66 @@
             android:id="@+id/action_mapFragment_to_navigation_home"
             app:destination="@id/navigation_home" />
     </fragment>
-</navigation>
 
+    <fragment
+        android:id="@+id/navigation_leaderboard"
+        android:name="com.qrcode_quest.ui.leaderboard.PlayerListFragment"
+        android:label="@string/leaderboard_label"
+        tools:layout="@layout/fragment_player_list">
+
+        <action
+            android:id="@+id/action_leaderboard_to_playerqrs"
+            app:destination="@id/navigation_player_qrlist"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+    </fragment>
+
+    <fragment
+        android:label="Player Captures"
+        android:id="@+id/navigation_player_qrlist"
+        android:name="com.qrcode_quest.ui.playerQR.PlayerQRListFragment"
+        tools:layout="@layout/fragment_player_qr_shots">
+        <action
+            android:id="@+id/action_playerqrs_to_qrview"
+            app:destination="@id/navigation_qrshot"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <argument
+            android:name="player"
+            app:argType="com.qrcode_quest.entities.PlayerAccount" />
+    </fragment>
+
+    <fragment
+        android:label="@string/qrcapture_label"
+        android:id="@+id/navigation_qrshot"
+        android:name="com.qrcode_quest.ui.qr_view.QRViewFragment"
+        tools:layout="@layout/fragment_qr_view" >
+        <argument
+            android:name="shot_owner"
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="shot_hash"
+            app:argType="string"
+            app:nullable="false" />
+        <action
+            android:id="@+id/action_qrshot_to_comments"
+            app:destination="@id/navigation_comments" />
+    </fragment>
+
+    <fragment
+        android:label="@string/comments_label"
+        android:id="@+id/navigation_comments"
+        android:name="com.qrcode_quest.ui.comments.CommentsFragment"
+        tools:layout="@layout/fragment_comments" >
+        <argument
+            android:name="qr_hash"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
+
+</navigation>

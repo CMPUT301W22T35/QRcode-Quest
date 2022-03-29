@@ -9,7 +9,10 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="pine">#FF01796F</color>
-    <color name="blue_green">#FF99DDC8</color>
+    <color name="blue_green">#FFB7E4C7</color>
     <color name="vermilion">#FFE6484D</color>
     <color name="dark">#FF181A21</color>
+    <color name="result_view">#b0000000</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="color_A545E6">#2B3BF2</color>
 </resources>

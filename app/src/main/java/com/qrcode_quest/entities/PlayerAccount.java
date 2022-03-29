@@ -1,6 +1,6 @@
 package com.qrcode_quest.entities;
 
-import android.os.Build;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -131,7 +131,6 @@ public class PlayerAccount implements Parcelable {
         return phone;
     }
 
-
     /**
      * Builds a PlayerAccount from a DocumentSnapshot.
      */
@@ -151,16 +150,13 @@ public class PlayerAccount implements Parcelable {
     /**
      * Builds a HashMap out of a PlayerAccount
      */
-    public HashMap<String, Object> toHashMap(){
+    public HashMap<String, Object> toHashMap() {
         HashMap<String, Object> playerMap = new HashMap<>();
         playerMap.put(Schema.PLAYER_NAME, this.getUsername());
         playerMap.put(Schema.PLAYER_EMAIL, this.getEmail());
         playerMap.put(Schema.PLAYER_PHONE, this.getPhoneNumber());
         playerMap.put(Schema.PLAYER_IS_OWNER, this.isOwner());
         playerMap.put(Schema.PLAYER_IS_DELETED, this.isDeleted());
-        // TODO implement QRCodes
-        playerMap.put(Schema.PLAYER_LOGIN_QRCODE, "");
-        playerMap.put(Schema.PLAYER_PROFILE_QRCODE, "");
         return playerMap;
     }
 
