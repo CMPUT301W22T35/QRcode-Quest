@@ -44,6 +44,7 @@ public class MainActivityTest {
     public ActivityScenarioRule<MainActivity> setupRule() {
         // get the application object so we can provide mock db and other dependencies to it
         QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
+        app.resetContainer();
         PlayerAccount testPlayer = new PlayerAccount("testPlayerName", "testplayer@gmail.com",
                 "123-456-7890", false, true);
         String deviceID = "";  // authentication is not important for MainActivity test, so leave blank
@@ -79,5 +80,33 @@ public class MainActivityTest {
             public void perform(MainActivity activity) {
             }
         });
+    }
+    @Test
+    public void testMainActivity2() {
+        ActivityScenario<MainActivity> scenario = rule.getScenario();
+        onView(withId(R.id.navigation_leaderboard)).perform(click());
+        scenario.onActivity(new ActivityScenario.ActivityAction<MainActivity>() {
+            @Override
+            public void perform(MainActivity activity) {
+            }
+        });
+    }
+
+    // From StackOverflow, by Aaron
+    // url: https://stackoverflow.com/questions/52818524/delay-test-in-espresso-android-without-freezing-main-thread
+    public static ViewAction waitFor(long delay) {
+        return new ViewAction() {
+            @Override public Matcher<View> getConstraints() {
+                return ViewMatchers.isRoot();
+            }
+
+            @Override public String getDescription() {
+                return "wait for " + delay + "milliseconds";
+            }
+
+            @Override public void perform(UiController uiController, View view) {
+                uiController.loopMainThreadForAtLeast(delay);
+            }
+        };
     }
 }

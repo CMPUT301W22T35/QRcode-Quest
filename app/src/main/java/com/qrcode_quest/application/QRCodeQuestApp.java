@@ -11,13 +11,21 @@ public class QRCodeQuestApp extends Application {
     // contains the variables for real objects when running the app, for mock objects when running
     // the unit tests
     // refer to https://developer.android.com/training/dependency-injection/manual
-    private final AppContainer container;
+    private AppContainer container;
 
+    /** initialize the Application instance and the AppContainer */
     public QRCodeQuestApp() {
-        container = new AppContainer(this);
+        resetContainer();
     }
 
+    /**
+     * get AppContainer that can provided dependency to other parts of the program
+     * @return an AppContainer for dependencies
+     */
     public AppContainer getContainer() {
         return container;
     }
+
+    /** used in tests to reset the container; we can do this because Espresso tests run sequentially */
+    public void resetContainer() { container = new AppContainer(this); }
 }
