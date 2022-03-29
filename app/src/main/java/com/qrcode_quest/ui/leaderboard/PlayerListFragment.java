@@ -8,7 +8,6 @@ import static com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.actio
 import static java.util.Objects.requireNonNull;
 
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
@@ -84,36 +83,10 @@ public class PlayerListFragment extends Fragment {
         mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
 
         LifecycleOwner owner = getViewLifecycleOwner();
-        LiveData<ArrayList<PlayerAccount>> allAccounts = mainViewModel.getPlayers();
-        LiveData<ArrayList<QRShot>> allShots = mainViewModel.getQRShots();
-
-        // define update callback
-        PlayerViewAdapter.SourceUpdateHandler updateHandler = () -> {
-            ArrayList<PlayerAccount> players = allAccounts.getValue();
-            ArrayList<QRShot> shots = allShots.getValue();
-            HashMap<String, PlayerStats> stats = calculatePlayerScores(players, shots);
-            setRanking(stats);
-
-            // Use those scores to build a displayable list
-            ArrayList<PlayerViewItem> listItems = new ArrayList<>();
-            for (String username : stats.keySet()){
-                int score = requireNonNull(stats.get(username)).totalScore;
-                listItems.add(new PlayerViewItem(username, score));
-            }
-            Collections.sort(listItems, (a,b)->b.score-a.score);
-
-            // Load the list into the View
-            viewAdapter = new PlayerViewAdapter(listItems, this::transitionToQRList);
-            viewAdapter.getFilter().filter(binding.playerlistSearchview.getQuery());
-            recyclerView.setAdapter(viewAdapter);
-
-            binding.playerlistLoadingContainer.setVisibility(View.GONE);
-            binding.playerlistMainContainer.setVisibility(View.VISIBLE);
-        };
 
         // When any of the sources change, update the leaderboard
-        allAccounts.observe(owner, playerAccounts -> updateHandler.onSourceUpdate());
-        allShots.observe(owner, playerAccounts -> updateHandler.onSourceUpdate());
+        mainViewModel.getPlayers().observe(owner, playerAccounts -> loadDataIntoView());
+        mainViewModel.getQRShots().observe(owner, shots -> loadDataIntoView());
 
         // Handle search queries
         binding.playerlistSearchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -138,6 +111,35 @@ public class PlayerListFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    /**
+     * Loads player data into the ViewAdapter and updates all the stats.
+     */
+    private void loadDataIntoView(){
+        ArrayList<PlayerAccount> players = mainViewModel.getPlayers().getValue();
+        ArrayList<QRShot> shots = mainViewModel.getQRShots().getValue();
+        if (shots == null || players == null) { return; }
+
+        HashMap<String, PlayerStats> stats = calculatePlayerScores(players, shots);
+        setRanking(stats);
+
+        // Use those scores to build a displayable list
+        ArrayList<PlayerViewItem> listItems = new ArrayList<>();
+        for (String username : stats.keySet()){
+            int score = requireNonNull(stats.get(username)).totalScore;
+            listItems.add(new PlayerViewItem(username, score));
+        }
+        Collections.sort(listItems, (a,b)->b.score-a.score);
+
+        // Load the list into the View
+        RecyclerView recyclerView = binding.playerlistRecycler;
+        viewAdapter = new PlayerViewAdapter(listItems, this::transitionToQRList);
+        viewAdapter.getFilter().filter(binding.playerlistSearchview.getQuery());
+        recyclerView.setAdapter(viewAdapter);
+
+        binding.playerlistLoadingContainer.setVisibility(View.GONE);
+        binding.playerlistMainContainer.setVisibility(View.VISIBLE);
     }
 
     /**

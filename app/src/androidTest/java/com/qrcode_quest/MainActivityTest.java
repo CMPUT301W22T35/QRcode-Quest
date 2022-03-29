@@ -21,7 +21,6 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.UiController;
-import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -72,7 +71,7 @@ public class MainActivityTest {
         // for more about how to use Espresso
         // see doc: https://developer.android.com/training/testing/espresso/basics
         onView(withId(R.id.navigation_leaderboard)).perform(click());
-        onView(isRoot()).perform(waitFor(3000));  // example of wait
+        onView(isRoot()).perform(EspressoHelper.waitFor(3000));  // example of wait
         onData(allOf(is(instanceOf(String.class)), is("This is home fragment")));
         onView(withId(R.id.playerlist_content_name))
                 .check(matches(withText(containsString("testPlayerName"))));
@@ -82,7 +81,6 @@ public class MainActivityTest {
             }
         });
     }
-
     @Test
     public void testMainActivity2() {
         ActivityScenario<MainActivity> scenario = rule.getScenario();
