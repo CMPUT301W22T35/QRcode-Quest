@@ -3,4 +3,12 @@
     <style name="button_dark" parent="@style/Widget.MaterialComponents.Button">
         <item name="android:backgroundTint">@color/pine</item>
     </style>
+
+    <style name="white_text" parent="@style/Theme.QRcodequest">
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:textColorSecondaryInverse">@color/white</item>
+    </style>
 </resources>

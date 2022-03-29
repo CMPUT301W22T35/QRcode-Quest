@@ -2,4 +2,10 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+    <dimen name="cardview_radius">12dp</dimen>
+    <dimen name="cardview_item_radius">16dp</dimen>
+    <dimen name="qrview_header_size">18sp</dimen>
+    <dimen name="qrview_content_size">16sp</dimen>
+    <dimen name="toolBarHeight">48dp</dimen>
 </resources>

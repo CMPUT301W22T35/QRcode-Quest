@@ -4,8 +4,7 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Random;
+import com.qrcode_quest.database.QRManager;
 
 /**
  * Represents a user's capture of a QRCode.
@@ -91,14 +90,14 @@ public class QRShot {
     /**
      * Gets the immutable name of the QRShot's owner.
      */
-    public String getOwnerName(){
+    public @NonNull String getOwnerName(){
         return this.ownerName;
     }
 
     /**
      * Gets the immutable hash of the QRShot's referent QRCode.
      */
-    public String getCodeHash(){
+    public @NonNull String getCodeHash(){
         return this.codeHash;
     }
 
