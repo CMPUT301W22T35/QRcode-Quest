@@ -85,7 +85,7 @@ public class QRShot {
         name = sb.toString();
 
         return name;
-//
+
     }
 
     /**
