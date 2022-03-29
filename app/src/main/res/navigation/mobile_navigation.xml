@@ -9,7 +9,11 @@
         android:id="@+id/navigation_home"
         android:name="com.qrcode_quest.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_navigation_home_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_leaderboard"
@@ -22,5 +26,15 @@
         android:name="com.qrcode_quest.ui.account.AccountFragment"
         android:label="@string/title_account"
         tools:layout="@layout/fragment_account" />
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.qrcode_quest.ui.map.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/map_fragment">
+        <action
+            android:id="@+id/action_mapFragment_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </fragment>
 </navigation>
 
