@@ -178,8 +178,6 @@ public class PlayerListFragment extends Fragment {
         // In case the currentUser and global user list is not in sync
         if (userStats == null) { return; }
 
-        List<PlayerStats> statList = new ArrayList<>(stats.values());
-
         // Create a hash set for each category (to account for ties)
         HashSet<Integer> totalCodeSet = new HashSet<>();
         HashSet<Integer> totalScoreSet = new HashSet<>();

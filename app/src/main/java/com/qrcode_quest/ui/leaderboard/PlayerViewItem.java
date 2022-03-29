@@ -1,7 +1,7 @@
 package com.qrcode_quest.ui.leaderboard;
 
 /**
- * A data model class for displaying a PlayerAccount in the list
+ * An immutable data model class for displaying a PlayerAccount in a list
  */
 public class PlayerViewItem {
     public final String username;
