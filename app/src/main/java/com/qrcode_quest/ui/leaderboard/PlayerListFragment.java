@@ -1,8 +1,5 @@
 package com.qrcode_quest.ui.leaderboard;
 
-import static android.content.Context.MODE_PRIVATE;
-import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
-import static com.qrcode_quest.Constants.SHARED_PREF_PATH;
 import static com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.actionLeaderboardToPlayerqrs;
 
 import static java.util.Objects.requireNonNull;
@@ -11,7 +8,6 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -52,8 +48,6 @@ import java.util.List;
  * @version 1.0
  */
 public class PlayerListFragment extends Fragment {
-    private static final String ARG_PLAYERS = "players";
-
     /** A tag used for logging */
     private static final String CLASS_TAG = "PlayerListFragment";
 
@@ -168,60 +162,55 @@ public class PlayerListFragment extends Fragment {
      */
     @SuppressLint("DefaultLocale")
     private void setRanking(HashMap<String, PlayerStats> stats){
-        // Grab the loaded user
-        SharedPreferences prefs = this.requireActivity().getApplicationContext()
-                .getSharedPreferences(SHARED_PREF_PATH, MODE_PRIVATE);
-        String currentUser = prefs.getString(AUTHED_USERNAME_PREF, "");
+        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), currentUser->{
+            // Grab the loaded user's stats
+            PlayerStats userStats = stats.get(currentUser.getUsername());
+            // In case the currentUser and global user list is not in sync
+            if (userStats == null) { return; }
 
-        // Grab the loaded users stats
-        PlayerStats userStats = stats.get(currentUser);
-        // In case the currentUser and global user list is not in sync
-        if (userStats == null) { return; }
-
-        List<PlayerStats> statList = new ArrayList<>(stats.values());
-
-        // Create a hash set for each category (to account for ties)
-        HashSet<Integer> totalCodeSet = new HashSet<>();
-        HashSet<Integer> totalScoreSet = new HashSet<>();
-        HashSet<Integer> bestCaptureSet = new HashSet<>();
-        for (PlayerStats stat : stats.values()){
-            totalCodeSet.add(stat.totalCodes);
-            totalScoreSet.add(stat.totalScore);
-            bestCaptureSet.add(stat.highestCode);
-        }
-
-        // Rank by total code count
-        List<Integer> totalCodes = new ArrayList<>(totalCodeSet);
-        Collections.sort(totalCodes, (a,b)->b-a);
-        for (int i = 0; i < totalCodes.size(); i++){
-            if (totalCodes.get(i) == userStats.totalCodes){
-                binding.playerlistTotalcaptures.setText(
-                        String.format("%d%s", i+1, getOrdinalAffix(i+1)));
-                break;
+            // Create a hash set for each category (to account for ties)
+            HashSet<Integer> totalCodeSet = new HashSet<>();
+            HashSet<Integer> totalScoreSet = new HashSet<>();
+            HashSet<Integer> bestCaptureSet = new HashSet<>();
+            for (PlayerStats stat : stats.values()){
+                totalCodeSet.add(stat.totalCodes);
+                totalScoreSet.add(stat.totalScore);
+                bestCaptureSet.add(stat.highestCode);
             }
-        }
 
-        // Rank by total score
-        List<Integer> totalScore = new ArrayList<>(totalScoreSet);
-        Collections.sort(totalScore, (a,b)->b-a);
-        for (int i = 0; i < totalScore.size(); i++){
-            if (totalScore.get(i) == userStats.totalScore){
-                binding.playerlistTotalscore.setText(
-                        String.format("%d%s", i+1, getOrdinalAffix(i+1)));
-                break;
+            // Rank by total code count
+            List<Integer> totalCodes = new ArrayList<>(totalCodeSet);
+            Collections.sort(totalCodes, (a,b)->b-a);
+            for (int i = 0; i < totalCodes.size(); i++){
+                if (totalCodes.get(i) == userStats.totalCodes){
+                    binding.playerlistTotalcaptures.setText(
+                            String.format("%d%s", i+1, getOrdinalAffix(i+1)));
+                    break;
+                }
             }
-        }
 
-        // Rank by best capture
-        List<Integer> bestCapture = new ArrayList<>(bestCaptureSet);
-        Collections.sort(bestCapture, (a,b)->b-a);
-        for (int i = 0; i < bestCapture.size(); i++){
-            if (bestCapture.get(i) == userStats.highestCode){
-                binding.playerlistBestcapture.setText(
-                        String.format("%d%s", i+1, getOrdinalAffix(i+1)));
-                break;
+            // Rank by total score
+            List<Integer> totalScore = new ArrayList<>(totalScoreSet);
+            Collections.sort(totalScore, (a,b)->b-a);
+            for (int i = 0; i < totalScore.size(); i++){
+                if (totalScore.get(i) == userStats.totalScore){
+                    binding.playerlistTotalscore.setText(
+                            String.format("%d%s", i+1, getOrdinalAffix(i+1)));
+                    break;
+                }
             }
-        }
+
+            // Rank by best capture
+            List<Integer> bestCapture = new ArrayList<>(bestCaptureSet);
+            Collections.sort(bestCapture, (a,b)->b-a);
+            for (int i = 0; i < bestCapture.size(); i++){
+                if (bestCapture.get(i) == userStats.highestCode){
+                    binding.playerlistBestcapture.setText(
+                            String.format("%d%s", i+1, getOrdinalAffix(i+1)));
+                    break;
+                }
+            }
+        });
     }
 
     /**
