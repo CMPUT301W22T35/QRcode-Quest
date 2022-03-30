@@ -1,13 +1,17 @@
 package com.qrcode_quest.ui.comments;
 
+import android.app.Application;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.qrcode_quest.database.CommentManager;
+import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;
@@ -17,11 +21,16 @@ import java.util.Collections;
  * Provides data handling for CommentsFragment.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
-public class CommentsViewModel extends ViewModel {
+public class CommentsViewModel extends AndroidViewModel {
     private static final String CLASS_TAG = "CommentsViewModel";
+    private final FirebaseFirestore db;
 
+    public CommentsViewModel(@NonNull Application application, FirebaseFirestore db) {
+        super(application);
+        this.db = db;
+    }
 
     /**
      * Gets an observable comment list for a specific hash
@@ -48,7 +57,7 @@ public class CommentsViewModel extends ViewModel {
      */
     public void loadComments(){
         if (commentsHash == null) { return; }
-        new CommentManager(FirebaseFirestore.getInstance()).getQRComments(commentsHash, results -> {
+        new CommentManager(db).getQRComments(commentsHash, results -> {
             if (!results.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to load comments from database.");
                 return;
