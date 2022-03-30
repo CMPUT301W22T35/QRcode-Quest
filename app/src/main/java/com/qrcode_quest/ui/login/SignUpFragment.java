@@ -206,7 +206,7 @@ public class SignUpFragment extends Fragment {
                 playerManager.addPlayer(newPlayer, addResult -> {
                     if (!addResult.isSuccess()){
                         Log.e(CLASS_TAG, "Failed to add user.");
-                        Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this.getActivity(), addResult.getError().getMessage(), Toast.LENGTH_SHORT).show();
                         showLoading(false);
                         return;
                     }
@@ -219,7 +219,7 @@ public class SignUpFragment extends Fragment {
                     playerManager.createPlayerSession(deviceUID, chosenUsername, sessionResult ->{
                         if (!sessionResult.isSuccess()){
                             Log.e(CLASS_TAG, "Failed to add session.");
-                            Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this.getActivity(), sessionResult.getError().getMessage(), Toast.LENGTH_SHORT).show();
                             return;
                         }
 
