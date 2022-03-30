@@ -159,6 +159,10 @@ public class MapFragment extends Fragment {
 
         // Go through the list of QRShots and determine which to mark on map
         for (QRShot qrShot : qrShots) {
+            // We only want ones recorded with a geolocation
+            if (qrShot.getLocation() == null)
+                continue;
+
             geolocations.add(qrShot.getLocation());
             double distance = qrShot.getLocation().getDistanceFrom(playerLocation);
 
