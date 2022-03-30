@@ -30,7 +30,8 @@ public class HomeFragment extends Fragment {
         final TextView textView = binding.textHome;
         homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
-        
+
+        // Transition to Maps
         binding.mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -39,7 +40,6 @@ public class HomeFragment extends Fragment {
         });
 
         return root;
-
 
     }
 

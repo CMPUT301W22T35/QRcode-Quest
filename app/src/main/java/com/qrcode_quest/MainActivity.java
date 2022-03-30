@@ -1,6 +1,7 @@
 package com.qrcode_quest;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +31,16 @@ public class MainActivity extends AppCompatActivity {
     /** A constant tag used for logging */
     public static final String CLASS_TAG = "MainActivity";
 
+    // Storage Permissions
+    private static final int REQUEST_CODE = 1;
+    private static final String[] PERMISSIONS = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.INTERNET
+    };
+
     private ActivityHomeBinding binding;
 
     private NavController navController;
@@ -40,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        getPermissions();
 
         // Setup the NavController, NavBar and ActionBar
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -69,31 +78,41 @@ public class MainActivity extends AppCompatActivity {
         // Do an initial pull of common data for faster loads in other fragments
         MainViewModel viewModel = new ViewModelProvider(this, mainViewModelFactory).get(MainViewModel.class);
         viewModel.getCurrentPlayer();
+
+        getPermissions(this);
+
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        return navController.navigateUp();
-    }
-
-    private void getPermissions() {
-        if (!hasPermissions()){
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+    /**
+     * If the app does not have permission,
+     * prompt user to grant permissions
+     */
+    public void getPermissions(Activity activity) {
+        if (!hasPermissions() ) {
+            Log.d(CLASS_TAG, "Permissions not granted");
+            // Permissions not granted, prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS,
+                    REQUEST_CODE
+            );
         }
     }
 
+    /**
+     * Checks if the app has necessary permissions
+     * @return  a boolean value
+     */
     private boolean hasPermissions() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) ==
                         PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                        PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) ==
+                        PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) ==
                         PackageManager.PERMISSION_GRANTED;
     }
 }
