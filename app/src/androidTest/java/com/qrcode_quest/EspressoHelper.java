@@ -9,6 +9,8 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import org.hamcrest.Matcher;
 
 public class EspressoHelper {
+    // From StackOverflow, by Aaron
+    // url: https://stackoverflow.com/questions/52818524/delay-test-in-espresso-android-without-freezing-main-thread
     public static ViewAction waitFor(long delay) {
         return new ViewAction() {
             @Override public Matcher<View> getConstraints() {
