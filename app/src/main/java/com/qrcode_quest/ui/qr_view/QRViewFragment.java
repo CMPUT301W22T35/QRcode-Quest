@@ -188,7 +188,8 @@ public class QRViewFragment extends Fragment {
      */
     private void deleteQR(){
         AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
-        new QRManager(container.getDb(), container.getStorage()).removeQRCode(shotHash, result ->{
+        QRManager qrManager = new QRManager(container.getDb(), container.getStorage());
+        qrManager.removeQRShot(shotOwner, shotHash, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to delete QRShot.");
                 Toast.makeText(this.getActivity(), "Failed to delete.", Toast.LENGTH_LONG)
