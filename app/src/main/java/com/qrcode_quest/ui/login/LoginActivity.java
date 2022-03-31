@@ -18,25 +18,31 @@ import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.ActivityLoginBinding;
 
+import java.util.zip.Inflater;
+
 /**
  * An activity for authenticating users, or onboarding new users.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class LoginActivity extends AppCompatActivity implements SignUpFragment.RegisterHandler {
     /** A tag to be used for logging */
     private static final String CLASS_TAG = "LoginActivity";
-    private ActivityLoginBinding binding;
+
+    private View fragmentContainer;
+    private View progressView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (getSupportActionBar() != null) { getSupportActionBar().hide(); }
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
 
-        binding = ActivityLoginBinding.inflate(getLayoutInflater());
-
-        binding.loginFragmentContainer.setVisibility(View.GONE);
-        binding.loginProgress.setVisibility(View.VISIBLE);
+        fragmentContainer = findViewById(R.id.login_fragment_container);
+        progressView = findViewById(R.id.login_progress);
+        
+        fragmentContainer.setVisibility(View.GONE);
+        progressView.setVisibility(View.VISIBLE);
 
         // Set initial fragment to the loading spinner
         if (savedInstanceState == null){
@@ -62,7 +68,6 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
             transitionToRegistration();
         }
 
-        setContentView(binding.getRoot());
     }
 
     /**
@@ -74,8 +79,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
      */
     @Override
     public void onRegistered(String deviceUID, String username) {
-        binding.loginFragmentContainer.setVisibility(View.GONE);
-        binding.loginProgress.setVisibility(View.VISIBLE);
+        fragmentContainer.setVisibility(View.GONE);
+        progressView.setVisibility(View.VISIBLE);
 
         // Check the database for a device session
         AppContainer container = ((QRCodeQuestApp) getApplication()).getContainer();
@@ -108,8 +113,8 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
      * Switches the view to the registration page.
      */
     private void transitionToRegistration(){
-        binding.loginFragmentContainer.setVisibility(View.VISIBLE);
-        binding.loginProgress.setVisibility(View.GONE);
+        fragmentContainer.setVisibility(View.VISIBLE);
+        progressView.setVisibility(View.GONE);
 
         this.getSupportFragmentManager()
                 .beginTransaction()

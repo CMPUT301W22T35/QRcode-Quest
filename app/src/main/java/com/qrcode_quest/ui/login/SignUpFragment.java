@@ -1,7 +1,6 @@
 package com.qrcode_quest.ui.login;
 
 
-import static android.content.Context.MODE_PRIVATE;
 import static com.qrcode_quest.Constants.*;
 
 import static java.util.Objects.requireNonNull;
@@ -22,19 +21,15 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.PlayerManager;
-import com.qrcode_quest.databinding.FragmentSignUpBinding;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -43,7 +38,7 @@ import java.util.UUID;
  * A view to enable the user to either log in using a QR code or register a new user.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class SignUpFragment extends Fragment {
     /**
@@ -62,8 +57,8 @@ public class SignUpFragment extends Fragment {
     private static final String CLASS_TAG = "SignUpFragment";
 
     private SignUpViewModel viewModel;
-    private FragmentSignUpBinding binding;
     private SharedPreferences sharedPrefs;
+
 
     public SignUpFragment(){}
     public static SignUpFragment newInstance() {
@@ -78,8 +73,6 @@ public class SignUpFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        binding = FragmentSignUpBinding.inflate(inflater, container, false);
 
         // Preload the players list for fast username testing
         AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
@@ -97,8 +90,7 @@ public class SignUpFragment extends Fragment {
         viewModel =  new ViewModelProvider(this, signUpViewModelFactory).get(SignUpViewModel.class);
         viewModel.getPlayers();
 
-        // Inflate the layout for this fragment
-        return binding.getRoot();
+        return inflater.inflate(R.layout.fragment_sign_up, container, false);
     }
 
     @Override
@@ -109,39 +101,43 @@ public class SignUpFragment extends Fragment {
         AppContainer container = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
         sharedPrefs = container.getPrivateDevicePrefs();
 
-
         // Set a click listener for scan to login button
-        binding.loginSignupScanButton.setOnClickListener(v -> {
+        view.findViewById(R.id.login_signup_scan_button).setOnClickListener(v -> {
             // TODO Implement scanning login codes
             Toast.makeText(this.getContext(), "Feature not implemented.", Toast.LENGTH_SHORT)
                     .show();
         });
 
         // Set a click listener for register button
-        binding.loginSignupRegisterButton.setOnClickListener(v->this.onRegisterClicked());
+        view.findViewById(R.id.login_signup_register_button)
+                .setOnClickListener(v->this.onRegisterClicked());
 
         // Add a listener to the username field to clear errors
-        binding.loginSignupUsername.addTextChangedListener(new TextWatcher() {
+        TextView usernameText = view.findViewById(R.id.login_signup_username);
+        TextInputLayout usernameLayout = view.findViewById(R.id.login_signup_username_layout);
+        usernameText.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
             public void afterTextChanged(Editable editable) {}
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                binding.loginSignupUsernameLayout.setErrorEnabled(false);
+                usernameLayout.setErrorEnabled(false);
             }
         });
 
         // Add a listener to email field to clear errors
-        binding.loginSignupEmail.addTextChangedListener(new TextWatcher() {
+        TextView emailText = view.findViewById(R.id.login_signup_email);
+        TextInputLayout emailLayout = view.findViewById(R.id.login_signup_email_layout);
+        emailText.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2){}
             public void afterTextChanged(Editable editable){}
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 String email = charSequence.toString();
-                if (binding.loginSignupEmailLayout.isErrorEnabled()){
+                if (emailLayout.isErrorEnabled()){
                     if (Patterns.EMAIL_ADDRESS.matcher(email).matches() || email.trim().isEmpty()) {
-                        binding.loginSignupEmailLayout.setErrorEnabled(false);
+                        emailLayout.setErrorEnabled(false);
                     }
                 }
             }
@@ -156,35 +152,38 @@ public class SignUpFragment extends Fragment {
         PlayerManager playerManager = new PlayerManager(container.getDb());
 
         // Ensure that if the user entered an email it is valid
-        String chosenEmail = requireNonNull(binding.loginSignupEmail.getText()).toString().trim();
+        TextView emailText = requireView().findViewById(R.id.login_signup_email);
+        TextInputLayout emailLayout = requireView().findViewById(R.id.login_signup_email_layout);
+        String chosenEmail = requireNonNull(emailText.getText()).toString().trim();
         if (!chosenEmail.isEmpty() && !Patterns.EMAIL_ADDRESS.matcher(chosenEmail).matches()){
-            binding.loginSignupEmailLayout.setError("Invalid email address");
+            emailLayout.setError("Invalid email address");
         }
         else {
-            binding.loginSignupEmailLayout.setErrorEnabled(false);
+            emailLayout.setErrorEnabled(false);
         }
 
         // Check the user actually entered a username
-        String chosenUsername = requireNonNull(binding.loginSignupUsername.getText()).toString();
+        TextView usernameText = requireView().findViewById(R.id.login_signup_email);
+        TextInputLayout usernameLayout = requireView().findViewById(R.id.login_signup_email_layout);
+        String chosenUsername = requireNonNull(usernameText.getText()).toString();
         if (chosenUsername.trim().isEmpty()) {
-            binding.loginSignupUsernameLayout.setError("Username is required");
+            usernameLayout.setError("Username is required");
         }
         else if (!chosenUsername.trim().equals(chosenUsername)){
-            binding.loginSignupUsernameLayout.setError("No leading/trailing whitespace");
+            usernameLayout.setError("No leading/trailing whitespace");
         }
 
         // Prevent a database request while a username error exists
-        if (binding.loginSignupUsernameLayout.isErrorEnabled()) { return; }
+        if (usernameLayout.isErrorEnabled()) { return; }
 
         // Prevent the user from spamming calls
-        binding.loginSignupRegisterButton.setEnabled(false);
-        binding.loginSignupMainContainer.setVisibility(View.GONE);
-        binding.loginSignupProgress.setVisibility(View.VISIBLE);
+        View registerButton = requireView().findViewById(R.id.login_signup_register_button);
+        setLoading(true);
 
         viewModel.getPlayers().observe(getViewLifecycleOwner(), players-> {
             // Unlock the button again
-            binding.loginSignupRegisterButton.setEnabled(true);
-            showLoading(true);
+            registerButton.setEnabled(true);
+            setLoading(true);
 
             // Scan players to see if username is taken
             boolean isTaken = false;
@@ -198,8 +197,8 @@ public class SignUpFragment extends Fragment {
             // Allow user creation
             if (!isTaken){
                 // Prevent registration while there are errors
-                if (binding.loginSignupUsernameLayout.isErrorEnabled() ||
-                    binding.loginSignupEmailLayout.isErrorEnabled()) { return; }
+                if (usernameLayout.isErrorEnabled() ||
+                    emailLayout.isErrorEnabled()) { return; }
 
                 // Username is free, we can add the user
                 PlayerAccount newPlayer = new PlayerAccount(chosenUsername, chosenEmail, "");
@@ -207,7 +206,7 @@ public class SignUpFragment extends Fragment {
                     if (!addResult.isSuccess()){
                         Log.e(CLASS_TAG, "Failed to add user.");
                         Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
-                        showLoading(false);
+                        setLoading(false);
                         return;
                     }
                     Log.i(CLASS_TAG, "New user registered: " + chosenUsername);
@@ -237,8 +236,8 @@ public class SignUpFragment extends Fragment {
             }
             // Handle username taken
             else {
-                showLoading(false);
-                binding.loginSignupUsernameLayout.setError("Username taken");
+                setLoading(false);
+                usernameLayout.setError("Username taken");
             }
         });
     }
@@ -258,14 +257,16 @@ public class SignUpFragment extends Fragment {
         return deviceUID;
     }
 
-    private void showLoading(boolean state){
+    private void setLoading(boolean state){
+        View mainContainer = requireView().findViewById(R.id.login_signup_main_container);
+        View progress = requireView().findViewById(R.id.login_signup_progress);
         if (state){
-            binding.loginSignupMainContainer.setVisibility(View.GONE);
-            binding.loginSignupProgress.setVisibility(View.VISIBLE);
+            mainContainer.setVisibility(View.GONE);
+            progress.setVisibility(View.VISIBLE);
         }
         else{
-            binding.loginSignupMainContainer.setVisibility(View.VISIBLE);
-            binding.loginSignupProgress.setVisibility(View.GONE);
+            mainContainer.setVisibility(View.VISIBLE);
+            progress.setVisibility(View.GONE);
         }
     }
 }

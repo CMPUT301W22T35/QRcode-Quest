@@ -16,8 +16,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
-import com.qrcode_quest.databinding.ActivityHomeBinding;
-import com.qrcode_quest.entities.QRShot;
 
 import java.util.Objects;
 
@@ -25,16 +23,13 @@ public class MainActivity extends AppCompatActivity {
     /** A constant tag used for logging */
     public static final String CLASS_TAG = "MainActivity";
 
-    private ActivityHomeBinding binding;
-
     private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityHomeBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_home);
 
         // Setup the NavController, NavBar and ActionBar
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -43,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_home);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
+        NavigationUI.setupWithNavController((BottomNavigationView)findViewById(R.id.nav_view), navController);
 
         // create the main view model
         AppContainer container = ((QRCodeQuestApp) getApplication()).getContainer();

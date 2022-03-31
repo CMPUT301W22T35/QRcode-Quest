@@ -23,10 +23,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.R;
 import com.qrcode_quest.database.SchemaResultHelper;
-import com.qrcode_quest.databinding.FragmentPlayerListBinding;
 
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
@@ -45,15 +46,21 @@ import java.util.List;
  * A view to display the global leaderboard
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class PlayerListFragment extends Fragment {
     /** A tag used for logging */
     private static final String CLASS_TAG = "PlayerListFragment";
 
-    private FragmentPlayerListBinding binding;
+    private View thisView;
     private MainViewModel mainViewModel;
     private PlayerViewAdapter viewAdapter;
+
+    // Views
+    private SearchView searchView;
+    private RecyclerView playerRecycler;
+    private View mainContainer;
+    private View loadingContainer;
 
     /** Empty constructor for android to use */
     public PlayerListFragment() {}
@@ -62,28 +69,31 @@ public class PlayerListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        // Grab the view's bindings
-        binding = FragmentPlayerListBinding.inflate(inflater, container, false);
+        // Inflate relevant views
+        thisView = inflater.inflate(R.layout.fragment_player_list, container, false);
+        playerRecycler = thisView.findViewById(R.id.playerlist_recycler);
+        searchView = thisView.findViewById(R.id.playerlist_searchview);
+        loadingContainer = thisView.findViewById(R.id.playerlist_loading_container);
+        mainContainer = thisView.findViewById(R.id.playerlist_main_container);
 
         // Init the recycler view to be empty
-        RecyclerView recyclerView = binding.playerlistRecycler;
-        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(new PlayerViewAdapter(new ArrayList<>(), null));
+        playerRecycler.setLayoutManager(new LinearLayoutManager(playerRecycler.getContext()));
+        playerRecycler.setAdapter(new PlayerViewAdapter(new ArrayList<>(), null));
 
-        binding.playerlistLoadingContainer.setVisibility(View.VISIBLE);
-        binding.playerlistMainContainer.setVisibility(View.GONE);
+        // Default to a loading view
+        loadingContainer.setVisibility(View.VISIBLE);
+        mainContainer.setVisibility(View.GONE);
 
         // Connect the LiveData sources
         mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
 
-        LifecycleOwner owner = getViewLifecycleOwner();
-
         // When any of the sources change, update the leaderboard
+        LifecycleOwner owner = getViewLifecycleOwner();
         mainViewModel.getPlayers().observe(owner, playerAccounts -> loadDataIntoView());
         mainViewModel.getQRShots().observe(owner, shots -> loadDataIntoView());
 
         // Handle search queries
-        binding.playerlistSearchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 viewAdapter.getFilter().filter(s);
@@ -99,12 +109,12 @@ public class PlayerListFragment extends Fragment {
             }
         });
         // Handle closing the search view
-        binding.playerlistSearchview.setOnCloseListener(() -> {
+        searchView.setOnCloseListener(() -> {
             viewAdapter.getFilter().filter(null);
             return false;
         });
 
-        return binding.getRoot();
+        return thisView;
     }
 
     /**
@@ -127,13 +137,12 @@ public class PlayerListFragment extends Fragment {
         Collections.sort(listItems, (a,b)->b.score-a.score);
 
         // Load the list into the View
-        RecyclerView recyclerView = binding.playerlistRecycler;
         viewAdapter = new PlayerViewAdapter(listItems, this::transitionToQRList);
-        viewAdapter.getFilter().filter(binding.playerlistSearchview.getQuery());
-        recyclerView.setAdapter(viewAdapter);
+        viewAdapter.getFilter().filter(searchView.getQuery());
+        playerRecycler.setAdapter(viewAdapter);
 
-        binding.playerlistLoadingContainer.setVisibility(View.GONE);
-        binding.playerlistMainContainer.setVisibility(View.VISIBLE);
+        loadingContainer.setVisibility(View.GONE);
+        mainContainer.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -162,6 +171,10 @@ public class PlayerListFragment extends Fragment {
      */
     @SuppressLint("DefaultLocale")
     private void setRanking(HashMap<String, PlayerStats> stats){
+        TextView totalCapturesText = thisView.findViewById(R.id.playerlist_totalcaptures);
+        TextView totalScoreText = thisView.findViewById(R.id.playerlist_totalscore);
+        TextView bestCaptureText = thisView.findViewById(R.id.playerlist_bestcapture);
+
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), currentUser->{
             // Grab the loaded user's stats
             PlayerStats userStats = stats.get(currentUser.getUsername());
@@ -183,7 +196,7 @@ public class PlayerListFragment extends Fragment {
             Collections.sort(totalCodes, (a,b)->b-a);
             for (int i = 0; i < totalCodes.size(); i++){
                 if (totalCodes.get(i) == userStats.totalCodes){
-                    binding.playerlistTotalcaptures.setText(
+                    totalCapturesText.setText(
                             String.format("%d%s", i+1, getOrdinalAffix(i+1)));
                     break;
                 }
@@ -194,7 +207,7 @@ public class PlayerListFragment extends Fragment {
             Collections.sort(totalScore, (a,b)->b-a);
             for (int i = 0; i < totalScore.size(); i++){
                 if (totalScore.get(i) == userStats.totalScore){
-                    binding.playerlistTotalscore.setText(
+                    totalScoreText.setText(
                             String.format("%d%s", i+1, getOrdinalAffix(i+1)));
                     break;
                 }
@@ -205,7 +218,7 @@ public class PlayerListFragment extends Fragment {
             Collections.sort(bestCapture, (a,b)->b-a);
             for (int i = 0; i < bestCapture.size(); i++){
                 if (bestCapture.get(i) == userStats.highestCode){
-                    binding.playerlistBestcapture.setText(
+                    bestCaptureText.setText(
                             String.format("%d%s", i+1, getOrdinalAffix(i+1)));
                     break;
                 }

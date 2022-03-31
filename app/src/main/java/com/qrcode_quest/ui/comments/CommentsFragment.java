@@ -16,14 +16,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.CommentManager;
-import com.qrcode_quest.databinding.FragmentCommentsBinding;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;
@@ -33,12 +35,16 @@ import java.util.Objects;
  * A comment viewing fragment. This is for displaying and adding comments to a specific QR Code.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class CommentsFragment extends Fragment {
+    // This view instance
+    private View thisView;
+
+    // View Models
     private CommentsViewModel viewModel;
     private MainViewModel mainViewModel;
-    private FragmentCommentsBinding binding;
+
     private CommentViewAdapter viewAdapter;
     private String qrHash;
 
@@ -57,7 +63,8 @@ public class CommentsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        binding = FragmentCommentsBinding.inflate(inflater, container, false);
+
+        thisView = inflater.inflate(R.layout.fragment_comments, container, false);
 
         // Create the comments view model
         AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
@@ -75,7 +82,7 @@ public class CommentsFragment extends Fragment {
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         // Load the recycler view
-        RecyclerView recyclerView = binding.commentsCommentList;
+        RecyclerView recyclerView = thisView.findViewById(R.id.comments_comment_list);
         viewAdapter = new CommentViewAdapter(new ArrayList<>());
         recyclerView.setAdapter(viewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
@@ -92,12 +99,16 @@ public class CommentsFragment extends Fragment {
         });
 
         // Hook up listeners to post comments
-        binding.commentsPostButton.setOnClickListener(v->onPostClicked());
-        binding.commentsInput.setOnEditorActionListener((textView, i, keyEvent) -> {
+        Button postButton = thisView.findViewById(R.id.comments_post_button);
+        postButton.setOnClickListener(v->onPostClicked());
+
+        EditText commentInput = thisView.findViewById(R.id.comments_input);
+        commentInput.setOnEditorActionListener((textView, i, keyEvent) -> {
             onPostClicked();
             return false;
         });
-        return binding.getRoot();
+
+        return thisView;
     }
 
     /**
@@ -105,17 +116,22 @@ public class CommentsFragment extends Fragment {
      * @param loading A boolean denoting if the view is loading or not
      */
     private void setLoadingState(boolean loading){
+        View post = thisView.findViewById(R.id.comments_post_button);
+        View comments = thisView.findViewById(R.id.comments_comment_list);
+        View noComments = thisView.findViewById(R.id.comments_nocomments_label);
+        View progress = thisView.findViewById(R.id.comments_progress);
+
         if (loading) {
-            binding.commentsPostButton.setEnabled(false);
-            binding.commentsCommentList.setVisibility(View.GONE);
-            binding.commentsNocommentsLabel.setVisibility(View.GONE);
-            binding.commentsProgress.setVisibility(View.VISIBLE);
+            post.setEnabled(false);
+            comments.setVisibility(View.GONE);
+            noComments.setVisibility(View.GONE);
+            progress.setVisibility(View.VISIBLE);
         }
         else{
-            binding.commentsPostButton.setEnabled(true);
-            binding.commentsCommentList.setVisibility(viewAdapter.getItemCount() == 0 ? View.GONE : View.VISIBLE);
-            binding.commentsNocommentsLabel.setVisibility(viewAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-            binding.commentsProgress.setVisibility(View.GONE);
+            post.setEnabled(true);
+            comments.setVisibility(viewAdapter.getItemCount() == 0 ? View.GONE : View.VISIBLE);
+            noComments.setVisibility(viewAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            progress.setVisibility(View.GONE);
         }
     }
 
@@ -140,7 +156,8 @@ public class CommentsFragment extends Fragment {
         }
 
         // Grab the trimmed text entered by the user
-        String msg = binding.commentsInput.getText().toString().trim();
+        EditText inputText = thisView.findViewById(R.id.comments_input);
+        String msg = inputText.getText().toString().trim();
 
         // Prevent empty messages
         if (msg.isEmpty()) { return; }
@@ -162,7 +179,7 @@ public class CommentsFragment extends Fragment {
 
                         // Handle addition success
                         viewModel.loadComments();
-                        binding.commentsInput.setText("");
+                        inputText.setText("");
                     }
             );
         });

@@ -19,13 +19,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.QRManager;
-import com.qrcode_quest.databinding.FragmentQrViewBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.RawQRCode;
@@ -37,11 +40,9 @@ import java.util.ArrayList;
  * A fragment for displaying a QR code's data.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class QRViewFragment extends Fragment {
-    private FragmentQrViewBinding binding;
-
     /** A tag used for logging */
     private static final String CLASS_TAG = "QRViewFragment";
 
@@ -74,17 +75,20 @@ public class QRViewFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
-        binding = FragmentQrViewBinding.inflate(inflater, container, false);
+        View view = inflater.inflate(R.layout.fragment_qr_view, container, false);
 
         // Set up the "other players" RecyclerView
         playerViewAdapter = new UsernameViewAdapter(new ArrayList<>());
-        RecyclerView otherPlayersList = binding.qrviewPlayerlist;
+        RecyclerView otherPlayersList = view.findViewById(R.id.qrview_playerlist);
         otherPlayersList.setAdapter(playerViewAdapter);
         otherPlayersList.setLayoutManager(new LinearLayoutManager(otherPlayersList.getContext()));
 
         // Default to the loading spinner screen
-        binding.qrviewMainLayout.setVisibility(View.GONE);
-        binding.qrviewLoadingLayout.setVisibility(View.VISIBLE);
+
+        View mainLayout = view.findViewById(R.id.qrview_main_layout);
+        View loadingLayout = view.findViewById(R.id.qrview_loading_layout);
+        mainLayout.setVisibility(View.GONE);
+        loadingLayout.setVisibility(View.VISIBLE);
 
         // Fetch and load the QRShot data into the fragment
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player -> {
@@ -93,20 +97,24 @@ public class QRViewFragment extends Fragment {
                     loadQRShot(shots, player);
 
                     // Make the fragment visible
-                    binding.qrviewMainLayout.setVisibility(View.VISIBLE);
-                    binding.qrviewLoadingLayout.setVisibility(View.GONE);
+                    mainLayout.setVisibility(View.VISIBLE);
+                    loadingLayout.setVisibility(View.GONE);
             });
         });
 
-        // Hook up button listeners
-        binding.qrviewOtherScansButton.setOnClickListener(view -> {
+        // View Players button
+        Button otherScansButton = view.findViewById(R.id.qrview_other_scans_button);
+        otherScansButton.setOnClickListener(v -> {
             // Swap the visibility of the view button and the list
-            binding.qrviewOtherScansButton.setVisibility(View.GONE);
-            binding.qrviewPlayerlist.setVisibility(View.VISIBLE);
+            otherScansButton.setVisibility(View.GONE);
+            otherPlayersList.setVisibility(View.VISIBLE);
         });
-        binding.qrviewCommentsButton.setOnClickListener(view -> transitionToComments(shotHash));
 
-        return binding.getRoot();
+        // Comment button listener
+        view.findViewById(R.id.qrview_comments_button)
+                .setOnClickListener(v -> transitionToComments(shotHash));
+
+        return view;
     }
 
     /**
@@ -117,6 +125,8 @@ public class QRViewFragment extends Fragment {
     @SuppressLint({"DefaultLocale", "NotifyDataSetChanged"})
     private void loadQRShot(ArrayList<QRShot> shots, PlayerAccount authedPlayer){
         AppCompatActivity main = requireNonNull((AppCompatActivity) this.getActivity());
+        View view = requireView();
+
         ArrayList<String> usersWhoScanned = playerViewAdapter.getItems();
         usersWhoScanned.clear();
 
@@ -145,28 +155,34 @@ public class QRViewFragment extends Fragment {
         int score = RawQRCode.getScoreFromHash(hash);
 
         // Load given data
-        binding.qrviewName.setText(hash.substring(hash.length()-5));
-        binding.qrviewScore.setText(String.format("%d", score));
-        binding.qrviewOtherScans.setText(String.format("%d", usersWhoScanned.size()));
+        TextView nameText = view.findViewById(R.id.qrview_name);
+        TextView scoreText = view.findViewById(R.id.qrview_score);
+        TextView otherScansText = view.findViewById(R.id.qrview_other_scans);
+        nameText.setText(hash.substring(hash.length()-5));
+        scoreText.setText(String.format("%d", score));
+        otherScansText.setText(String.format("%d", usersWhoScanned.size()));
 
         // Try to load the image
         if (shot.getPhoto() != null){
-            binding.qrviewPhoto.setImageBitmap(shot.getPhoto());
-            binding.qrviewPhoto.setVisibility(View.VISIBLE);
+            ImageView photoView = view.findViewById(R.id.qrview_photo);
+            photoView.setImageBitmap(shot.getPhoto());
+            photoView.setVisibility(View.VISIBLE);
         }
 
         // Try to load the geolocation
         if (shot.getLocation() != null ){
-            binding.qrviewGeoloc.setText(shot.getLocation().toString());
-            binding.qrviewGeolocContainer.setVisibility(View.VISIBLE);
+            TextView geolocText = view.findViewById(R.id.qrview_geoloc);
+            geolocText.setText(shot.getLocation().toString());
+            view.findViewById(R.id.qrview_geoloc_container).setVisibility(View.VISIBLE);
         }
 
         // Show the owner buttons if privileged
         if (authedPlayer.getUsername().equals(shot.getOwnerName()) || authedPlayer.isOwner()){
-            binding.qrviewDeleteButton.setVisibility(View.VISIBLE);
-            binding.qrviewDeleteButton.setOnClickListener(view -> {
-                binding.qrviewMainLayout.setVisibility(View.GONE);
-                binding.qrviewLoadingLayout.setVisibility(View.VISIBLE);
+            Button deleteButton = view.findViewById(R.id.qrview_delete_button);
+            deleteButton.setVisibility(View.VISIBLE);
+            deleteButton.setOnClickListener(v -> {
+                view.findViewById(R.id.qrview_main_layout).setVisibility(View.GONE);
+                view.findViewById(R.id.qrview_loading_layout).setVisibility(View.VISIBLE);
                 this.deleteQR();
             });
         }

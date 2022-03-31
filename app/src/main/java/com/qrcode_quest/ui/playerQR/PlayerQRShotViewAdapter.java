@@ -4,26 +4,22 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.qrcode_quest.R;
-import com.qrcode_quest.databinding.QrshotItemViewBinding;
-import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.RawQRCode;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link QRShot}.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotViewAdapter.ViewHolder> {
     /**
@@ -54,15 +50,16 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(QrshotItemViewBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false));
+        // Load the View that the view holder is made from
+        View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.qrshot_item_view, parent, false);
+
+        return new ViewHolder(view);
     }
 
     @SuppressLint("DefaultLocale")
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         // Try to get the underlying QR objects
         QRShot shot = shots.get(position);
         if (shot == null) {
@@ -98,13 +95,11 @@ public class PlayerQRShotViewAdapter extends RecyclerView.Adapter<PlayerQRShotVi
 
         /**
          * Constructs a ViewHolder and binds the View to the data
-         *
-         * @param binding
          */
-        public ViewHolder(@NonNull QrshotItemViewBinding binding) {
-            super(binding.getRoot());
-            qrName = binding.playerQrlistContentName;
-            qrScore = binding.playerQrlistContentScore;
+        public ViewHolder(@NonNull View view) {
+            super(view);
+            qrName = view.findViewById(R.id.player_qrlist_content_name);
+            qrScore = view.findViewById(R.id.player_qrlist_content_score);
         }
     }
 }

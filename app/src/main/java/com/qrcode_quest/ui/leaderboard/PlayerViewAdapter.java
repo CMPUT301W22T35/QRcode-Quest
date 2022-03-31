@@ -2,6 +2,7 @@ package com.qrcode_quest.ui.leaderboard;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
@@ -10,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.qrcode_quest.databinding.PlayerItemViewBinding;
+import com.qrcode_quest.R;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link PlayerAccount}.
  *
  * @author jdumouch
- * @version 1.0
+ * @version 1.1
  */
 public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.ViewHolder>
     implements Filterable {
@@ -56,10 +57,11 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(PlayerItemViewBinding.inflate(
-                LayoutInflater.from(parent.getContext()),
-                parent,
-                false));
+        // Load the View that the view holder is made from
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.player_item_view, parent, false);
+
+        return new PlayerViewAdapter.ViewHolder(view);
     }
 
     @SuppressLint("DefaultLocale")
@@ -91,10 +93,11 @@ public class PlayerViewAdapter extends RecyclerView.Adapter<PlayerViewAdapter.Vi
         public PlayerViewItem player;
 
         /** Constructs a ViewHolder and bind the members to the view */
-        public ViewHolder(@NonNull PlayerItemViewBinding binding) {
-            super(binding.getRoot());
-            nameText = binding.playerlistContentName;
-            scoreText = binding.playerlistContentScore;
+        public ViewHolder(@NonNull View view) {
+            super(view);
+
+            nameText = view.findViewById(R.id.playerlist_content_name);
+            scoreText = view.findViewById(R.id.playerlist_content_score);
         }
     }
 
