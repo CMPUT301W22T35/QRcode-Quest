@@ -16,6 +16,11 @@
 
 package com.qrcode_quest.zxing.decoding;
 
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
+import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -124,7 +129,7 @@ final class DecodeHandler extends Handler {
       }
     }
   }
-  
+
   public Bitmap getBitmapFromByte(byte[] temp, int width, int height){
     if(temp != null){
       BitmapFactory.Options options = new BitmapFactory.Options();
@@ -143,21 +148,33 @@ final class DecodeHandler extends Handler {
   }
 
   void saveBitmap(Bitmap bitmap) {
-      String path = activity.getCacheDir() + "/images/";
-      File saveFile = new File(path, "qr.jpeg");
-      File file=new File(path);
-      if (!file.exists()){
-          file.mkdirs();
-      }
-      Log.d(TAG, file.getAbsolutePath());
-      try {
-          FileOutputStream saveImgOut = new FileOutputStream(saveFile);
-          bitmap.compress(Bitmap.CompressFormat.JPEG, 80, saveImgOut);
-          saveImgOut.flush();
-          saveImgOut.close();
-      } catch (IOException ex) {
-          ex.printStackTrace();
-      }
+    final int pixelSize = 4;  // assume one pixel 4 bytes, no compression
+    final int maxAllowedPixelCount = (8 * 1024) / pixelSize;
+    int width = bitmap.getWidth();
+    int height = bitmap.getHeight();
+    double scaleFactor = sqrt(((double)maxAllowedPixelCount / (width * height)));
+    int destWidth = max(1, (int) floor(width * scaleFactor));
+    int destHeight = max(1, (int) floor(height * scaleFactor));
+    // scale the bitmap to appropriate size
+    // StackOverflow by user432209 and JJD
+    // url: https://stackoverflow.com/questions/4837715/how-to-resize-a-bitmap-in-android
+    bitmap = Bitmap.createScaledBitmap(bitmap, destWidth, destHeight, false);
+
+    String path = activity.getCacheDir() + "/images/";
+    File saveFile = new File(path, "qr.png");
+    File file=new File(path);
+    if (!file.exists()){
+        file.mkdirs();
+    }
+    Log.d(TAG, file.getAbsolutePath());
+    try {
+        FileOutputStream saveImgOut = new FileOutputStream(saveFile);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, saveImgOut);
+        saveImgOut.flush();
+        saveImgOut.close();
+    } catch (IOException ex) {
+        ex.printStackTrace();
+    }
   }
 
 }

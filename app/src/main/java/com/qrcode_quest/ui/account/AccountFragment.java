@@ -123,7 +123,7 @@ public class AccountFragment extends Fragment {
            if (!TextUtils.isEmpty(code)){
                RawQRCode rawCode = new RawQRCode(code);
                Log.d(AccountFragment.class.getSimpleName(),"code:"+code);
-               String path = requireActivity().getCacheDir() + "/images/qr.jpeg";
+               String path = requireActivity().getCacheDir() + "/images/qr.png";
                Bitmap bitmap = BitmapFactory.decodeFile(path);
                try {
                    QRCode qrCode = new QRCode(rawCode);
