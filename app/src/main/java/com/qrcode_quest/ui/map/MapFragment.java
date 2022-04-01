@@ -210,7 +210,7 @@ public class MapFragment extends Fragment {
         // Clear the old list of nearby QR codes
         MapListContent.clearItems();
 
-        // Get a list of unique QRShots by their QRHash to remove duplicates
+        // Get a list of unique QRShots based on their QRHash to remove duplicates
         HashSet<String> qrHashs = new HashSet<>(); // a list of unique QR Codes (their hash)
         ArrayList<QRShot> uniqueQRShots = new ArrayList<>(); // a list of unique QR shots
         for(QRShot qrShot: qrShots){
@@ -220,7 +220,11 @@ public class MapFragment extends Fragment {
         }
 
         // Go through the list of unique QRShots and determine which to mark on map
-        for (QRShot qrShot : uniqueQRShots) {
+        for (QRShot qrShot: uniqueQRShots) {
+            // We only want ones recorded with a geolocation
+            if (qrShot.getLocation() == null)
+                continue;
+
             double distance = qrShot.getLocation().getDistanceFrom(currentLocation);
 
             // only mark nearby QRShots
@@ -237,6 +241,7 @@ public class MapFragment extends Fragment {
         // Sort QR code locations by distance (ascending), for Map list of nearby QR Codes
         MapListContent.sort();
     }
+
 
     /**
      * For marking/updating the player's location on the map

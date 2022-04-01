@@ -7,15 +7,13 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,16 +22,12 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.qrcode_quest.MainViewModel;
-import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.QRManager;
-import com.qrcode_quest.database.SchemaResultHelper;
-import com.qrcode_quest.databinding.FragmentPlayerQrShotsBinding;
 import com.qrcode_quest.databinding.FragmentQrViewBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
-import com.qrcode_quest.ui.leaderboard.PlayerViewAdapter;
 import com.qrcode_quest.entities.RawQRCode;
 import com.qrcode_quest.ui.qr_view.QRViewFragmentDirections.ActionQrshotToComments;
 
@@ -60,6 +54,7 @@ public class QRViewFragment extends Fragment {
     /** The hash of the QRShot captured (fragment parameter) */
     private String shotHash;
 
+    private UsernameViewAdapter playerViewAdapter;
     private MainViewModel mainViewModel;
 
     /** Required empty constructor */
@@ -81,11 +76,17 @@ public class QRViewFragment extends Fragment {
         mainViewModel = new ViewModelProvider(this.requireActivity()).get(MainViewModel.class);
         binding = FragmentQrViewBinding.inflate(inflater, container, false);
 
+        // Set up the "other players" RecyclerView
+        playerViewAdapter = new UsernameViewAdapter(new ArrayList<>());
+        RecyclerView otherPlayersList = binding.qrviewPlayerlist;
+        otherPlayersList.setAdapter(playerViewAdapter);
+        otherPlayersList.setLayoutManager(new LinearLayoutManager(otherPlayersList.getContext()));
+
         // Default to the loading spinner screen
         binding.qrviewMainLayout.setVisibility(View.GONE);
         binding.qrviewLoadingLayout.setVisibility(View.VISIBLE);
 
-        // Fetch and load the data into the fragment
+        // Fetch and load the QRShot data into the fragment
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player -> {
             mainViewModel.getQRShots().observe(getViewLifecycleOwner(), shots -> {
                     // Load the data into the fragment
@@ -98,9 +99,10 @@ public class QRViewFragment extends Fragment {
         });
 
         // Hook up button listeners
-        binding.qrviewOtherScansButton.setOnClickListener(view ->{
-            // TODO implement View Players
-            Toast.makeText(this.getActivity(), "View players not implemented", Toast.LENGTH_SHORT).show();
+        binding.qrviewOtherScansButton.setOnClickListener(view -> {
+            // Swap the visibility of the view button and the list
+            binding.qrviewOtherScansButton.setVisibility(View.GONE);
+            binding.qrviewPlayerlist.setVisibility(View.VISIBLE);
         });
         binding.qrviewCommentsButton.setOnClickListener(view -> transitionToComments(shotHash));
 
@@ -112,37 +114,40 @@ public class QRViewFragment extends Fragment {
      * @param shots A list of all the QRShots
      * @param authedPlayer The player viewing the QRCode
      */
-    @SuppressLint("DefaultLocale")
+    @SuppressLint({"DefaultLocale", "NotifyDataSetChanged"})
     private void loadQRShot(ArrayList<QRShot> shots, PlayerAccount authedPlayer){
         AppCompatActivity main = requireNonNull((AppCompatActivity) this.getActivity());
+        ArrayList<String> usersWhoScanned = playerViewAdapter.getItems();
+        usersWhoScanned.clear();
 
-        // Count the total captures, as well as find our target shot
-        int timesCaptured = 0;
+        // Find all users who scanned the code, as well as find our target shot
         QRShot shot = null;
         for (QRShot testShot : shots){
             // Check if this is a shared shot
             if (testShot.getCodeHash().equals(shotHash)){
-                timesCaptured++;
-
+                usersWhoScanned.add(testShot.getOwnerName());
                 // Check if this is the exact shot
                 if (testShot.getOwnerName().equals(shotOwner)){
                     shot = testShot;
                 }
             }
         }
+        playerViewAdapter.notifyDataSetChanged();
+
         // Ensure we actually found the shot (given database integrity is sound, it will)
         if (shot == null) {
             Log.e(CLASS_TAG, "Failed to find QRShot in shot list.");
             return;
         }
 
+        // Calculate the score of the shot
         String hash = shot.getCodeHash();
         int score = RawQRCode.getScoreFromHash(hash);
 
         // Load given data
         binding.qrviewName.setText(hash.substring(hash.length()-5));
         binding.qrviewScore.setText(String.format("%d", score));
-        binding.qrviewOtherScans.setText(String.format("%d", timesCaptured));
+        binding.qrviewOtherScans.setText(String.format("%d", usersWhoScanned.size()));
 
         // Try to load the image
         if (shot.getPhoto() != null){
@@ -179,7 +184,7 @@ public class QRViewFragment extends Fragment {
 
     /**
      * Deletes the loaded QR code from the database and return to last screen.
-     * This will occur even if the delete failed.
+     * Note: This will occur even if the delete failed.
      */
     private void deleteQR(){
         AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();

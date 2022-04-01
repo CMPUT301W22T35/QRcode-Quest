@@ -4,8 +4,10 @@ package com.qrcode_quest.ui.comments;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,11 +20,14 @@ import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.CommentManager;
 import com.qrcode_quest.databinding.FragmentCommentsBinding;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * A comment viewing fragment. This is for displaying and adding comments to a specific QR Code.
@@ -54,8 +59,19 @@ public class CommentsFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding = FragmentCommentsBinding.inflate(inflater, container, false);
 
+        // Create the comments view model
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+        ViewModelProvider.Factory viewModelFactory = new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> aClass) {
+                return Objects.requireNonNull(aClass.cast(new CommentsViewModel(
+                        requireActivity().getApplication(), appContainer.getDb())));
+            }
+        };
+
         // Grab the view models
-        viewModel = new ViewModelProvider(this).get(CommentsViewModel.class);
+        viewModel = new ViewModelProvider(this, viewModelFactory).get(CommentsViewModel.class);
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         // Load the recycler view
