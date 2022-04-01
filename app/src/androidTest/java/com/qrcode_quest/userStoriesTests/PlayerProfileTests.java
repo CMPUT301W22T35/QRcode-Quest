@@ -1,2 +1,84 @@
-package com.qrcode_quest.userStoriesTests;public class PlayerProfileTests {
+package com.qrcode_quest.userStoriesTests;
+
+import static androidx.test.espresso.Espresso.onData;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.allOf;
+
+import android.util.Log;
+import android.view.View;
+
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import com.qrcode_quest.EspressoHelper;
+import com.qrcode_quest.MainActivity;
+import com.qrcode_quest.MockInstances;
+import com.qrcode_quest.R;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
+import com.qrcode_quest.entities.PlayerAccount;
+
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+public class PlayerProfileTests {
+
+    public ActivityScenarioRule<MainActivity> rule;
+
+    @Rule
+    public ActivityScenarioRule<MainActivity> setupRule() {
+        // get the application object so we can provide mock db and other dependencies to it
+        QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
+        app.resetContainer();
+        PlayerAccount testPlayer = new PlayerAccount("testPlayerName", "testplayer@gmail.com",
+                "123-456-7890", false, true);
+        String deviceID = "";  // authentication is not important for MainActivity test, so leave blank
+
+        AppContainer container = app.getContainer();
+        container.setDb(MockInstances.createSingerPlayerDb(testPlayer, deviceID));
+        container.setStorage(MockInstances.createEmptyPhotoStorage());
+        container.setPrivateDevicePrefs(MockInstances.createEmptySharedPreferences());
+
+        rule = new ActivityScenarioRule<>(MainActivity.class);
+        return rule;
+    }
+
+    //US 04.01.01
+    //As a player, I want a profile with a unique username and my contact information.
+    @Test
+    public void profileInfoTest(){
+
+        ActivityScenario<MainActivity> scenario = rule.getScenario();
+
+        onView(withId(R.id.navigation_account)).perform(click());
+        onView(isRoot()).perform(EspressoHelper.waitFor(3000));
+        onData(allOf(is(instanceOf(String.class)), is("This is profile fragment")));
+        onView(withId(R.id.playerlist_content_name))
+                .check(matches(withText(containsString("testPlayerName"))));
+        scenario.onActivity(new ActivityScenario.ActivityAction<MainActivity>() {
+            @Override
+            public void perform(MainActivity activity) {
+            }
+        });
+
+    }
 }

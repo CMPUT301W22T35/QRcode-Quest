@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 
 import com.qrcode_quest.database.QRManager;
 
+import java.util.Random;
+
 /**
  * Represents a user's capture of a QRCode.
  * Multiple QRShots can be associated with the same underlying QRCode.
