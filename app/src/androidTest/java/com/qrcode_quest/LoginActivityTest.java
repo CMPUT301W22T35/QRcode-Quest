@@ -8,15 +8,10 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-
-import android.app.Activity;
-import android.util.Log;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.qrcode_quest.application.AppContainer;
@@ -25,8 +20,6 @@ import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.matchers.TextInputLayoutMatcher;
 import com.qrcode_quest.ui.login.LoginActivity;
 
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
