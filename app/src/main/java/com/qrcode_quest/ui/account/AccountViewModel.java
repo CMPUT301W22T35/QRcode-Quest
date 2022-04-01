@@ -1,6 +1,8 @@
 package com.qrcode_quest.ui.account;
 
 import android.graphics.Bitmap;
+import android.location.Location;
+import android.location.LocationManager;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -20,6 +22,7 @@ import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.database.Result;
+import com.qrcode_quest.entities.GPSLocationLiveData;
 import com.qrcode_quest.entities.QRShot;
 
 import java.util.HashMap;
@@ -30,13 +33,16 @@ public class AccountViewModel extends ViewModel {
     private final MutableLiveData<String> mText;
     private HashMap<Object, Object> pathToPhotos;
     private  MutableLiveData<Bitmap> bitmapLivedata = new MutableLiveData<Bitmap>();
+    MutableLiveData<Location> actualLocation;
     QRManager qrManager;
     public AccountViewModel(QRManager qrManager) {
         mText = new MutableLiveData<>();
         mText.setValue("This is account fragment");
         pathToPhotos = new HashMap<>();
         this.qrManager = qrManager;
+        actualLocation = new MutableLiveData<>();
     }
+
 
     public MutableLiveData<Bitmap> getBitmapLivedata() {
         return bitmapLivedata;

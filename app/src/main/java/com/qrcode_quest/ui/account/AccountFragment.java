@@ -3,11 +3,15 @@ package com.qrcode_quest.ui.account;
 import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
 import static com.qrcode_quest.Constants.DEVICE_UID_PREF;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
@@ -29,6 +34,8 @@ import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.FragmentAccountBinding;
+import com.qrcode_quest.entities.GPSLocationLiveData;
+import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
@@ -40,6 +47,7 @@ public class AccountFragment extends Fragment {
     private FragmentAccountBinding binding;
     private AccountViewModel accountViewModel;
     private MainViewModel mainViewModel;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -62,7 +70,7 @@ public class AccountFragment extends Fragment {
                 new ViewModelProvider(this, accountViewModelFactory).get(AccountViewModel.class);
         binding = FragmentAccountBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
+       getGps();
         return root;
     }
 
@@ -72,8 +80,10 @@ public class AccountFragment extends Fragment {
         binding.test.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent =  new Intent(getActivity(), CaptureActivity.class);
-                startActivityForResult(intent,100);
+
+
+                goCapture();
+
             }
         });
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), new Observer<PlayerAccount>() {
@@ -99,6 +109,8 @@ public class AccountFragment extends Fragment {
         });
     }
 
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -108,7 +120,7 @@ public class AccountFragment extends Fragment {
                Log.e(AccountFragment.class.getSimpleName(),"code:"+code);
                String path = getActivity().getCacheDir() + "/images/qr.png";
                Bitmap bitmap = BitmapFactory.decodeFile(path);
-               QRShot qrShot = new QRShot(name,code.hashCode()+"",bitmap,null);
+               QRShot qrShot = new QRShot(name,code.hashCode()+"",bitmap,location);
                accountViewModel.uploadQrCode(qrShot);
            }
         }
@@ -119,4 +131,38 @@ public class AccountFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+    Geolocation location = null;
+    private void getGps(){
+        QRCodeQuestApp app = (QRCodeQuestApp) getActivity().getApplication();
+        AppContainer appContainer = app.getContainer();
+        GPSLocationLiveData liveData = new GPSLocationLiveData(app.getApplicationContext(),
+                appContainer.getLocationManager());
+        if (liveData.isPermissionGranted()){
+            liveData.observe(getViewLifecycleOwner(), new Observer<Location>() {
+                @Override
+                public void onChanged(Location geolocation) {
+                    if (geolocation != null) {
+                        location = new Geolocation(geolocation.getLatitude(),geolocation.getLongitude());
+                    }
+
+                }
+            });
+        }else{
+            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.ACCESS_FINE_LOCATION
+            ,Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+        }
+
+
+    }
+    private void goCapture() {
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.CAMERA}, 1);
+        } else {
+            Intent intent =  new Intent(getActivity(), CaptureActivity.class);
+            startActivityForResult(intent,100);
+        }
+
+    }
+
 }
