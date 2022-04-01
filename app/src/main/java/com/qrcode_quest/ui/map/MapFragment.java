@@ -46,7 +46,7 @@ import java.util.Objects;
  * A view to display nearby QR codes on a map
  *
  * Uses OpenStreetMap (osmdroid) to create a MapView
- *  reference: https://osmdroid.github.io/osmdroid/How-to-use-the-osmdroid-library.html
+ * reference: https://osmdroid.github.io/osmdroid/How-to-use-the-osmdroid-library.html
  *
  * @author ageolleg
  * @version 1.0
@@ -58,7 +58,6 @@ public class MapFragment extends Fragment {
     private MainViewModel mainViewModel;
     private MapViewModel mapViewModel;
 
-    private MapController mapController;
     public LocationManager locationManager;
     private GPSLocationLiveData gpsLocationLiveData;
     private Geolocation currentLocation;
@@ -67,8 +66,8 @@ public class MapFragment extends Fragment {
     private final int NEARBY_DISTANCE = 5000;
 
     private MapView mapView;
-    private GeoPoint startPoint;
     private Marker startMarker;
+    private MapController mapController;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -94,18 +93,17 @@ public class MapFragment extends Fragment {
 
                 mapViewModel.setLastLocation(gpsLocationLiveData);
                 Log.d(CLASS_TAG, String.valueOf(mapViewModel.getLastLocation()));
-                // Log.d(CLASS_TAG, String.valueOf(currentLocation));
                 showMap(location);
 
             } else if(mapViewModel.lastLocation == null){
                 mapView.setVisibility(View.GONE);
                 view.findViewById(R.id.mapListActionButton).setVisibility(View.GONE);
                 view.findViewById(R.id.map_loading).setVisibility(View.VISIBLE);
-                  Log.d(CLASS_TAG, "Cannot get current location");
+                Log.d(CLASS_TAG, "Current location not found");
             }
         });
 
-        // Use last recorded location from ViewModel to avoid reloading locations, null locations
+        // Use last recorded location from ViewModel to avoid reloading null location
         if (mapViewModel.lastLocation != null){
             mapView.setVisibility(View.VISIBLE);
             view.findViewById(R.id.map_loading).setVisibility(View.GONE);
@@ -113,16 +111,14 @@ public class MapFragment extends Fragment {
 
             Log.d(CLASS_TAG, String.valueOf(mapViewModel.getLastLocation()));
             mapViewModel.lastLocation.observe(getViewLifecycleOwner(), lastLocation->{
-                Log.d(CLASS_TAG, "last location observed!");
                 if (lastLocation != null) {
-                    // Log.d(CLASS_TAG, String.valueOf(location));
                     showMap(lastLocation);
                 }
             });
         }
         mapView.getOverlays().add(startMarker);
 
-        // Handle action to go to MapList (List of Nearby QR Codes)
+        // Handle action to go to MapList (a list of Nearby QR Codes)
         FloatingActionButton mapListActionButton = view.findViewById(R.id.mapListActionButton);
         mapListActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,7 +133,6 @@ public class MapFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     /**
@@ -145,7 +140,6 @@ public class MapFragment extends Fragment {
      */
     private void setUpOSM(){
         Context context = requireActivity().getApplicationContext();
-        //Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         Configuration.getInstance()
                 .setOsmdroidTileCache(
@@ -161,7 +155,7 @@ public class MapFragment extends Fragment {
     }
 
     /**
-     * Set up default map controls and overlays for the osm map view
+     * Set up default map controls and overlays for the map view
      * @param mapView the map view to be displayed
      */
     private void setMapView(MapView mapView){
@@ -173,7 +167,7 @@ public class MapFragment extends Fragment {
         mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
-        mapView.setZoomRounding(true);
+        // mapView.setZoomRounding(true);
 
         // Set the map's zoom value
         mapController = (MapController) mapView.getController();
@@ -191,7 +185,7 @@ public class MapFragment extends Fragment {
     private void showMap(Location location){
         currentLocation = new Geolocation(location.getLatitude(), location.getLongitude());
 
-        startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+        GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
         markCurrentLocation(startPoint);
 
         // If current location is found, get nearby QR codes and mark them on the map
@@ -213,7 +207,8 @@ public class MapFragment extends Fragment {
             return;
         }
 
-        MapListContent.clearItems(); // clear the old list of nearby QR codes
+        // Clear the old list of nearby QR codes
+        MapListContent.clearItems();
 
         // Get a list of unique QRShots by their QRHash to remove duplicates
         HashSet<String> qrHashs = new HashSet<>(); // a list of unique QR Codes (their hash)
@@ -229,8 +224,7 @@ public class MapFragment extends Fragment {
             double distance = qrShot.getLocation().getDistanceFrom(currentLocation);
 
             // only mark nearby QRShots
-            if (distance <= NEARBY_DISTANCE ) {
-                //geolocations.add(qrShot.getLocation());
+            if (distance <= NEARBY_DISTANCE) {
                 double lat = qrShot.getLocation().getLatitude();
                 double lon = qrShot.getLocation().getLongitude();
                 int score = RawQRCode.getScoreFromHash(qrShot.getCodeHash());
@@ -285,7 +279,6 @@ public class MapFragment extends Fragment {
 
         mapView.getOverlays().add(qrMarker);
     }
-
 
     @Override
     public void onResume(){
