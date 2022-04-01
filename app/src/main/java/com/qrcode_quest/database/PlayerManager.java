@@ -46,7 +46,7 @@ public class PlayerManager extends DatabaseManager {
      * @param username The username to check
      */
     public void checkUserExists(String username, Listener<Boolean> listener) {
-        db.collection(Schema.COLLECTION_PLAYER_ACCOUNT)
+        getDb().collection(Schema.COLLECTION_PLAYER_ACCOUNT)
                 .document(Schema.getPlayerAccountDocumentName(username))
                 .get()
                 .addOnCompleteListener(task->{
@@ -70,7 +70,7 @@ public class PlayerManager extends DatabaseManager {
      * @param player The PlayerAccount to add
      */
     public void addPlayer(PlayerAccount player, Listener<Void> listener){
-        Task<Void> task = db.runTransaction(transaction -> {
+        Task<Void> task = getDb().runTransaction(transaction -> {
             final CollectionReference playersRef = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT);
             final DocumentReference playerRef = playersRef.document(
                     Schema.getPlayerAccountDocumentName(player.getUsername()));
@@ -93,7 +93,7 @@ public class PlayerManager extends DatabaseManager {
      * @param deleted The state of deleted to switch to (true being deleted)
      */
     public void setDeletedPlayer(String username, boolean deleted, Listener<Void> listener){
-        Task<Void> task = db.runTransaction(transaction -> {
+        Task<Void> task = getDb().runTransaction(transaction -> {
             final CollectionReference playersRef = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT);
             final DocumentReference playerRef = playersRef.document(
                     Schema.getPlayerAccountDocumentName(username));
@@ -113,8 +113,8 @@ public class PlayerManager extends DatabaseManager {
      * @param player The player data to update with
      */
     public void updatePlayer(PlayerAccount player, Listener<Void> listener){
-        Task<Void> task = db.runTransaction(transaction -> {
-            final CollectionReference playersRef = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT);
+        Task<Void> task = getDb().runTransaction(transaction -> {
+            final CollectionReference playersRef = getDb().collection(Schema.COLLECTION_PLAYER_ACCOUNT);
             final DocumentReference playerRef = playersRef.document(
                     Schema.getPlayerAccountDocumentName(player.getUsername()));
 
@@ -133,7 +133,7 @@ public class PlayerManager extends DatabaseManager {
      * Fetches all the undeleted players from the database
      */
     public void getPlayerList(Listener<ArrayList<PlayerAccount>> listener){
-        Task<QuerySnapshot> task = db.collection(Schema.COLLECTION_PLAYER_ACCOUNT)
+        Task<QuerySnapshot> task = getDb().collection(Schema.COLLECTION_PLAYER_ACCOUNT)
                 .whereEqualTo(Schema.PLAYER_IS_DELETED, false)
                 .get();
         retrieveResultByTask(task, listener, new PlayerListRetriever());
@@ -147,7 +147,7 @@ public class PlayerManager extends DatabaseManager {
     public void validatePlayerSession(String deviceId, String username,
                                       Listener<Boolean> listener) {
 
-        db.collection(Schema.COLLECTION_AUTH)
+        getDb().collection(Schema.COLLECTION_AUTH)
                 .document(Schema.getAuthDocumentName(username, deviceId))
                 .get()
                 .addOnCompleteListener(task -> {
@@ -173,7 +173,7 @@ public class PlayerManager extends DatabaseManager {
         sessionMap.put(Schema.AUTH_PLAYER, username);
         sessionMap.put(Schema.AUTH_IS_PRIMARY_ACCOUNT, true);
 
-        Task<Void> task = db.collection(Schema.COLLECTION_AUTH)
+        Task<Void> task = getDb().collection(Schema.COLLECTION_AUTH)
                 .document(Schema.getAuthDocumentName(username, deviceId))
                 .set(sessionMap);
         retrieveResultByTask(task, listener, new VoidResultRetriever());

@@ -59,6 +59,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         }
         // On a failed auth attempt, register a new user.
         else{
+            Log.d(CLASS_TAG, "Preferences not found.");
             transitionToRegistration();
         }
 
@@ -74,6 +75,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
      */
     @Override
     public void onRegistered(String deviceUID, String username) {
+        Log.d(CLASS_TAG, "Logging in: " + username + " + " + deviceUID);
         binding.loginFragmentContainer.setVisibility(View.GONE);
         binding.loginProgress.setVisibility(View.VISIBLE);
 
