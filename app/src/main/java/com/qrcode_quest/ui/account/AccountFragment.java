@@ -37,9 +37,13 @@ import com.qrcode_quest.databinding.FragmentAccountBinding;
 import com.qrcode_quest.entities.GPSLocationLiveData;
 import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 public class AccountFragment extends Fragment {
@@ -52,9 +56,9 @@ public class AccountFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         mainViewModel =
-                new ViewModelProvider(getActivity()).get(MainViewModel.class);
+                new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
-        AppContainer appContainer = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         ViewModelProvider.Factory accountViewModelFactory = new ViewModelProvider.Factory() {
             @NonNull
             @Override
@@ -92,7 +96,7 @@ public class AccountFragment extends Fragment {
             @Override
             public void onChanged(PlayerAccount playerAccount) {
 
-                Log.e(AccountFragment.class.getSimpleName(),"onChanged");
+                Log.d(AccountFragment.class.getSimpleName(),"onChanged");
                 if (playerAccount!=null){
                      name = playerAccount.getUsername();
                     String email = playerAccount.getEmail();
@@ -117,11 +121,17 @@ public class AccountFragment extends Fragment {
         if (requestCode==100&&resultCode== Activity.RESULT_OK){
            String code = data.getStringExtra("verify_code");
            if (!TextUtils.isEmpty(code)){
-               Log.e(AccountFragment.class.getSimpleName(),"code:"+code);
-               String path = getActivity().getCacheDir() + "/images/qr.png";
+               RawQRCode rawCode = new RawQRCode(code);
+               Log.d(AccountFragment.class.getSimpleName(),"code:"+code);
+               String path = requireActivity().getCacheDir() + "/images/qr.png";
                Bitmap bitmap = BitmapFactory.decodeFile(path);
-               QRShot qrShot = new QRShot(name,code.hashCode()+"",bitmap,location);
-               accountViewModel.uploadQrCode(qrShot);
+               try {
+                   QRCode qrCode = new QRCode(rawCode);
+                   QRShot qrShot = new QRShot(name, qrCode.getHashCode(), bitmap, location);
+                   accountViewModel.uploadQrCode(qrShot);
+               } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+                   e.printStackTrace();
+               }
            }
         }
     }
@@ -133,7 +143,7 @@ public class AccountFragment extends Fragment {
     }
     Geolocation location = null;
     private void getGps(){
-        QRCodeQuestApp app = (QRCodeQuestApp) getActivity().getApplication();
+        QRCodeQuestApp app = (QRCodeQuestApp) requireActivity().getApplication();
         AppContainer appContainer = app.getContainer();
         GPSLocationLiveData liveData = new GPSLocationLiveData(app.getApplicationContext(),
                 appContainer.getLocationManager());
@@ -148,16 +158,16 @@ public class AccountFragment extends Fragment {
                 }
             });
         }else{
-            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.ACCESS_FINE_LOCATION
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION
             ,Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
         }
 
 
     }
     private void goCapture() {
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.CAMERA}, 1);
+            ActivityCompat.requestPermissions(requireActivity(),new String[]{Manifest.permission.CAMERA}, 1);
         } else {
             Intent intent =  new Intent(getActivity(), CaptureActivity.class);
             startActivityForResult(intent,100);
