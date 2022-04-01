@@ -169,8 +169,8 @@ public class SignUpFragment extends Fragment {
         if (chosenUsername.trim().isEmpty()) {
             binding.loginSignupUsernameLayout.setError("Username is required");
         }
-        else if (!chosenUsername.trim().equals(chosenUsername)){
-            binding.loginSignupUsernameLayout.setError("No leading/trailing whitespace");
+        else if (chosenUsername.contains(" ")){
+            binding.loginSignupUsernameLayout.setError("No whitespace allowed");
         }
 
         // Prevent a database request while a username error exists
