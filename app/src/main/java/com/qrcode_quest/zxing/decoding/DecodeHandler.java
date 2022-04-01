@@ -76,7 +76,6 @@ final class DecodeHandler extends Handler {
   }
 
   private void decode(byte[] data, int width, int height) {
-    byte[] orginData = data;
     Result rawResult = null;
 
     byte[] rotatedData = new byte[data.length];
@@ -85,15 +84,11 @@ final class DecodeHandler extends Handler {
         rotatedData[x * height + height - y - 1] = data[x + y * width];
       }
     }
-    int tmp = width; // Here we are swapping, that's the difference to #11
-    width = height;
-    height = tmp;
-    data = rotatedData;
 
+    // note the parameters passed to .buildLuminanceSource have width and height swapped
+    // Here we are swapping, that's the difference to #11
     PlanarYUVLuminanceSource source = activity.getCameraManager()
-            .buildLuminanceSource(data, width, height);
-
-
+            .buildLuminanceSource(rotatedData, height, width);
     if (source != null) {
       BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
@@ -107,15 +102,14 @@ final class DecodeHandler extends Handler {
       }
     }
 
-
-
     Handler handler = activity.getHandler();
     if (rawResult != null) {
 
       if (handler != null) {
-        Bitmap bitmap = getBitmapFromByte(orginData,width,height);
+        // this is the photo when taking shot of QR code
+        Bitmap bitmap = getBitmapFromByte(data, width, height);
         if (bitmap!=null){
-          Log.e("zzz",bitmap.toString());
+          Log.d(TAG, bitmap.toString());
           saveBitmap(bitmap);
         }
 
@@ -130,6 +124,7 @@ final class DecodeHandler extends Handler {
       }
     }
   }
+  
   public Bitmap getBitmapFromByte(byte[] temp, int width, int height){
     if(temp != null){
       BitmapFactory.Options options = new BitmapFactory.Options();
@@ -139,30 +134,30 @@ final class DecodeHandler extends Handler {
       yuvImage.compressToJpeg(new Rect(0,0,width,height),100,baos);
       byte[] datas = baos.toByteArray();
       BitmapFactory.Options options2 = new BitmapFactory.Options();
-      options2.inPreferredConfig = Bitmap.Config.RGB_565;
-      Bitmap bitmap = BitmapFactory.decodeByteArray(datas, 0, datas.length,options2);
+      options2.inPreferredConfig = Bitmap.Config.ARGB_8888;
+      Bitmap bitmap = BitmapFactory.decodeByteArray(datas, 0, datas.length);
       return bitmap;
     }else{
       return null;
     }
   }
-   void saveBitmap(Bitmap bm) {
-    String path = activity.getCacheDir() + "/images/";
-     File saveFile = new File(path, "qr.png");
-     File file=new File(path);
-     if (!file.exists()){
-       file.mkdirs();
 
-     }
-     Log.e("zzz",file.getAbsolutePath());
-     try {
-       FileOutputStream saveImgOut = new FileOutputStream(saveFile);
-       bm.compress(Bitmap.CompressFormat.JPEG, 80, saveImgOut);
-       saveImgOut.flush();
-       saveImgOut.close();
-     } catch (IOException ex) {
-       ex.printStackTrace();
-     }
+  void saveBitmap(Bitmap bitmap) {
+      String path = activity.getCacheDir() + "/images/";
+      File saveFile = new File(path, "qr.jpeg");
+      File file=new File(path);
+      if (!file.exists()){
+          file.mkdirs();
+      }
+      Log.d(TAG, file.getAbsolutePath());
+      try {
+          FileOutputStream saveImgOut = new FileOutputStream(saveFile);
+          bitmap.compress(Bitmap.CompressFormat.JPEG, 80, saveImgOut);
+          saveImgOut.flush();
+          saveImgOut.close();
+      } catch (IOException ex) {
+          ex.printStackTrace();
+      }
   }
 
 }
