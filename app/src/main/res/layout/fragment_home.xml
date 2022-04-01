@@ -31,7 +31,6 @@
         android:contentDescription="Map"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:ignore="SpeakableTextPresentCheck">
-
     </ImageButton>
 
 

@@ -174,7 +174,7 @@ public class MapFragment extends Fragment {
             return;
         }
 
-        //MapListContent.clearItems();
+        MapListContent.clearItems();
         Geolocation playerGeolocation = locationToGeolocation(Objects.requireNonNull(currentLocation.getValue()));
 
         // Get a list of unique QRShots by their QRHash to remove duplicates
@@ -197,13 +197,13 @@ public class MapFragment extends Fragment {
                 double lon = qrShot.getLocation().getLongitude();
                 int score = RawQRCode.getScoreFromHash(qrShot.getCodeHash());
 
-                //MapListContent.addItem(new MapListContent.MapListItem(score, distance, lat, lon));
+                MapListContent.addItem(new MapListContent.MapListItem(score, distance, lat, lon));
                 markQRLocation(score, distance, lat, lon);
             }
         }
 
         // Sort QR code locations by distance (ascending), for Map List of nearby QR Codes
-        // MapListContent.sort();
+        MapListContent.sort();
 
     }
 
