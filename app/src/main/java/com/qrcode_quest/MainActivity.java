@@ -31,16 +31,6 @@ public class MainActivity extends AppCompatActivity {
     /** A constant tag used for logging */
     public static final String CLASS_TAG = "MainActivity";
 
-    // Storage Permissions
-    private static final int REQUEST_CODE = 1;
-    private static final String[] PERMISSIONS = {
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.INTERNET
-    };
-
     private ActivityHomeBinding binding;
 
     private NavController navController;
@@ -79,40 +69,11 @@ public class MainActivity extends AppCompatActivity {
         MainViewModel viewModel = new ViewModelProvider(this, mainViewModelFactory).get(MainViewModel.class);
         viewModel.getCurrentPlayer();
 
-        getPermissions(this);
-
     }
 
-    /**
-     * If the app does not have permission,
-     * prompt user to grant permissions
-     */
-    public void getPermissions(Activity activity) {
-        if (!hasPermissions() ) {
-            Log.d(CLASS_TAG, "Permissions not granted");
-            // Permissions not granted, prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS,
-                    REQUEST_CODE
-            );
-        }
+    @Override
+    public boolean onSupportNavigateUp() {
+        return navController.navigateUp();
     }
 
-    /**
-     * Checks if the app has necessary permissions
-     * @return  a boolean value
-     */
-    private boolean hasPermissions() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                        PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) ==
-                        PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) ==
-                        PackageManager.PERMISSION_GRANTED;
-    }
 }
