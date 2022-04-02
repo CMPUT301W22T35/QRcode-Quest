@@ -39,6 +39,7 @@ import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.QRStringConverter;
 import com.qrcode_quest.entities.RawQRCode;
 import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
@@ -99,8 +100,8 @@ public class AccountFragment extends Fragment {
                 Log.d(AccountFragment.class.getSimpleName(),"onChanged");
                 if (playerAccount!=null){
                      name = playerAccount.getUsername();
-                    String email = playerAccount.getEmail();
-                    accountViewModel.createQRImage(name+"##"+email,300,300);
+                    accountViewModel.createQRImage(
+                            QRStringConverter.getLoginQRString(name),300,300);
 
                 }
             }
@@ -121,14 +122,37 @@ public class AccountFragment extends Fragment {
         if (requestCode==100&&resultCode== Activity.RESULT_OK){
            String code = data.getStringExtra("verify_code");
            if (!TextUtils.isEmpty(code)){
-               RawQRCode rawCode = new RawQRCode(code);
                Log.d(AccountFragment.class.getSimpleName(),"code:"+code);
+
+               String playerName = QRStringConverter.getPlayerNameFromLoginQRString(code);
+               if (playerName != null) {
+                   // handles login qr code
+                   Log.d("LOGIN_SCAN", playerName);
+                   // TODO: (after moving this piece of code into capture fragment)
+                   // 1) transition back to account fragment with a message containing player's name
+                   // 2) account fragment updates database to first check if the given player name
+                   // exists, and if so insert a playerName-deviceId pair into PlayerDevice relation
+                   return;
+               }
+               playerName = QRStringConverter.getPlayerNameFromProfileQRString(code);
+               if (playerName != null) {
+                   // handles profile qr code
+                   Log.d("PROFILE_SCAN", playerName);
+                   // TODO: (after moving this piece of code into capture fragment)
+                   // 1) transition to playerQRListFragment with player's name as parameter
+                   return;
+               }
+
+               // otherwise this is a normal qr code for score
+               RawQRCode rawCode = new RawQRCode(code);
                String path = requireActivity().getCacheDir() + "/images/qr.png";
                Bitmap bitmap = BitmapFactory.decodeFile(path);
                try {
                    QRCode qrCode = new QRCode(rawCode);
                    QRShot qrShot = new QRShot(name, qrCode.getHashCode(), bitmap, location);
                    accountViewModel.uploadQrCode(qrShot);
+                   // TODO: (after moving this piece of code into capture fragment)
+                   // 1) after scanning, call mainViewModel.loadQRCodesAndShots() to force an update
                } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
                    e.printStackTrace();
                }
