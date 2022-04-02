@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,11 +40,15 @@ import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
+import com.qrcode_quest.databinding.FragmentAccountBinding;
+import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.entities.RawQRCode;
 
 import java.util.Objects;
 
 public class AccountFragment extends Fragment {
     private String name;
+    private String email;
     private FragmentAccountBinding binding;
     private AccountViewModel accountViewModel;
     private MainViewModel mainViewModel;
@@ -66,41 +71,51 @@ public class AccountFragment extends Fragment {
                     throw new IllegalArgumentException("Unexpected ViewModelClass type request received by the factory!");
             }
         };
+
         accountViewModel =
                 new ViewModelProvider(this, accountViewModelFactory).get(AccountViewModel.class);
+
         binding = FragmentAccountBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-       getGps();
+        getGps();
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.test.setOnClickListener(new View.OnClickListener() {
+
+        binding.qrgenerateLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-
                 goCapture();
-
             }
         });
+
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), new Observer<PlayerAccount>() {
-
-
             @Override
             public void onChanged(PlayerAccount playerAccount) {
 
                 Log.e(AccountFragment.class.getSimpleName(),"onChanged");
                 if (playerAccount!=null){
-                     name = playerAccount.getUsername();
-                    String email = playerAccount.getEmail();
+                    name = playerAccount.getUsername();
+                    email = playerAccount.getEmail();
+                    binding.playerUsername.setText(name);
+
+                    if (email != null) {
+                        binding.playerEmail.setText(email);
+                    }
+                    else{
+                        binding.playerEmail.setText("Not Provided");
+                    }
+
                     accountViewModel.createQRImage(name+"##"+email,300,300);
 
                 }
             }
         });
+
         accountViewModel.getBitmapLivedata().observe(getViewLifecycleOwner(), new Observer<Bitmap>() {
             @Override
             public void onChanged(Bitmap bitmap) {
@@ -108,7 +123,6 @@ public class AccountFragment extends Fragment {
             }
         });
     }
-
 
 
     @Override
@@ -131,6 +145,7 @@ public class AccountFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
     Geolocation location = null;
     private void getGps(){
         QRCodeQuestApp app = (QRCodeQuestApp) getActivity().getApplication();
@@ -151,9 +166,8 @@ public class AccountFragment extends Fragment {
             ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.ACCESS_FINE_LOCATION
             ,Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
         }
-
-
     }
+
     private void goCapture() {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -164,5 +178,4 @@ public class AccountFragment extends Fragment {
         }
 
     }
-
 }
