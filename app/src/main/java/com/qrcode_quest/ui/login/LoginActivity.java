@@ -84,7 +84,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         new PlayerManager(container.getDb()).validatePlayerSession(deviceUID, username, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to authenticate players");
-                Toast.makeText(this, "Database call failed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, result.getError().getMessage(), Toast.LENGTH_SHORT).show();
                 transitionToRegistration();
                 return;
             }

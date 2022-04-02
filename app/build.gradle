@@ -65,6 +65,9 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.4.1'
     implementation 'androidx.navigation:navigation-ui:2.4.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    implementation 'org.osmdroid:osmdroid-android:6.1.2'
+
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.4.0'
