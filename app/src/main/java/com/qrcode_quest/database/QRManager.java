@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * Interfaces to query and update QRShot objects in the Firestore database
  * @author tianming, jdumouch
- * @version 1.1
+ * @version 1.2
  * @see com.qrcode_quest.entities.QRCode
  * @see com.qrcode_quest.entities.QRShot
  */
@@ -304,6 +304,18 @@ public class QRManager extends DatabaseManager {
             }
         });
         retrieveResultByTask(task, onCompleteListener, new ManagerResult.VoidResultRetriever());
+    }
+
+    /**
+     * Removes a specific QRShot from the database
+     * @param owner The username of the owner of the QRShot
+     * @param qrHash The hash of the QRShot to remove
+     */
+    public void removeQRShot(String owner, String qrHash, Listener<Void> listener){
+        Task<Void> task = getDb().collection(Schema.COLLECTION_QRSHOT)
+                .document(Schema.getQRShotDocumentName(qrHash, owner))
+                .delete();
+        retrieveResultByTask(task, listener, new ManagerResult.VoidResultRetriever());
     }
 
     public void removeQRCode(String qrHash, Listener<Void> listener) {

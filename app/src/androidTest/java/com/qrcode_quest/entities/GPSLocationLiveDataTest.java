@@ -41,9 +41,8 @@ public class GPSLocationLiveDataTest {
     // StackOverflow, by donturner and Amin Keshavarzian
     // url: https://stackoverflow.com/questions/50403128/how-to-grant-permissions-to-android-instrumented-tests
     @Rule
-    public GrantPermissionRule fineLocRule = GrantPermissionRule.grant(Manifest.permission.ACCESS_FINE_LOCATION);
-    @Rule
-    public GrantPermissionRule coarseLocRule = GrantPermissionRule.grant(Manifest.permission.ACCESS_COARSE_LOCATION);
+    public GrantPermissionRule fineLocRule = GrantPermissionRule.grant(Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION);
     public ActivityScenarioRule<MainActivity> rule;
 
     @Rule

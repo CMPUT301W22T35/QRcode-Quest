@@ -1,5 +1,8 @@
 package com.qrcode_quest;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -7,6 +10,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -16,9 +22,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.ActivityHomeBinding;
 import com.qrcode_quest.entities.QRShot;
+import com.qrcode_quest.entities.RawQRCode;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -62,10 +72,12 @@ public class MainActivity extends AppCompatActivity {
         // Do an initial pull of common data for faster loads in other fragments
         MainViewModel viewModel = new ViewModelProvider(this, mainViewModelFactory).get(MainViewModel.class);
         viewModel.getCurrentPlayer();
+
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         return navController.navigateUp();
     }
+
 }

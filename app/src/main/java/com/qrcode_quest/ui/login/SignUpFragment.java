@@ -1,7 +1,6 @@
 package com.qrcode_quest.ui.login;
 
 
-import static android.content.Context.MODE_PRIVATE;
 import static com.qrcode_quest.Constants.*;
 
 import static java.util.Objects.requireNonNull;
@@ -22,19 +21,13 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.qrcode_quest.MainViewModel;
-import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.databinding.FragmentSignUpBinding;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -169,8 +162,8 @@ public class SignUpFragment extends Fragment {
         if (chosenUsername.trim().isEmpty()) {
             binding.loginSignupUsernameLayout.setError("Username is required");
         }
-        else if (!chosenUsername.trim().equals(chosenUsername)){
-            binding.loginSignupUsernameLayout.setError("No leading/trailing whitespace");
+        else if (chosenUsername.contains(" ")){
+            binding.loginSignupUsernameLayout.setError("No whitespace allowed");
         }
 
         // Prevent a database request while a username error exists
@@ -206,7 +199,7 @@ public class SignUpFragment extends Fragment {
                 playerManager.addPlayer(newPlayer, addResult -> {
                     if (!addResult.isSuccess()){
                         Log.e(CLASS_TAG, "Failed to add user.");
-                        Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this.getActivity(), addResult.getError().getMessage(), Toast.LENGTH_SHORT).show();
                         showLoading(false);
                         return;
                     }
@@ -219,7 +212,7 @@ public class SignUpFragment extends Fragment {
                     playerManager.createPlayerSession(deviceUID, chosenUsername, sessionResult ->{
                         if (!sessionResult.isSuccess()){
                             Log.e(CLASS_TAG, "Failed to add session.");
-                            Toast.makeText(this.getActivity(), "Database call failed.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this.getActivity(), sessionResult.getError().getMessage(), Toast.LENGTH_SHORT).show();
                             return;
                         }
 

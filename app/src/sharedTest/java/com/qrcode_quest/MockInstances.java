@@ -8,12 +8,16 @@ import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.database.Result;
+import com.qrcode_quest.database.Schema;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.HashMap;
 
 /**
  * creates mock instances of Firebase db and storage
+ *
+ * @author tianming, jdumouch
+ * @version 1.1
  */
 public class MockInstances {
     /**
@@ -28,7 +32,7 @@ public class MockInstances {
      * creates a database with only one player registered
      * @return a FirebaseFirestore db
      */
-    public static FirebaseFirestore createSingerPlayerDb(PlayerAccount account,
+    public static FirebaseFirestore createSinglePlayerDb(PlayerAccount account,
                                                          String correspondingDeviceID) {
         FirebaseFirestore db = MockDb.createMockDatabase(new HashMap<>());
         new PlayerManager(db).addPlayer(account, result -> { });
@@ -46,5 +50,18 @@ public class MockInstances {
 
     public static SharedPreferences createEmptySharedPreferences() {
         return MockSharedPref.createMockSharedPref(new HashMap<>());
+    }
+
+    /**
+     * Create a mock preference of a pre-registered user.
+     * @param username The username of the player
+     * @param deviceID The device ID of the player.
+     */
+    public static SharedPreferences createRegisteredPreferences(String username, String deviceID){
+        HashMap<String, String> prefMap = new HashMap<>();
+        prefMap.put(Constants.AUTHED_USERNAME_PREF, username);
+        prefMap.put(Constants.DEVICE_UID_PREF, deviceID);
+
+        return MockSharedPref.createMockSharedPref(prefMap);
     }
 }

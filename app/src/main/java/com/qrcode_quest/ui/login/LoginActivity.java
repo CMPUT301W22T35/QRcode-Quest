@@ -59,6 +59,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         }
         // On a failed auth attempt, register a new user.
         else{
+            Log.d(CLASS_TAG, "Preferences not found.");
             transitionToRegistration();
         }
 
@@ -74,6 +75,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
      */
     @Override
     public void onRegistered(String deviceUID, String username) {
+        Log.d(CLASS_TAG, "Logging in: " + username + " + " + deviceUID);
         binding.loginFragmentContainer.setVisibility(View.GONE);
         binding.loginProgress.setVisibility(View.VISIBLE);
 
@@ -82,7 +84,7 @@ public class LoginActivity extends AppCompatActivity implements SignUpFragment.R
         new PlayerManager(container.getDb()).validatePlayerSession(deviceUID, username, result ->{
             if (!result.isSuccess()){
                 Log.e(CLASS_TAG, "Failed to authenticate players");
-                Toast.makeText(this, "Database call failed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, result.getError().getMessage(), Toast.LENGTH_SHORT).show();
                 transitionToRegistration();
                 return;
             }
