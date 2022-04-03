@@ -197,19 +197,23 @@ public final class CameraManager {
         return null;
       }
       Point screenResolution = configManager.getScreenResolution();
+      Point cameraResolution = configManager.getCameraResolution();
+
       if (screenResolution == null) {
         // Called early, before init even finished
         return null;
       }
 
       int screenResolutionX = screenResolution.x;
-
+      int screenResolutionY = screenResolution.y;
       int width = (int) (screenResolutionX * 0.74);
-      int height = width;
+      int height = (int) (screenResolutionY * 0.74);
 
 
-      int leftOffset = (screenResolution.x - width) / 2;
-      int topOffset = (int) ((screenResolution.y - height) / 2.7);
+      int leftOffset = (screenResolutionX - width) / 2;
+      int topOffset = 0;
+      Log.d("x", Integer.toString(leftOffset));
+      Log.d("y", Integer.toString(topOffset));
 
       framingRect = new Rect(leftOffset, topOffset, leftOffset + width,
               topOffset + height);

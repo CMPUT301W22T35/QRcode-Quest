@@ -50,7 +50,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     private boolean playBeep;
     private boolean vibrate;
     protected String verify_code;
-    protected String strhint_res ="Scan";;
+    protected String strhint_res ="Find and scan a QR code";;
     public static final int REQUEST_CODE_GET_PIC_URI=100;
     private SurfaceHolder surfaceHolder;
     private CameraManager cameraManager;
@@ -80,14 +80,8 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     }
 
     protected void initView() {
-        Window window = getActivity().getWindow();
+        Window window = requireActivity().getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-//        setSupportActionBar(binding.toolbar);
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowTitleEnabled(false);
-//        binding.toolbar.setNavigationIcon(R.mipmap.nav_leftbai);
-//        binding.toolbar.setNavigationOnClickListener(view -> returnToAccountFragment());
-//        binding.tvTitle.setText("Scan");
         hasSurface = false;
         binding.viewfinderView.initTextHint(strhint_res);
     }
