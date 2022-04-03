@@ -53,7 +53,6 @@ public class QRManager extends DatabaseManager {
                 // look for ones with photos
                 List<DocumentSnapshot> snapshots = result.unwrap();
                 final int[] numPhotosRemaining = {0};
-                final boolean[] hasExecutedListener = {false};
 
                 ArrayList<QRShot> shots = new ArrayList<>();
                 HashMap<String, QRShot> photoPathToShot = new HashMap<>();
@@ -86,25 +85,22 @@ public class QRManager extends DatabaseManager {
                         // give the loading results to the listener)
                         numPhotosRemaining[0] -= 1;
                         assert numPhotosRemaining[0] >= 0;
-                        if (hasExecutedListener[0])
-                            return;  // do nothing
 
                         if (!taskLoadPhoto.isSuccessful()) {
-                            Log.d("STORAGE", photoRef.getPath() + " exception");
+                            Log.d("QR_IMAGE_EXCEPTION", photoRef.getPath());
                             Exception e = taskLoadPhoto.getException();
                             assert e != null;
-                            listener.onResult(new Result<>(new DbError(
-                                    "Exception downloading photos: " + e.getLocalizedMessage(), path)));
-                            hasExecutedListener[0] = true;
+                            e.printStackTrace();
                         } else {
+                            Log.d("QR_IMAGE_SUCCESS", photoRef.getPath());
                             byte[] photoBytes = taskLoadPhoto.getResult();
                             if (photoBytes != null) {
                                 Bitmap reconstructedPhoto = photoStorage.decodeFromBytes(photoBytes);
                                 Objects.requireNonNull(photoPathToShot.get(path)).setPhoto(reconstructedPhoto);
                             }
                         }
-
                         if (numPhotosRemaining[0] == 0) {
+                            Log.d("QR_FINISHED", "loading finished");
                             // all photos have been loaded
                             listener.onResult(new Result<>(shots));
                         }
