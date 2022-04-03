@@ -20,20 +20,7 @@ public class PlayerTests {
 
     @Rule
     public ActivityScenarioRule<MainActivity> setupRule() {
-            // get the application object so we can provide mock db and other dependencies to it
-        QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
-        app.resetContainer();
-        PlayerAccount testPlayer = new PlayerAccount("testPlayerName", "testplayer@gmail.com",
-                "123-456-7890", false, true);
-        String deviceID = "";  // authentication is not important for MainActivity test, so leave blank
 
-        AppContainer container = app.getContainer();
-        container.setDb(MockInstances.createSingerPlayerDb(testPlayer, deviceID));
-        container.setStorage(MockInstances.createEmptyPhotoStorage());
-        container.setPrivateDevicePrefs(MockInstances.createEmptySharedPreferences());
-
-        rule = new ActivityScenarioRule<>(MainActivity.class);
-        return rule;
     }
 
     //US 01.01.01

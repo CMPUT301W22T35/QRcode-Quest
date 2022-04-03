@@ -13,6 +13,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasXPath;
 
 import android.util.Log;
 import android.view.View;
@@ -33,52 +34,44 @@ import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.matchers.TextInputLayoutMatcher;
+import com.qrcode_quest.ui.login.LoginActivity;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
+/**
+ * Tests user stories for Player Profile functionality.
+ *
+ * @author egwhite
+ * @version 1.0
+ */
 public class PlayerProfileTests {
 
-    public ActivityScenarioRule<MainActivity> rule;
+    //US 04.0X.01
+    //As a player, I do not want to log into my application using a username and password as my device can identify me.
+    @Test
+    public void deviceIDTest(){
 
-    @Rule
-    public ActivityScenarioRule<MainActivity> setupRule() {
-        // get the application object so we can provide mock db and other dependencies to it
         QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
         app.resetContainer();
-        PlayerAccount testPlayer = new PlayerAccount("testPlayerName", "testplayer@gmail.com",
-                "123-456-7890", false, true);
-        String deviceID = "";  // authentication is not important for MainActivity test, so leave blank
+
+        PlayerAccount testPlayer = new PlayerAccount("TestUsername",
+                "test@email.com", "123-456-7890", false, false);
+        String deviceID = "test";
 
         AppContainer container = app.getContainer();
-        container.setDb(MockInstances.createSingerPlayerDb(testPlayer, deviceID));
+        container.setDb(MockInstances.createSinglePlayerDb(testPlayer, deviceID));
         container.setStorage(MockInstances.createEmptyPhotoStorage());
-        container.setPrivateDevicePrefs(MockInstances.createEmptySharedPreferences());
+        container.setPrivateDevicePrefs(
+                MockInstances.createRegisteredPreferences(testPlayer.getUsername(), deviceID));
 
-        rule = new ActivityScenarioRule<>(MainActivity.class);
-        return rule;
-    }
 
-    //US 04.01.01
-    //As a player, I want a profile with a unique username and my contact information.
-    @Test
-    public void profileInfoTest(){
-
-        ActivityScenario<MainActivity> scenario = rule.getScenario();
-
-        onView(withId(R.id.navigation_account)).perform(click());
-        onView(isRoot()).perform(EspressoHelper.waitFor(3000));
-        onData(allOf(is(instanceOf(String.class)), is("This is profile fragment")));
-        onView(withId(R.id.playerlist_content_name))
-                .check(matches(withText(containsString("testPlayerName"))));
-        scenario.onActivity(new ActivityScenario.ActivityAction<MainActivity>() {
-            @Override
-            public void perform(MainActivity activity) {
-            }
-        });
+        ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class);
+        onView(isRoot()).perform(EspressoHelper.waitFor(1000));
+        onView(withId(R.id.text_home)).check(matches(TextInputLayoutMatcher.hasNoError())); //check login was successful and are on MainActivity
 
     }
 }
