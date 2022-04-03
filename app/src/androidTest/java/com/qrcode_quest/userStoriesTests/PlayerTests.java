@@ -1,5 +1,6 @@
 package com.qrcode_quest.userStoriesTests;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -11,6 +12,7 @@ import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
@@ -20,12 +22,31 @@ public class PlayerTests {
 
     @Rule
     public ActivityScenarioRule<MainActivity> setupRule() {
+        // get the application object so we can provide mock db and other dependencies to it
+        QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
+        app.resetContainer();
+        PlayerAccount testPlayer = new PlayerAccount("testPlayerName", "testplayer@gmail.com",
+                "123-456-7890", false, true);
+        String deviceID = "";
 
+        AppContainer container = app.getContainer();
+        container.setDb(MockInstances.createSinglePlayerDb(testPlayer, deviceID));
+        container.setStorage(MockInstances.createEmptyPhotoStorage());
+        container.setPrivateDevicePrefs(MockInstances.createEmptySharedPreferences());
+
+        rule = new ActivityScenarioRule<>(MainActivity.class);
+        return rule;
     }
+
 
     //US 01.01.01
     //As a player, I want to add new QR codes to my account.
+    @Test
     public void addQRTest() {
+
+        ActivityScenario scenario = rule.getScenario();
+
+
 
 
     }
