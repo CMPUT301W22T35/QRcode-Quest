@@ -1,24 +1,18 @@
 package com.qrcode_quest.ui.account;
 
-import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
-import static com.qrcode_quest.Constants.DEVICE_UID_PREF;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,8 +21,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
-import com.qrcode_quest.CaptureActivity;
+import com.qrcode_quest.R;
+import com.qrcode_quest.ui.capture.CaptureFragment;
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
@@ -41,7 +37,6 @@ import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.QRStringConverter;
 import com.qrcode_quest.entities.RawQRCode;
-import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -75,35 +70,20 @@ public class AccountFragment extends Fragment {
                 new ViewModelProvider(this, accountViewModelFactory).get(AccountViewModel.class);
         binding = FragmentAccountBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-       getGps();
+        getGps();
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.test.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-                goCapture();
-
-            }
-        });
-        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), new Observer<PlayerAccount>() {
-
-
-            @Override
-            public void onChanged(PlayerAccount playerAccount) {
-
-                Log.d(AccountFragment.class.getSimpleName(),"onChanged");
-                if (playerAccount!=null){
-                     name = playerAccount.getUsername();
-                    accountViewModel.createQRImage(
-                            QRStringConverter.getLoginQRString(name),300,300);
-
-                }
+        binding.test.setOnClickListener(view1 -> goCapture());
+        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), playerAccount -> {
+            Log.d(AccountFragment.class.getSimpleName(),"onChanged");
+            if (playerAccount != null) {
+                name = playerAccount.getUsername();
+                accountViewModel.createQRImage(
+                        QRStringConverter.getLoginQRString(name),300,300);
             }
         });
         accountViewModel.getBitmapLivedata().observe(getViewLifecycleOwner(), new Observer<Bitmap>() {
@@ -178,25 +158,21 @@ public class AccountFragment extends Fragment {
                     if (geolocation != null) {
                         location = new Geolocation(geolocation.getLatitude(),geolocation.getLongitude());
                     }
-
                 }
             });
         }else{
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION
-            ,Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
         }
-
-
     }
     private void goCapture() {
         if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(),new String[]{Manifest.permission.CAMERA}, 1);
         } else {
-            Intent intent =  new Intent(getActivity(), CaptureActivity.class);
-            startActivityForResult(intent,100);
+            Navigation.findNavController(requireView()).navigate(R.id.action_navigation_account_to_captureFragment);
         }
-
     }
 
 }

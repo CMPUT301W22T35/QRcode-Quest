@@ -37,7 +37,11 @@
         android:id="@+id/navigation_account"
         android:name="com.qrcode_quest.ui.account.AccountFragment"
         android:label="@string/title_account"
-        tools:layout="@layout/fragment_account" />
+        tools:layout="@layout/fragment_account" >
+        <action
+            android:id="@+id/action_navigation_account_to_captureFragment"
+            app:destination="@id/captureFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_leaderboard"
@@ -99,5 +103,9 @@
             app:argType="string"
             app:nullable="false" />
     </fragment>
+    <fragment
+        android:id="@+id/captureFragment"
+        android:name="com.qrcode_quest.ui.capture.CaptureFragment"
+        android:label="CaptureFragment" />
 
 </navigation>

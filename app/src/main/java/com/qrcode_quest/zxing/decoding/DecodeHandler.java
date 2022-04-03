@@ -16,12 +16,10 @@
 
 package com.qrcode_quest.zxing.decoding;
 
-import static java.lang.Math.ceil;
 import static java.lang.Math.floor;
 import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -38,9 +36,8 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
-import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
-import com.qrcode_quest.CaptureActivity;
+import com.qrcode_quest.ui.capture.CaptureFragment;
 import com.qrcode_quest.zxing.Constant;
 
 import java.io.ByteArrayOutputStream;
@@ -53,14 +50,14 @@ final class DecodeHandler extends Handler {
 
   private static final String TAG = DecodeHandler.class.getSimpleName();
 
-  private final CaptureActivity activity;
+  private final CaptureFragment fragment;
   private final MultiFormatReader multiFormatReader;
   private boolean running = true;
 
-  DecodeHandler(CaptureActivity activity, Map<DecodeHintType, Object> hints) {
+  DecodeHandler(CaptureFragment fragment, Map<DecodeHintType, Object> hints) {
     multiFormatReader = new MultiFormatReader();
     multiFormatReader.setHints(hints);
-    this.activity = activity;
+    this.fragment = fragment;
   }
 
   @Override
@@ -92,7 +89,7 @@ final class DecodeHandler extends Handler {
 
     // note the parameters passed to .buildLuminanceSource have width and height swapped
     // Here we are swapping, that's the difference to #11
-    PlanarYUVLuminanceSource source = activity.getCameraManager()
+    PlanarYUVLuminanceSource source = fragment.getCameraManager()
             .buildLuminanceSource(rotatedData, height, width);
     if (source != null) {
       BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
@@ -107,7 +104,7 @@ final class DecodeHandler extends Handler {
       }
     }
 
-    Handler handler = activity.getHandler();
+    Handler handler = fragment.getHandler();
     if (rawResult != null) {
 
       if (handler != null) {
@@ -160,7 +157,7 @@ final class DecodeHandler extends Handler {
     // url: https://stackoverflow.com/questions/4837715/how-to-resize-a-bitmap-in-android
     bitmap = Bitmap.createScaledBitmap(bitmap, destWidth, destHeight, false);
 
-    String path = activity.getCacheDir() + "/images/";
+    String path = fragment.requireActivity().getCacheDir() + "/images/";
     File saveFile = new File(path, "qr.png");
     File file=new File(path);
     if (!file.exists()){

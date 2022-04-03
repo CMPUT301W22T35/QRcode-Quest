@@ -109,8 +109,11 @@ public class MainViewModel extends AndroidViewModel {
         Log.d(CLASS_TAG, "Loaded authed user: " + username + "...");
         new PlayerManager(db).getPlayer(username, result -> {
             // Catch errors/failure
-            if (!result.isSuccess() || result.unwrap() == null) {
-                Log.e(CLASS_TAG, "Failed to load current player.");
+            if (!result.isSuccess()) {
+                Log.e(CLASS_TAG, "Failed to load current player. " + result.getError().getMessage());
+                return;
+            } else if (result.unwrap() == null) {
+                Log.e(CLASS_TAG, "Current player does not exist.");
                 return;
             }
 

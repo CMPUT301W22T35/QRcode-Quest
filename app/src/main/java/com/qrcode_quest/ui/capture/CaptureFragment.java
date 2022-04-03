@@ -1,53 +1,51 @@
-package com.qrcode_quest;
+package com.qrcode_quest.ui.capture;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import static android.content.Context.AUDIO_SERVICE;
+import static android.content.Context.VIBRATOR_SERVICE;
+
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
-import android.graphics.Bitmap;
-import android.location.Location;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.zxing.Result;
+import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.R;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
+import com.qrcode_quest.databinding.FragmentCaptureBinding;
 import com.qrcode_quest.zxing.Constant;
 import com.qrcode_quest.zxing.camera.CameraManager;
-import com.qrcode_quest.zxing.decoding.CaptureActivityHandler;
-import com.qrcode_quest.zxing.decoding.InactivityTimer;
+import com.qrcode_quest.zxing.decoding.CaptureFragmentHandler;
 import com.qrcode_quest.zxing.view.ViewfinderView;
 
 import java.io.IOException;
 
-public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.Callback  {
+public class CaptureFragment extends Fragment implements SurfaceHolder.Callback  {
 
     private static final float BEEP_VOLUME = 0.10f;
     protected static final int BACK_PREVIEW = 1000;
     private static long curTime;
-    protected CaptureActivityHandler handler;
-    private ViewfinderView viewfinderView;
+    protected CaptureFragmentHandler handler;
     private TextView txt_nonet_hint;
     private boolean hasSurface;
-    private InactivityTimer inactivityTimer;
     private MediaPlayer mediaPlayer;
     private boolean playBeep;
     private boolean vibrate;
@@ -55,9 +53,12 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
     protected String strhint_res ="Scan";;
     public static final int REQUEST_CODE_GET_PIC_URI=100;
     private SurfaceHolder surfaceHolder;
-    private SurfaceView surfaceView;
     private CameraManager cameraManager;
     private static final int REQUEST_SD=1002;
+    private static final long VIBRATE_DURATION = 200L;
+
+    MainViewModel mainViewModel;
+    FragmentCaptureBinding binding;
 
 
     public CameraManager getCameraManager() {
@@ -67,147 +68,113 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView( R.layout.activity_capture);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                            ViewGroup container, Bundle savedInstanceState) {
+        mainViewModel =
+                new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+
+        binding = FragmentCaptureBinding.inflate(inflater, container, false);
         initView();
-        initData();
-
-    }
-
-
-    protected void initData() {
-        inactivityTimer = new InactivityTimer(this);
+        return binding.getRoot();
     }
 
     protected void initView() {
-        Window window = getWindow();
+        Window window = getActivity().getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        Toolbar toolbar =  findViewById(R.id.toolbar);
-        if (toolbar==null){
-            return;
-        }
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        toolbar.setNavigationIcon(R.mipmap.nav_leftbai);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-               finish();
-            }
-        });
-        TextView mTitle =  toolbar.findViewById(R.id.tv_title);
-        mTitle.setText("Scan");
+//        setSupportActionBar(binding.toolbar);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayShowTitleEnabled(false);
+//        binding.toolbar.setNavigationIcon(R.mipmap.nav_leftbai);
+//        binding.toolbar.setNavigationOnClickListener(view -> returnToAccountFragment());
+//        binding.tvTitle.setText("Scan");
         hasSurface = false;
-        surfaceView = (SurfaceView) findViewById(R.id.preview_view);
-        viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-        viewfinderView.initTextHint(strhint_res);
+        binding.viewfinderView.initTextHint(strhint_res);
     }
 
+    /** return the user to account fragment */
+    public void returnToAccountFragment() {
 
-
-
-
-
-
+    }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
-        cameraManager = new CameraManager(getApplication());
 
-        viewfinderView.setCameraManager(cameraManager);
+        // handle camera and beeping
+        cameraManager = new CameraManager(requireActivity().getApplication());
+
+        binding.viewfinderView.setCameraManager(cameraManager);
         handler = null;
         playBeep = true;
-        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder = binding.previewView.getHolder();
         if (hasSurface) {
-
             initCamera(surfaceHolder);
         } else {
             surfaceHolder.addCallback(this);
         }
 
-        inactivityTimer.onResume();
-
-        AudioManager audioService = (AudioManager) getSystemService(AUDIO_SERVICE);
+        AudioManager audioService = (AudioManager) requireActivity().getSystemService(AUDIO_SERVICE);
         if (audioService.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
             playBeep = false;
         }
         initBeepSound();
         vibrate = true;
-
-
-
-
     }
 
     @Override
-    protected void onPause() {
-
-        super.onPause();
-
-    }
-
-    @Override
-    protected void onDestroy() {
+    public void onDestroy() {
 
         if (handler != null) {
             handler.quitSynchronously();
             handler = null;
         }
-        inactivityTimer.onPause();
         cameraManager.closeDriver();
 
         if (!hasSurface) {
-
             surfaceHolder.removeCallback(this);
         }
-        inactivityTimer.shutdown();
-        viewfinderView.stopAnimator();
+        binding.viewfinderView.stopAnimator();
         super.onDestroy();
     }
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_CAMERA:
-                return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-    public static boolean checkTime(long timeoffset) {
+
+    /**
+     * check if the specified time has passed in milliseconds since the last time checkTime()
+     * returns successfully
+     * @param dt the minimum elapsed time required
+     * @return true if given time has passed
+     */
+    public static boolean checkTime(long dt) {
         long time = System.currentTimeMillis();
-        if(time-curTime<timeoffset) {
+        if(time - curTime < dt) {
             return false;
         }
         curTime = time;
         return true;
     }
+
+
     public void handleDecode(Result result) {
         if(!checkTime(1000))
             return;
-
-        inactivityTimer.onActivity();
         playBeepSoundAndVibrate();
         verify_code = result.getText();
         if(TextUtils.isEmpty(verify_code)) {
-
-            handler.sendEmptyMessageDelayed(Constant.RESTART_PREVIEW,BACK_PREVIEW);
+            handler.sendEmptyMessageDelayed(Constant.RESTART_PREVIEW, BACK_PREVIEW);
             return;
         }
         if(!doAfterScan(verify_code)){
-            handler.sendEmptyMessageDelayed(Constant.RESTART_PREVIEW,BACK_PREVIEW);
+            handler.sendEmptyMessageDelayed(Constant.RESTART_PREVIEW, BACK_PREVIEW);
         }
-
-
     }
 
     private boolean doAfterScan(String verify_code) {
         Log.d("CAPTURE_VERIFY_CODE" ,verify_code);
         Intent intent = new Intent();
         intent.putExtra("verify_code",verify_code);
-        setResult(RESULT_OK,intent);
-        finish();
+        // TODO: deal with the scanned photo
+
+        returnToAccountFragment();
         return false;
     }
 
@@ -222,14 +189,12 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
         try {
             cameraManager.openDriver(surfaceHolder);
             if (handler == null) {
-                handler = new CaptureActivityHandler(this, cameraManager);
+                handler = new CaptureFragmentHandler(this, cameraManager);
             }
         } catch (IOException ioe) {
         } catch (RuntimeException e) {
             return;
         }
-
-
     }
 
     @Override
@@ -254,7 +219,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
     }
 
     public ViewfinderView getViewfinderView() {
-        return viewfinderView;
+        return binding.viewfinderView;
     }
 
     public Handler getHandler() {
@@ -262,8 +227,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
     }
 
     public void drawViewfinder() {
-        viewfinderView.drawViewfinder();
-
+        binding.viewfinderView.drawViewfinder();
     }
 
     private void initBeepSound() {
@@ -271,7 +235,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
             // The volume on STREAM_SYSTEM is not adjustable, and users found it
             // too loud,
             // so we now play on the music stream.
-            setVolumeControlStream(AudioManager.STREAM_MUSIC);
+            requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.setOnCompletionListener(beepListener);
@@ -290,36 +254,21 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
         }
     }
 
-
-
-    private static final long VIBRATE_DURATION = 200L;
-
     private void playBeepSoundAndVibrate() {
         if (playBeep && mediaPlayer != null) {
             mediaPlayer.start();
         }
         if (vibrate) {
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            Vibrator vibrator = (Vibrator) requireActivity().getSystemService(VIBRATOR_SERVICE);
             vibrator.vibrate(VIBRATE_DURATION);
         }
     }
 
-    /**
-     * When the beep has finished playing, rewind to queue up another one.
-     */
+    /** When the beep has finished playing, rewind to queue up another one. */
     private final MediaPlayer.OnCompletionListener beepListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             mediaPlayer.seekTo(0);
         }
     };
-
-    public void continuePreview() {
-        if (handler != null){
-            handler.sendEmptyMessageDelayed(R.id.restart_preview,BACK_PREVIEW);
-        }
-    }
-
-
-
 }

@@ -35,7 +35,7 @@
             android:windowSoftInputMode="adjustPan">
         </activity>
 
-        <activity android:name=".CaptureActivity"
+        <activity android:name=".ui.capture.CaptureFragment"
             android:theme="@style/Theme.NOBar"/>
 
     </application>
