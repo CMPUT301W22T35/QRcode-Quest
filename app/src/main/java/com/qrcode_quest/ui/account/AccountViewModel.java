@@ -34,12 +34,10 @@ public class AccountViewModel extends ViewModel {
     private HashMap<Object, Object> pathToPhotos;
     private  MutableLiveData<Bitmap> bitmapLivedata = new MutableLiveData<Bitmap>();
     MutableLiveData<Location> actualLocation;
-    QRManager qrManager;
-    public AccountViewModel(QRManager qrManager) {
+    public AccountViewModel() {
         mText = new MutableLiveData<>();
         mText.setValue("This is account fragment");
         pathToPhotos = new HashMap<>();
-        this.qrManager = qrManager;
         actualLocation = new MutableLiveData<>();
     }
 
@@ -54,7 +52,7 @@ public class AccountViewModel extends ViewModel {
     public void createQRImage(String content, int widthPix, int heightPix) {
         try {
             if (content == null || "".equals(content)) {
-                return ;
+                return;
             }
             Map<EncodeHintType, Object> hints = new HashMap<>();
             hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
@@ -78,19 +76,5 @@ public class AccountViewModel extends ViewModel {
         } catch (WriterException e) {
             e.printStackTrace();
         }
-    }
-
-    public void uploadQrCode(QRShot qrShot) {
-        qrManager.createQRShot(qrShot, new ManagerResult.Listener<Void>() {
-            @Override
-            public void onResult(Result<Void> result) {
-
-            }
-        }, new ManagerResult.Listener<Void>() {
-            @Override
-            public void onResult(Result<Void> result) {
-
-            }
-        });
     }
 }

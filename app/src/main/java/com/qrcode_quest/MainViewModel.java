@@ -16,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
+import com.qrcode_quest.database.DbError;
 import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
@@ -104,22 +105,61 @@ public class MainViewModel extends AndroidViewModel {
         SharedPreferences sharedPrefs = container.getPrivateDevicePrefs();
         if (!sharedPrefs.contains(AUTHED_USERNAME_PREF)) { return; }
         String username = sharedPrefs.getString(AUTHED_USERNAME_PREF, "");
+        setCurrentPlayerByUsername(username, sharedPrefs, new ManagerResult.Listener<PlayerAccount>() {
+            @Override
+            public void onResult(Result<PlayerAccount> result) {
+                if (!result.isSuccess()) {
+                    Log.e(CLASS_TAG, "Failed to load current player. " + result.getError().getMessage());
+                } else if (result.unwrap() == null) {
+                    Log.e(CLASS_TAG, "Current player does not exist.");
+                }
+            }
+        });
+    }
+
+    /**
+     * set current player both in persistent storage for next login
+     * will check if the given player exists before setting, if not the action will fail
+     * @param newUsername name of the player
+     * @param sharedPrefs shared preferences object for persistent storage
+     */
+    public void setCurrentPlayerByUsername(@NonNull String newUsername, SharedPreferences sharedPrefs,
+                                            ManagerResult.Listener<PlayerAccount> listener) {
 
         // Load the players record
-        Log.d(CLASS_TAG, "Loaded authed user: " + username + "...");
-        new PlayerManager(db).getPlayer(username, result -> {
+        Log.d(CLASS_TAG, "Loaded authed user: " + newUsername + "...");
+        PlayerManager manager = new PlayerManager(db);
+
+        // on local storage
+        String deviceID = sharedPrefs.getString(DEVICE_UID_PREF, null);
+        String storedUsername = sharedPrefs.getString(AUTHED_USERNAME_PREF, null);
+
+        manager.getPlayer(newUsername, result -> {
             // Catch errors/failure
-            if (!result.isSuccess()) {
-                Log.e(CLASS_TAG, "Failed to load current player. " + result.getError().getMessage());
-                return;
-            } else if (result.unwrap() == null) {
-                Log.e(CLASS_TAG, "Current player does not exist.");
+            if (!result.isSuccess() || result.unwrap() == null) {
+                listener.onResult(result);
                 return;
             }
-
-            Log.d(CLASS_TAG, "Loading authed user: " + username + "... done.");
-            // Store the user
-            currentPlayer.setValue(result.unwrap());
+            Log.d(CLASS_TAG, "Loading authed user: " + newUsername + "... done.");
+            if (!newUsername.equals(storedUsername)) {
+                // Store the user-device pair to db
+                manager.createPlayerSession(deviceID, newUsername, result1 -> {
+                        if (result1.isSuccess()) {
+                            // Store the user
+                            SharedPreferences.Editor editor = sharedPrefs.edit();
+                            editor.putString(AUTHED_USERNAME_PREF, newUsername);
+                            editor.apply();
+                            currentPlayer.setValue(result.unwrap());
+                            listener.onResult(result);
+                        } else {
+                            listener.onResult(new Result<>(result1.getError()));
+                        }
+                    }
+                );
+            } else {
+                currentPlayer.setValue(result.unwrap());
+                listener.onResult(result);
+            }
         });
     }
 
@@ -160,6 +200,7 @@ public class MainViewModel extends AndroidViewModel {
                         codes.put(qrHash, newCode);
                     }
                 }
+                ensureQRCodesAndShotsInitialized();
                 allQRCodes.setValue(new ArrayList<>(codes.values()));
                 allQRShots.setValue(shots);
             }
