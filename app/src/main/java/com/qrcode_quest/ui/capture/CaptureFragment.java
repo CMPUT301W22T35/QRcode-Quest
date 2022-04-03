@@ -5,6 +5,9 @@ import static android.content.Context.VIBRATOR_SERVICE;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -24,6 +27,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -91,6 +95,15 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     FragmentCaptureBinding binding;
     FirebaseFirestore db;
     PhotoStorage storage;
+    // lock the scan after first scan so we don't have 2 scans asynchronously upload data simultaneously
+    private boolean lockScan;
+
+    /**
+     * Mandatory empty constructor for the fragment manager to instantiate the
+     * fragment (e.g. upon screen orientation changes).
+     */
+    public CaptureFragment() {
+    }
 
     public CameraManager getCameraManager() {
         return cameraManager;
@@ -103,6 +116,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
                             ViewGroup container, Bundle savedInstanceState) {
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
+        lockScan = false;  // permit scan at start
         PlayerAccount player = CaptureFragmentArgs.fromBundle(getArguments()).getPlayer();
         AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         db = appContainer.getDb();
@@ -207,13 +221,14 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     public void handleDecode(Result result) {
         if(!checkTime(1000))
             return;
+        Log.d("RECORD_LOCK", Boolean.toString(lockScan));
         playBeepSoundAndVibrate();
         verify_code = result.getText();
-        if(TextUtils.isEmpty(verify_code)) {
+        if (TextUtils.isEmpty(verify_code) || lockScan) {
             handler.sendEmptyMessageDelayed(Constant.RESTART_PREVIEW, BACK_PREVIEW);
             return;
         }
-        if(!doAfterScan(verify_code)){
+        if (!doAfterScan(verify_code)) {
             handler.sendEmptyMessageDelayed(Constant.RESTART_PREVIEW, BACK_PREVIEW);
         }
     }
@@ -224,66 +239,119 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         intent.putExtra("verify_code",verify_code);
 
         if (!TextUtils.isEmpty(verify_code)){
-            Log.d(AccountFragment.class.getSimpleName(),"code:"+verify_code);
-
+            // 3 cases: login, profile or other qr codes
             String playerName = QRStringConverter.getPlayerNameFromLoginQRString(verify_code);
             if (playerName != null) {
-                // handles login qr code
-                Log.d("LOGIN_SCAN", playerName);
-                QRCodeQuestApp app = (QRCodeQuestApp) requireActivity().getApplication();
-                AppContainer appContainer = app.getContainer();
-                mainViewModel.setCurrentPlayerByUsername(playerName, appContainer.getPrivateDevicePrefs(),
-                        result -> {
-                            if (!result.isSuccess()) {
-                                Log.e("LOGIN_SCAN", result.getError().getMessage());
-                            } else if (result.unwrap() == null) {
-                                Log.e("LOGIN_SCAN", "player does not exist");
-                            } else {
-                                // the player account has been updated
-                                returnToAccountFragment();
-                            }
-                        });
+                onScanLoginQR(playerName);
                 return false;
             }
             playerName = QRStringConverter.getPlayerNameFromProfileQRString(verify_code);
             if (playerName != null) {
-                // handles profile qr code
-                Log.d("PROFILE_SCAN", playerName);
-                new PlayerManager(db).getPlayer(playerName, result -> {
-                    if (!result.isSuccess()) {
-                        Log.e("PROFILE_SCAN", result.getError().getMessage());
-                    } else if (result.unwrap() == null) {
-                        Log.e("PROFILE_SCAN", "player does not exist");
-                    } else {
-                        goToPlayerQRListFragment(result.unwrap());
-                    }
-                });
+                onScanProfileQR(playerName);
                 return false;
             }
-
-            // otherwise this is a normal qr code for score
-            RawQRCode rawCode = new RawQRCode(verify_code);
-            String path = requireActivity().getCacheDir() + "/images/qr.png";
-            Bitmap bitmap = BitmapFactory.decodeFile(path);
-            try {
-                QRCode qrCode = new QRCode(rawCode);
-                // TODO: ask if location/photo is to be recorded
-                QRShot qrShot = new QRShot(captureViewModel.getCurrentPlayer().getUsername(),
-                        qrCode.getHashCode(), bitmap, captureViewModel.getCurrentLocation());
-
-                new QRManager(db, storage).createQRShot(qrShot, result -> { }, result -> {
-                    if (result.isSuccess()) {
-                        goToPlayerQRListFragment(captureViewModel.getCurrentPlayer());
-                        mainViewModel.loadQRCodesAndShots();
-                    }
-                });
-
-            } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
+            onScanNormalQR();
         }
 
         return false;
+    }
+
+    private void onScanLoginQR(String playerName) {
+        lockScan = true;
+        Log.d("LOGIN_SCAN", playerName);
+        QRCodeQuestApp app = (QRCodeQuestApp) requireActivity().getApplication();
+        AppContainer appContainer = app.getContainer();
+        mainViewModel.setCurrentPlayerByUsername(playerName, appContainer.getPrivateDevicePrefs(),
+                result -> {
+                    if (!result.isSuccess()) {
+                        Log.e("LOGIN_SCAN", result.getError().getMessage());
+                    } else if (result.unwrap() == null) {
+                        Log.e("LOGIN_SCAN", "player does not exist");
+                    } else {
+                        // the player account has been updated
+                        returnToAccountFragment();
+                    }
+                });
+    }
+
+    private void onScanProfileQR(String playerName) {
+        lockScan = true;
+        Log.d("PROFILE_SCAN", playerName);
+        new PlayerManager(db).getPlayer(playerName, result -> {
+            if (!result.isSuccess()) {
+                Log.e("PROFILE_SCAN", result.getError().getMessage());
+            } else if (result.unwrap() == null) {
+                Log.e("PROFILE_SCAN", "player does not exist");
+            } else {
+                goToPlayerQRListFragment(result.unwrap());
+            }
+        });
+    }
+
+    private void onScanNormalQR() {
+        lockScan = true;
+        RawQRCode rawCode = new RawQRCode(verify_code);
+        String path = requireActivity().getCacheDir() + "/images/qr.png";
+        Bitmap bitmap = BitmapFactory.decodeFile(path);
+        try {
+            String qrHash = new QRCode(rawCode).getHashCode();
+            onUploadingQRShot(new QRShot(captureViewModel.getCurrentPlayer().getUsername(),
+                    qrHash, bitmap, captureViewModel.getCurrentLocation()));
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onUploadingQRShot(QRShot shot) {
+        Context context = requireActivity().getApplicationContext();
+
+        // StackOverflow, by Steve Haley
+        // url: https://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
+        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    shot.setLocation(null);
+                    break;
+            }
+            // show another dialog
+            DialogInterface.OnClickListener dialogClickListener1 = (dialog1, which1) -> {
+                switch (which1){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        shot.setPhoto(null);
+                        break;
+                }
+                // record stuffs and return
+                Log.d("RECORD_SHOT", "start");
+
+                ManagerResult.Listener<Void> listener = result -> {
+                    if (result.isSuccess()) {
+                        Log.d("RECORD_SHOT", "success");
+                        goToPlayerQRListFragment(captureViewModel.getCurrentPlayer());
+                        mainViewModel.loadQRCodesAndShots();
+                    } else {
+                        // do nothing if the shot is already there
+                        Log.d("RECORD_SHOT", "fail");
+                        Toast toast = Toast.makeText(context, "QR code already recorded!",
+                                Toast.LENGTH_SHORT);
+                        toast.show();
+                        lockScan = false;
+                    }
+                };
+                new QRManager(db, storage).createQRShot(shot, listener, result -> { });
+            };
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage("Do you want to record photo?").setPositiveButton("Yes", dialogClickListener1)
+                    .setNegativeButton("No", dialogClickListener1).show();
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setMessage("Do you want to record location?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
     }
 
 
