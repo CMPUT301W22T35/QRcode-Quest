@@ -3,6 +3,8 @@ package com.qrcode_quest.ui.capture;
 import static android.content.Context.AUDIO_SERVICE;
 import static android.content.Context.VIBRATOR_SERVICE;
 
+import static com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.actionPlayerqrsToQrview;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -61,6 +63,7 @@ import com.qrcode_quest.entities.RawQRCode;
 import com.qrcode_quest.ui.account.AccountFragment;
 import com.qrcode_quest.ui.account.AccountFragmentDirections;
 import com.qrcode_quest.ui.account.AccountViewModel;
+import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections;
 import com.qrcode_quest.zxing.Constant;
 import com.qrcode_quest.zxing.camera.CameraManager;
 import com.qrcode_quest.zxing.decoding.CaptureFragmentHandler;
@@ -327,12 +330,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
                         break;
                 }
                 // record stuffs and return
-                Log.d("RECORD_SHOT", "start");
-
                 ManagerResult.Listener<Void> listener = result -> {
                     if (result.isSuccess()) {
                         Log.d("RECORD_SHOT", "success");
-                        goToPlayerQRListFragment(captureViewModel.getCurrentPlayer());
+                        goToQRShotFragment(shot.getOwnerName(), shot.getCodeHash());
                         mainViewModel.loadQRCodesAndShots();
                     } else {
                         // do nothing if the shot is already there
@@ -453,6 +454,15 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         NavController navController = NavHostFragment.findNavController(this);
         CaptureFragmentDirections.ActionCaptureFragmentToNavigationPlayerQrlist action =
                 CaptureFragmentDirections.actionCaptureFragmentToNavigationPlayerQrlist(player);
+        navController.navigate(action);
+    }
+
+    /** go to qr view fragment for the newly captured qr shot */
+    public void goToQRShotFragment(String ownerName, String qrHash) {
+        // Navigate to the QRView of the clicked shot
+        NavController navController = NavHostFragment.findNavController(this);
+        CaptureFragmentDirections.ActionCaptureFragmentToNavigationQrshot action =
+                CaptureFragmentDirections.actionCaptureFragmentToNavigationQrshot(ownerName, qrHash);
         navController.navigate(action);
     }
 }
