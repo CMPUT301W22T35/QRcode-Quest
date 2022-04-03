@@ -121,7 +121,9 @@
             app:argType="com.qrcode_quest.entities.PlayerAccount" />
         <action
             android:id="@+id/action_captureFragment_to_navigation_qrshot"
-            app:destination="@id/navigation_qrshot" />
+            app:destination="@id/navigation_qrshot"
+            app:popUpTo="@+id/navigation_account"
+            app:popUpToInclusive="true" />
     </fragment>
 
 </navigation>
