@@ -1,5 +1,7 @@
 package com.qrcode_quest.ui.account;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,10 +13,16 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.qrcode_quest.Constants;
+import com.qrcode_quest.MainActivity;
 import com.qrcode_quest.MainViewModel;
+import com.qrcode_quest.application.AppContainer;
+import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.databinding.FragmentAccountBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRStringConverter;
+import com.qrcode_quest.ui.login.LoginActivity;
+import com.qrcode_quest.zxing.Constant;
 
 public class AccountFragment extends Fragment {
     private PlayerAccount account;
@@ -32,6 +40,7 @@ public class AccountFragment extends Fragment {
 
         accountViewModel =
                 new ViewModelProvider(this).get(AccountViewModel.class);
+
         binding = FragmentAccountBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -52,6 +61,19 @@ public class AccountFragment extends Fragment {
                 accountViewModel.createQRImage(QRStringConverter.getProfileQRString(
                         account.getUsername()), QR_WIDTH, QR_HEIGHT);
             }
+        });
+        binding.accountLogoutButton.setOnClickListener(v -> {
+            // Clear saved account data
+            AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+            SharedPreferences sharedPrefs = appContainer.getPrivateDevicePrefs();
+            SharedPreferences.Editor prefEditor = sharedPrefs.edit();
+            prefEditor.remove(Constants.AUTHED_USERNAME_PREF);
+            prefEditor.remove(Constants.DEVICE_UID_PREF);
+            prefEditor.apply();
+
+            // Transition to login
+            startActivity(new Intent(requireActivity(), LoginActivity.class));
+            requireActivity().finish();
         });
 
         // fetch the current player account

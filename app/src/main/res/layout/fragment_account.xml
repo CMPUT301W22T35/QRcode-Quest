@@ -123,13 +123,13 @@
         android:id="@+id/qrgenerate_button_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="18dp"
+        android:layout_margin="10dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/iv_code"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toTopOf="@id/account_logout_button">
 
         <Button
             android:id="@+id/qrgenerate_profile_button"
@@ -147,4 +147,15 @@
             android:layout_marginRight="12dp"
             android:text="@string/generate_login_qr" />
     </LinearLayout>
+    <Button
+        android:id="@+id/account_logout_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:backgroundTint="@color/vermilion"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/qrgenerate_button_layout"
+        app:layout_constraintEnd_toEndOf="@id/qrgenerate_button_layout"
+        android:text="Logout"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
