@@ -59,7 +59,7 @@ public class HomeFragment extends Fragment {
         // Handle Map button click to go to Map
         binding.homeMapButton.setOnClickListener(view -> {
             // Get permissions before going to map
-            promptCamPermissions();
+            promptMapPermissions();
             if (hasMapPermissions()){
                 Navigation.findNavController(root).navigate(R.id.action_navigation_home_to_mapFragment);
             } else {

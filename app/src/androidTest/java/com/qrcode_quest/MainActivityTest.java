@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
@@ -249,8 +250,7 @@ public class MainActivityTest {
         onView(withId(R.id.qrview_delete_button)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
 
         // Check deletion functionality
-        // TODO fix exception (if time permits)
-        //onView(withId(R.id.qrview_delete_button)).perform(click());
+        onView(withId(R.id.qrview_delete_button)).perform(click());
         scenario.close();
     }
 
@@ -276,14 +276,22 @@ public class MainActivityTest {
             String hash = bareCode.getQRHash();
             String hashName = hash.substring(hash.length() - 5);
             onView(withText(hashName)).perform(click());
+
+            // Delete a qr shot
+            onView(withId(R.id.qrview_delete_button)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+            onView(withId(R.id.qrview_delete_button)).perform(click());
+            onView(isRoot()).perform(EspressoHelper.waitFor(250));
+            onView(withText(hashName)).check(doesNotExist());
+
+            // Delete a player
+            onView(withId(R.id.player_qrlist_deleteplayer_button)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
+            onView(withId(R.id.player_qrlist_deleteplayer_button)).perform(click());
+            onView(isRoot()).perform(EspressoHelper.waitFor(250));
+            onView(withText("test_0")).check(doesNotExist());
         } catch (Exception e) {
             Log.e(CLASS_TAG, e.getClass() + ": " + e.getMessage());
             assert false;
         }
-
-        // Check delete owned capture button visible
-        onView(withId(R.id.qrview_delete_button)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
-
         scenario.close();
     }
 
@@ -322,12 +330,11 @@ public class MainActivityTest {
         onView(withId(R.id.comments_post_button)).perform(click());
 
         // Wait for the update
-        onView(isRoot()).perform(EspressoHelper.waitFor(2000));
+        onView(isRoot()).perform(EspressoHelper.waitFor(250));
 
         // Check it appeared
-        // TODO Figure out why this doesn't add correctly
-        //onView(withText(localPlayer.getUsername())).check(matches(isDisplayed()));
-        //onView(withText("new comment")).check(matches(isDisplayed()));
+        onView(withText(localPlayer.getUsername())).check(matches(isDisplayed()));
+        onView(withText("new comment")).check(matches(isDisplayed()));
 
         scenario.close();
     }

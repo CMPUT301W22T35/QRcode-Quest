@@ -88,7 +88,7 @@ public class MainActivityMapTest {
     @Test
     public void checkMapDisplayed() {
         ActivityScenario<MainActivity> scenario = rule.getScenario();
-        onView(withId(R.id.mapButton)).perform(click());
+        onView(withId(R.id.home_map_button)).perform(click());
         onView(isRoot()).perform(EspressoHelper.waitFor(5000));
 
         MapView[] mapViews = new MapView[1];
@@ -112,7 +112,7 @@ public class MainActivityMapTest {
     @Test
     public void checkMapCurrentLocation() {
         ActivityScenario<MainActivity> scenario = rule.getScenario();
-        onView(withId(R.id.mapButton)).perform(click());
+        onView(withId(R.id.home_map_button)).perform(click());
         onView(isRoot()).perform(EspressoHelper.waitFor(5000));
 
         double latLon[] = {0.0, 0.0};
@@ -149,7 +149,7 @@ public class MainActivityMapTest {
     @Test
     public void checkMapNearbyQRCodes() {
         ActivityScenario<MainActivity> scenario = rule.getScenario();
-        onView(withId(R.id.mapButton)).perform(click());
+        onView(withId(R.id.home_map_button)).perform(click());
         onView(isRoot()).perform(EspressoHelper.waitFor(5000));
 
         MapView[] mapViews = new MapView[1];
@@ -181,7 +181,7 @@ public class MainActivityMapTest {
     @Test
     public void checkMapBackButtons(){
         ActivityScenario<MainActivity> scenario = rule.getScenario();
-        onView(withId(R.id.mapButton)).perform(click());
+        onView(withId(R.id.home_map_button)).perform(click());
         onView(isRoot()).perform(EspressoHelper.waitFor(5000));
 
         onView(withContentDescription("Navigate up")).perform(click());
@@ -189,7 +189,7 @@ public class MainActivityMapTest {
 
         onView(withId(R.id.mapListActionButton)).check(doesNotExist());
 
-        onView(withId(R.id.mapButton)).perform(click());
+        onView(withId(R.id.home_map_button)).perform(click());
         onView(withId(R.id.mapListActionButton)).perform(click());
 
         onView(withContentDescription("Navigate up")).perform(click());

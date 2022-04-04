@@ -9,10 +9,13 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import android.Manifest;
+
 import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
@@ -20,6 +23,7 @@ import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.matchers.TextInputLayoutMatcher;
 import com.qrcode_quest.ui.login.LoginActivity;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,6 +35,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(AndroidJUnit4.class)
 public class LoginActivityTest {
+    @Rule
+    public GrantPermissionRule grantPermissionRule = GrantPermissionRule.grant(
+            Manifest.permission.CAMERA
+    );
+
     /** Tests the case where the user has account data that does not exist on the database. */
     @Test
     public void testInvalidUser() {
@@ -183,10 +192,24 @@ public class LoginActivityTest {
         // Wait for auth and then check the activity is dead (signed in)
         onView(isRoot()).perform(EspressoHelper.waitFor(500));
         assertThat(scenario.getState(), is(Lifecycle.State.DESTROYED));
+        scenario.close();
     }
 
     @Test
     public void testScanSignIn(){
-        // TODO implement
+        QRCodeQuestApp app = ApplicationProvider.getApplicationContext();
+        app.resetContainer();
+
+        AppContainer container = app.getContainer();
+        container.setDb(MockInstances.createEmptyDb());
+        container.setStorage(MockInstances.createEmptyPhotoStorage());
+        container.setPrivateDevicePrefs(
+                MockInstances.createEmptySharedPreferences());
+        ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class);
+
+        onView(withId(R.id.login_signup_scan_button)).perform(click());
+        onView(isRoot()).perform(EspressoHelper.waitFor(1000));
+        onView(withId(R.id.viewfinder_view)).check(matches(isDisplayed()));
+        scenario.close();
     }
 }
