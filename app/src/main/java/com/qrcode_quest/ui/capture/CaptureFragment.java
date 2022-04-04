@@ -69,12 +69,13 @@ import com.qrcode_quest.zxing.view.ViewfinderView;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class CaptureFragment extends Fragment implements SurfaceHolder.Callback  {
 
     private static final float BEEP_VOLUME = 0.10f;
-    protected static final int BACK_PREVIEW = 1000;
+    protected static final int BACK_PREVIEW = 2500;
     private static long curTime;
     protected CaptureFragmentHandler handler;
     private TextView txt_nonet_hint;
@@ -220,7 +221,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
 
 
     public void handleDecode(Result result) {
-        if(!checkTime(1000))
+        if(!checkTime(BACK_PREVIEW))
             return;
         Log.d("RECORD_LOCK", Boolean.toString(lockScan));
         playBeepSoundAndVibrate();
@@ -305,6 +306,20 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
 
     private void onUploadingQRShot(QRShot shot) {
         Context context = requireActivity().getApplicationContext();
+        ArrayList<QRShot> shots = mainViewModel.getQRShots().getValue();
+        if (shots == null) {
+            lockScan = false;
+            return;
+        }
+        for (QRShot testShot : shots){
+            if (testShot.getOwnerName().equals(shot.getOwnerName())
+                && testShot.getCodeHash().equals(shot.getCodeHash())){
+                Toast.makeText(requireContext(), "Already scanned", Toast.LENGTH_SHORT).show();
+                lockScan = false;
+                return;
+            }
+        }
+
 
         // StackOverflow, by Steve Haley
         // url: https://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android

@@ -177,19 +177,4 @@ public class LoginCaptureFragment extends CaptureFragment implements SurfaceHold
         }
     }
 
-    /**
-     * check if the specified time has passed in milliseconds since the last time checkTime()
-     * returns successfully
-     * @param dt the minimum elapsed time required
-     * @return true if given time has passed
-     */
-    public static boolean checkTime(long dt) {
-        long time = System.currentTimeMillis();
-        if(time - curTime < dt) {
-            return false;
-        }
-        curTime = time;
-        return true;
-    }
-
 }
