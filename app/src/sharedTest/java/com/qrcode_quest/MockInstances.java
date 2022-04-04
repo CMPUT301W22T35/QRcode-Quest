@@ -2,16 +2,23 @@ package com.qrcode_quest;
 
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
+import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.database.Result;
 import com.qrcode_quest.database.Schema;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.entities.QRShot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * creates mock instances of Firebase db and storage
@@ -37,6 +44,26 @@ public class MockInstances {
         FirebaseFirestore db = MockDb.createMockDatabase(new HashMap<>());
         new PlayerManager(db).addPlayer(account, result -> { });
         new PlayerManager(db).createPlayerSession(correspondingDeviceID, account.getUsername(), result -> { });
+        return db;
+    }
+
+    /**
+     * Creates a database with a player and QR Shots
+     * @return a FirebaseFirestore db
+     */
+    public static FirebaseFirestore createPlayersQRShotsDb(ArrayList<QRShot> shots,
+                                                           PlayerAccount user,
+                                                           String correspondingDeviceID){
+        FirebaseFirestore db = MockDb.createMockDatabase(new HashMap<>());
+        PlayerManager playerManager = new PlayerManager(db);
+        playerManager.addPlayer(user, result -> {});
+        playerManager.createPlayerSession(correspondingDeviceID, user.getUsername(), result -> {});
+
+        QRManager qrManager = new QRManager(db, createEmptyPhotoStorage());
+        for (QRShot qrShot: shots){
+            qrManager.createQRShot(qrShot, result -> {}, result -> {});
+        }
+
         return db;
     }
 
