@@ -98,12 +98,17 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     public CaptureFragment() {
     }
 
+    /**
+     * obtain the camera manager (which is initialized after onResume)
+     * @return the CameraManager instance
+     */
     public CameraManager getCameraManager() {
         return cameraManager;
     }
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                             ViewGroup container, Bundle savedInstanceState) {
@@ -139,6 +144,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         return binding.getRoot();
     }
 
+    /**
+     * start the GPSLocationLiveData observer to monitor any change in location
+     * after the first location update the player can start saving location for the qr code
+     */
     private void startLocationUpdates(){
         QRCodeQuestApp app = (QRCodeQuestApp) requireActivity().getApplication();
         AppContainer appContainer = app.getContainer();
@@ -211,7 +220,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         return true;
     }
 
-
+    /**
+     * handles the result after a qr code scan
+     * @param result zxing Result of qr code
+     */
     public void handleDecode(Result result) {
         if(!checkTime(BACK_PREVIEW))
             return;
@@ -227,6 +239,11 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         }
     }
 
+    /**
+     * handles the qr code message
+     * @param verify_code message embedded within the qr code
+     * @return false is needs to call send empty message to the handler
+     */
     private boolean doAfterScan(String verify_code) {
         Log.d("CAPTURE_VERIFY_CODE" ,verify_code);
         Intent intent = new Intent();
@@ -250,6 +267,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         return false;
     }
 
+    /**
+     * handles login qr code scan
+     * @param playerName name of the player embedded in the login qr message
+     */
     private void onScanLoginQR(String playerName) {
         lockScan = true;
         Log.d("LOGIN_SCAN", playerName);
@@ -268,6 +289,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
                 });
     }
 
+    /**
+     * handles profile qr code scan
+     * @param playerName name of the player embedded in the profile qr message
+     */
     private void onScanProfileQR(String playerName) {
         lockScan = true;
         Log.d("PROFILE_SCAN", playerName);
@@ -282,6 +307,9 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         });
     }
 
+    /**
+     * handles a normal qr code
+     */
     private void onScanNormalQR() {
         lockScan = true;
         RawQRCode rawCode = new RawQRCode(verify_code);
@@ -296,6 +324,11 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         }
     }
 
+    /**
+     * handles upload of a QRShot object; will prompt dialog for player to choose save/not save
+     * location and photo
+     * @param shot the qr shot object containing possibly the location and photo of the shot to upload
+     */
     private void onUploadingQRShot(QRShot shot) {
         Context context = requireActivity().getApplicationContext();
         ArrayList<QRShot> shots = mainViewModel.getQRShots().getValue();
@@ -360,7 +393,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
                 .setNegativeButton("No", dialogClickListener).show();
     }
 
-
+    /**
+     * initialize the surfaceHolder with cameraManager
+     * @param surfaceHolder the surface holder to use
+     */
     private void initCamera(SurfaceHolder surfaceHolder) {
         if (surfaceHolder == null) {
             throw new IllegalStateException("No SurfaceHolder provided");
@@ -389,18 +425,22 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) { hasSurface = false; }
 
+    /** @return get the view finder view */
     public ViewfinderView getViewfinderView() {
         return binding.viewfinderView;
     }
 
+    /** @return get the capture handler */
     public Handler getHandler() {
         return handler;
     }
 
+    /** draw the view finder */
     public void drawViewfinder() {
         binding.viewfinderView.drawViewfinder();
     }
 
+    /** initialize the beeping sound */
     private void initBeepSound() {
         if (playBeep && mediaPlayer == null) {
             // https://github.com/oVirt/moVirt/commit/f4e0c03d28932c8cc97c7f71793fd51122951ff3
@@ -428,6 +468,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         }
     }
 
+    /** play beeping sound and vibrate */
     private void playBeepSoundAndVibrate() {
         if (playBeep && mediaPlayer != null) {
             mediaPlayer.start();

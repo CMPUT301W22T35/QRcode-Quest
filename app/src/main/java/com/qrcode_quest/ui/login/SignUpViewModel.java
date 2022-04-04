@@ -24,6 +24,10 @@ public class SignUpViewModel extends ViewModel {
     /** Provides Firebase remote access */
     private final PlayerManager playerManager;
 
+    /**
+     * creates a sign up view model
+     * @param playerManager the manager to fetch account data
+     */
     public SignUpViewModel(PlayerManager playerManager) {
         this.playerManager = playerManager;
     }

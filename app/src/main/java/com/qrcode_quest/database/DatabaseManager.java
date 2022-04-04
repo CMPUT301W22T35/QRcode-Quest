@@ -18,7 +18,11 @@ public class DatabaseManager {
     static private final String SENDER_NAME = "DatabaseManager";
 
     protected FirebaseFirestore db;
-    public DatabaseManager() { this.db = FirebaseFirestore.getInstance(); }
+
+    /**
+     * Create a database manager that fetches data from the provided database instance
+     * @param db a FirebaseFirestore instance
+     */
     public DatabaseManager(FirebaseFirestore db) { this.db = db; }
 
     /**
@@ -58,6 +62,14 @@ public class DatabaseManager {
         });
     }
 
+    /**
+     * retrieve object of given type from a Firestore
+     * @param collectionName name of the collection where the document is located
+     * @param documentName name of the document to retrieve
+     * @param listener handler that handles the object after retrieval completes
+     * @param retriever handler that retrieves the object from the document snapshot of the document
+     * @param <T> The class type of retrieved object
+     */
     protected <T> void retrieveObjectFromDocument(
             String collectionName,
             String documentName,

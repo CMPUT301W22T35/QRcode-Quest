@@ -83,6 +83,7 @@ public class ManagerResult {
     }
 
 
+    /** A retriever that does not required the returned data */
     public static class VoidResultRetriever implements
             Retriever<Void, Void> {
         @Override
@@ -91,6 +92,7 @@ public class ManagerResult {
         }
     }
 
+    /** A retriever that does not required the returned data for photo upload task specifically */
     public static class TaskSnapshotRetriever implements
             Retriever<Void, UploadTask.TaskSnapshot> {
         @Override
@@ -99,6 +101,7 @@ public class ManagerResult {
         }
     }
 
+    /** retriever that retrieves a list of comments from query result */
     public static class CommentListRetriever implements
             Retriever<ArrayList<Comment>, QuerySnapshot> {
         /**
@@ -168,6 +171,7 @@ public class ManagerResult {
         return new Result<>(shot);
     }
 
+    /** retrieves an array list of QRCode from a QuerySnapshot */
     public static class QRCodeListRetriever implements
             Retriever<ArrayList<QRCode>, QuerySnapshot> {
         @Override
@@ -201,6 +205,7 @@ public class ManagerResult {
         }
     }
 
+    /** retrieves an array list of PlayerAccount from QuerySnapshot */
     public static class PlayerListRetriever implements
             Retriever<ArrayList<PlayerAccount>, QuerySnapshot> {
         @Override
