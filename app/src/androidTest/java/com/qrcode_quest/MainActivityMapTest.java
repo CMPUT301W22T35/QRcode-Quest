@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import android.Manifest;
 import android.content.Context;
 import android.location.LocationManager;
+import android.util.Log;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
@@ -150,27 +151,54 @@ public class MainActivityMapTest {
         onView(withId(R.id.home_map_button)).perform(click());
         onView(isRoot()).perform(EspressoHelper.waitFor(5000));
 
+        double latLon[] = {0.0, 0.0};
+        Geolocation geolocation;
         MapView[] mapViews = new MapView[1];
         scenario.onActivity(activity -> {
-            mapViews[0] = activity.findViewById(R.id.mapView);
+            mapViews[0] = activity.findViewById(R.id.mapView); // Get the map view
+
+            // Get the device's current location
+            Context context = activity.getApplicationContext();
+            LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            GPSLocationLiveData locationLiveData = new GPSLocationLiveData(context, locationManager);
+            locationLiveData.observe(activity, location -> {
+                if (location != null){
+                    latLon[0] = location.getLatitude();
+                    latLon[1] = location.getLongitude();
+                }
+            });
+
         });
+        onView(isRoot()).perform(EspressoHelper.waitFor(5000));
+        geolocation = new Geolocation(latLon[0], latLon[1]);
+        Log.d("COORDINATES", String.valueOf(geolocation.getLatitude()) );
+        Log.d("COORDINATES", String.valueOf(geolocation.getLongitude()) );
 
-        // Check for 2 markers (nearby locations)
-        mapViews[0].getOverlays().remove(0); // remove scale bar overlay first
-        mapViews[0].getOverlays().remove(0); // remove current location marker
-        assertFalse(mapViews[0].getOverlays().isEmpty());
-        assertEquals(2, mapViews[0].getOverlays().size());
+        // Testing With GPS location at 53.5270, -113.5249, since Mock GPS Locations don't work
+        if (geolocation.getLatitude() == 53.52702166666667 && geolocation.getLongitude() == -113.524915) {
+            // Check location of nearby qr code markers
+            Marker qrMarker1 = (Marker) mapViews[0].getOverlays().get(2);
+            Marker qrMarker2 = (Marker) mapViews[0].getOverlays().get(3);
+            Geolocation m1 = new Geolocation(qrMarker1.getPosition().getLatitude(), qrMarker1.getPosition().getLongitude());
+            Geolocation m2 = new Geolocation(qrMarker2.getPosition().getLatitude(), qrMarker2.getPosition().getLongitude());
 
-        // Check location of nearby qr code markers
-        Marker qrMarker1 = (Marker) mapViews[0].getOverlays().get(0);
-        Marker qrMarker2 = (Marker) mapViews[0].getOverlays().get(1);
-        assertEquals(53.52622, qrMarker1.getPosition().getLatitude(),0.002);
-        assertEquals(-113.52782, qrMarker2.getPosition().getLongitude(), 0.002);
+            assertEquals(53.52622, qrMarker1.getPosition().getLatitude(), 0.002);
+            assertEquals(-113.52782, qrMarker2.getPosition().getLongitude(), 0.002);
 
-        // Check correct displays in MapList
-        onView(withId(R.id.mapListActionButton)).perform(click());
-        onView(withText("Latitude: 53.52622 Longitude: -113.52077")).check(matches(isDisplayed()));
-        onView(withText("Latitude: 53.52340 Longitude: -113.52782")).check(matches(isDisplayed()));
+            // Check for 2 markers (nearby locations)
+            mapViews[0].getOverlays().remove(0); // remove scale bar overlay first
+            mapViews[0].getOverlays().remove(0); // remove current location marker
+            assertFalse(mapViews[0].getOverlays().isEmpty());
+            assertEquals(2, mapViews[0].getOverlays().size());
+
+            // Check correct displays in MapList
+            onView(withId(R.id.mapListActionButton)).perform(click());
+            onView(withText("Latitude: 53.52622 Longitude: -113.52077")).check(matches(isDisplayed()));
+            onView(withText("Latitude: 53.52340 Longitude: -113.52782")).check(matches(isDisplayed()));
+
+        }
+        // Locations outside of nearby range should have no nearby QR codes marked
+        // only 2 overlays expected (scale bar and current location)
     }
 
     /**
