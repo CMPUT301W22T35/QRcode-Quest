@@ -148,8 +148,9 @@ public class CommentsFragment extends Fragment {
         setLoadingState(true);
 
         // Add the comment to the database
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player-> {
-            new CommentManager(FirebaseFirestore.getInstance()).addComment(
+            new CommentManager(appContainer.getDb()).addComment(
                     new Comment( player.getUsername(), msg, qrHash),
                     result -> {
                         // Handle comment addition failure

@@ -325,9 +325,8 @@ public class MainActivityTest {
         onView(isRoot()).perform(EspressoHelper.waitFor(2000));
 
         // Check it appeared
-        // TODO Figure out why this doesn't add correctly
-        //onView(withText(localPlayer.getUsername())).check(matches(isDisplayed()));
-        //onView(withText("new comment")).check(matches(isDisplayed()));
+        onView(withText(localPlayer.getUsername())).check(matches(isDisplayed()));
+        onView(withText("new comment")).check(matches(isDisplayed()));
 
         scenario.close();
     }
