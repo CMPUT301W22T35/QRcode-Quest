@@ -15,10 +15,17 @@ import androidx.lifecycle.ViewModel;
 public class MapViewModel extends ViewModel {
     private MutableLiveData<Location> lastLocation;
 
+    /** the the location live data of the last location
+     * @return location live data of last location
+     */
     public MutableLiveData<Location> getLastLocation() {
         return lastLocation;
     }
 
+    /**
+     * set the location live data to the given location
+     * @param currentLocation current location's livedata object
+     */
     public void setLastLocation(MutableLiveData<Location> currentLocation) {
         this.lastLocation = currentLocation;
     }

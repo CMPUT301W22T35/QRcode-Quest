@@ -29,6 +29,11 @@ public class SchemaResultHelper {
         return map;
     }
 
+    /**
+     * aggregate shots into a HashMap of qr codes
+     * @param shots an arraylist of qr shots
+     * @return a hashmap from qr hash to each qr codes contained in shots
+     */
     public static HashMap<String, QRCode> getQrHashToCodeMapFromShots(ArrayList<QRShot> shots) {
         HashMap<String, QRCode> map = new HashMap<>();
         for(QRShot shot: shots) {
@@ -40,6 +45,11 @@ public class SchemaResultHelper {
         return map;
     }
 
+    /**
+     * group the qr shots by qr hash
+     * @param shots the shots to group
+     * @return a hashmap from qr hash to the corresponding array of qr shots (order not guaranteed)
+     */
     public static HashMap<String, ArrayList<QRShot>> getQrHashToShotArrayMap(ArrayList<QRShot> shots) {
         HashMap<String, ArrayList<QRShot>> map = new HashMap<>();
         for(QRShot shot: shots) {

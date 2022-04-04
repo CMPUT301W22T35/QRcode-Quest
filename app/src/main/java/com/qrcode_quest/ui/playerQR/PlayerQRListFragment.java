@@ -128,6 +128,7 @@ public class PlayerQRListFragment extends Fragment {
         return binding.getRoot();
     }
 
+    /** delete the user corresponding to the current page */
     private void deleteSelectedUser(){
         AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         binding.playerQrlistProgress.setVisibility(View.VISIBLE);

@@ -26,6 +26,10 @@ public class RawQRCode {
      */
     public RawQRCode(@NonNull String qr) { this.qr = qr; }
 
+    /**
+     * get the qr hash of this qr code
+     * @return a qr hash string
+     */
     public @NonNull String getQR() {
         return qr;
     }
@@ -62,6 +66,13 @@ public class RawQRCode {
         }
     }
 
+    /**
+     * turns an array of input bytes to a byte array representing hex digits with the same literal
+     * value; the resulting array will be about 2 times as long, but in case the most significant
+     * digit is less than 16 it will have one digit less
+     * @param input the input byte array
+     * @return the hex representation of the input byte array
+     */
     static public byte[] getHexRepresentationOfByteArray(byte[] input) {
         int outputLength = input.length * 2;  // length will double in hexadecimal format
         int finalByte = input[input.length - 1] & 0xFF;

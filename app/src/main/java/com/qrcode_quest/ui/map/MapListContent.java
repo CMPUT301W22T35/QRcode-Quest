@@ -16,21 +16,23 @@ public class MapListContent {
      */
     public static final List<MapListItem> ITEMS = new ArrayList<MapListItem>();
 
+    /**
+     * add item to the static list of nearby codes
+     * @param item an item
+     */
     public static void addItem(MapListItem item) {
         ITEMS.add(item);
     }
 
+    /** clear all items in the static list */
     public static void clearItems(){
         ITEMS.clear();
     }
 
+    /** sort nearby qr code locations by distance in ascending order */
     public static void sort(){
         // Sort QR code locations by distance (ascending)
         Collections.sort(ITEMS, (m1, m2) -> Double.compare(m1.distance, m2.distance));
-    }
-
-    public static MapListItem createPlaceholderItem(int score, double distance, double lat, double lon) {
-        return new MapListItem(score, distance, lat, lon);
     }
 
     /**

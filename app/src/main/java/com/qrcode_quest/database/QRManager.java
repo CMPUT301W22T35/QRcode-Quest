@@ -37,12 +37,22 @@ public class QRManager extends DatabaseManager {
     final static long MAX_FILE_SIZE = 16 * 1024;  // 16KB = 128Kb
 
     PhotoStorage photoStorage;  // for uploading the photos
-    
+
+    /**
+     * Create a QRManager that fetches shots from given db with photos from the given storage
+     * @param db the database instance
+     * @param photoStorage the photo storage instance
+     */
     public QRManager(FirebaseFirestore db, PhotoStorage photoStorage) {
         super(db);
         this.photoStorage = photoStorage;
     }
 
+    /**
+     * retrieve an arraylist of QRShot objects with photos attached
+     * @param task the task that returns a QuerySnapshot that contains all the relevant documents
+     * @param listener handles the result arraylist of QRShot objects
+     */
     public void retrieveQRShotsWithPhotos(Task<QuerySnapshot> task, Listener<ArrayList<QRShot>> listener) {
         retrieveResultByTask(task, new Listener<List<DocumentSnapshot>>() {
             @Override
@@ -309,6 +319,11 @@ public class QRManager extends DatabaseManager {
         retrieveResultByTask(task, listener, new ManagerResult.VoidResultRetriever());
     }
 
+    /**
+     * Remove all QRShot corresponding to the give qr hash
+     * @param qrHash the qr hash of the QRShots to remove
+     * @param listener handles the result (for error information)
+     */
     public void removeQRCode(String qrHash, Listener<Void> listener) {
         final CollectionReference collectionRef = getDb().collection(Schema.COLLECTION_QRSHOT);
 

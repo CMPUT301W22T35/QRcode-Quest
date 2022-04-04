@@ -17,12 +17,16 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * view model that holds states for account fragment
+ */
 public class AccountViewModel extends ViewModel {
 
     private final MutableLiveData<String> mText;
     private HashMap<Object, Object> pathToPhotos;
     private  MutableLiveData<Bitmap> bitmapLivedata = new MutableLiveData<Bitmap>();
     MutableLiveData<Location> actualLocation;
+    /** creates the view model */
     public AccountViewModel() {
         mText = new MutableLiveData<>();
         mText.setValue("This is account fragment");
@@ -30,20 +34,32 @@ public class AccountViewModel extends ViewModel {
         actualLocation = new MutableLiveData<>();
     }
 
-
+    /** @return the live data that contains the QRCode to display (an empty image when hide) */
     public MutableLiveData<Bitmap> getBitmapLivedata() {
         return bitmapLivedata;
     }
 
+    /** @return the text livedata */
     public LiveData<String> getText() {
         return mText;
     }
 
+    /**
+     * create an invisible QR image of the given size
+     * @param widthPix width in pixel
+     * @param heightPix height in pixel
+     */
     public void hideQRImage(int widthPix, int heightPix) {
         Bitmap bitmap = Bitmap.createBitmap(widthPix, heightPix, Bitmap.Config.ARGB_8888);
         bitmapLivedata.postValue(bitmap);
     }
 
+    /**
+     * create a QR image with the given message
+     * @param content the content qr message
+     * @param widthPix width in pixel
+     * @param heightPix height in pixel
+     */
     public void createQRImage(String content, int widthPix, int heightPix) {
         try {
             if (content == null || "".equals(content)) {

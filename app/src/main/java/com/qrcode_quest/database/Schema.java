@@ -13,6 +13,11 @@ package com.qrcode_quest.database;
  */
 public class Schema {
     public static final String COLLECTION_PLAYER_ACCOUNT = "PlayerAccount";
+    /**
+     * get the Firestore document name of player of the given player name
+     * @param playerName player's name
+     * @return document's name
+     */
     public static String getPlayerAccountDocumentName(String playerName) {
         return playerName;
     }
@@ -23,12 +28,24 @@ public class Schema {
     public static final String PLAYER_IS_OWNER = "isOwner";
 
     public static final String COLLECTION_QRSHOT = "QRShot";
+    /**
+     * get the Firestore document name of QRShot
+     * @param qrHash qr hash of the QRShot object
+     * @param playerName player'name
+     * @return document's name
+     */
     public static String getQRShotDocumentName(String qrHash, String playerName) {
         return qrHash + "_" + playerName;
     }
     public static final String QRSHOT_QRHASH = "qrhash";
     public static final String QRSHOT_PLAYER_NAME = "playerName";
     public static final String QRSHOT_SCORE = "score";
+    /**
+     * get the photo path on the Firebase storage
+     * @param qrHash qr hash of the corresponding qr code
+     * @param playerName player that took the shot
+     * @return path to the photo
+     */
     public static String getPhotoPathOnCloudStorage(String qrHash, String playerName) {
         return "images/" + qrHash + "_" + playerName;
     }
@@ -37,6 +54,12 @@ public class Schema {
     public static final String QRSHOT_LATITUDE = "latitude";
 
     public static final String COLLECTION_COMMENT = "Comment";
+    /**
+     * get the Firestore document name of
+     * @param qrHash hash of the qr code that contains the comment
+     * @param commentNumber name of the comment
+     * @return document's name
+     */
     public static String getCommentDocumentName(String qrHash, int commentNumber) {
         return qrHash + "_" + Integer.toString(commentNumber);
     }
@@ -45,12 +68,23 @@ public class Schema {
     public static final String COMMENT_PLAYER_NAME = "playerName";
     public static final String COMMENT_TEXT = "text";
     // workaround because there is no collection level locking
+    /**
+     * get the Firestore document name of
+     * @param qrHash hash of qr code that corresponding to the meta document
+     * @return document's name
+     */
     public static String getCommentMetaDocumentName(String qrHash) {
         return "commentMeta_" + qrHash;
     }
     public static final String COMMENT_META_COUNT = "commentNum";
 
     public static final String COLLECTION_AUTH = "PlayerDevice";
+    /**
+     * get the Firestore document name of the PlayerDevice relation
+     * @param playerName player's name
+     * @param deviceUID string id of the device
+     * @return document's name
+     */
     public static String getAuthDocumentName(String playerName, String deviceUID) {
         return deviceUID + "_" + playerName;
     }

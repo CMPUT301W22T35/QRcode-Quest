@@ -87,6 +87,10 @@ public class Geolocation {
         return EARTH_RADIUS * Math.abs(diffRad);
     }
 
+    /**
+     * converts the geolocation to readable form
+     * @return a string of the format "latitude, longitude"
+     */
     @SuppressLint("DefaultLocale")
     @NonNull
     @Override

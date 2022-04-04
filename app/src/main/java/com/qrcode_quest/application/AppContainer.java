@@ -21,21 +21,37 @@ public class AppContainer {
     private SharedPreferences privateDevicePrefs;
     private LocationManager locationManager;
 
+    /**
+     * creates an app container
+     * @param app the app that will hold this container
+     */
     public AppContainer(QRCodeQuestApp app) {
         this.app = app;
     }
 
+    /**
+     * obtain the Firestore db reference
+     * @return a Firestore instance
+     */
     public FirebaseFirestore getDb() {
         if (db == null)
             db = FirebaseFirestore.getInstance();
         return db;
     }
 
+    /**
+     * initialize Firestore db reference
+     * @param db a Firestore instance
+     */
     public void setDb(FirebaseFirestore db) {
         assert this.db == null;  // prevent accidentally set twice
         this.db = db;
     }
 
+    /**
+     * obtain the PhotoStorage reference
+     * @return a PhotoStorage instance
+     */
     public PhotoStorage getStorage() {
         if (storage == null)
             storage = new PhotoStorage(
@@ -44,11 +60,19 @@ public class AppContainer {
         return storage;
     }
 
+    /**
+     * initialize PhotoStorage db reference
+     * @param storage a PhotoStorage instance
+     */
     public void setStorage(PhotoStorage storage) {
         assert this.storage == null;  // prevent accidentally set twice
         this.storage = storage;
     }
 
+    /**
+     * obtain the private device shared preferences
+     * @return a SharedPreferences instance
+     */
     public SharedPreferences getPrivateDevicePrefs() {
         // can create it each time this method is called as well
         if (privateDevicePrefs == null) {
@@ -58,11 +82,19 @@ public class AppContainer {
         return privateDevicePrefs;
     }
 
+    /**
+     * initialize private device shared preferences
+     * @param privateDevicePrefs private device shared preferences
+     */
     public void setPrivateDevicePrefs(SharedPreferences privateDevicePrefs) {
         assert this.privateDevicePrefs == null;  // prevent accidentally set twice
         this.privateDevicePrefs = privateDevicePrefs;
     }
 
+    /**
+     * obtain the LocationManager instance
+     * @return a LocationManager instance
+     */
     public LocationManager getLocationManager() {
         if (locationManager == null) {
             locationManager = (LocationManager) app.getApplicationContext()
@@ -71,6 +103,10 @@ public class AppContainer {
         return locationManager;
     }
 
+    /**
+     * initialize the LocationManager instance
+     * @param locationManager a LocationManager instance
+     */
     public void setLocationManager(LocationManager locationManager) {
         assert this.locationManager == null;
         this.locationManager = locationManager;

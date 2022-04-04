@@ -41,6 +41,11 @@ public final class CaptureFragmentHandler extends Handler {
     PREVIEW, SUCCESS, DONE
   }
 
+  /**
+   * initialize the handler for capture fragment
+   * @param fragment the capture fragment
+   * @param cameraManager the camera manager of the capture fragment
+   */
   public CaptureFragmentHandler(CaptureFragment fragment, CameraManager cameraManager) {
     this.fragment = fragment;
     decodeThread = new DecodeThread(fragment,  new ViewfinderResultPointCallback(

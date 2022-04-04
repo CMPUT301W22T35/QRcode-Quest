@@ -25,6 +25,11 @@ public class CommentsViewModel extends AndroidViewModel {
     private static final String CLASS_TAG = "CommentsViewModel";
     private final FirebaseFirestore db;
 
+    /**
+     * creates the comment view model
+     * @param application the application to provide to android view model
+     * @param db the database to fetch comments
+     */
     public CommentsViewModel(@NonNull Application application, FirebaseFirestore db) {
         super(application);
         this.db = db;
