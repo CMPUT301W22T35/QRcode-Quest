@@ -92,10 +92,8 @@ public class MapFragment extends Fragment {
                 view.findViewById(R.id.mapListActionButton).setVisibility(View.VISIBLE);
 
                 mapViewModel.setLastLocation(gpsLocationLiveData);
-                Log.d(CLASS_TAG, String.valueOf(mapViewModel.getLastLocation()));
                 showMap(location);
-
-            } else if(mapViewModel.lastLocation == null){
+            } else if(mapViewModel.getLastLocation() == null){
                 mapView.setVisibility(View.GONE);
                 view.findViewById(R.id.mapListActionButton).setVisibility(View.GONE);
                 view.findViewById(R.id.map_loading).setVisibility(View.VISIBLE);
@@ -104,13 +102,12 @@ public class MapFragment extends Fragment {
         });
 
         // Use last recorded location from ViewModel to avoid reloading null location
-        if (mapViewModel.lastLocation != null){
+        if (mapViewModel.getLastLocation() != null){
             mapView.setVisibility(View.VISIBLE);
             view.findViewById(R.id.map_loading).setVisibility(View.GONE);
             view.findViewById(R.id.mapListActionButton).setVisibility(View.VISIBLE);
 
-            Log.d(CLASS_TAG, String.valueOf(mapViewModel.getLastLocation()));
-            mapViewModel.lastLocation.observe(getViewLifecycleOwner(), lastLocation->{
+            mapViewModel.getLastLocation().observe(getViewLifecycleOwner(), lastLocation->{
                 if (lastLocation != null) {
                     showMap(lastLocation);
                 }

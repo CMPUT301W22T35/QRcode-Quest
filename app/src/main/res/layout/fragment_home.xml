@@ -71,5 +71,4 @@
         app:layout_constraintBottom_toBottomOf="@id/home_qrs_button"
         tools:ignore="SpeakableTextPresentCheck"/>
 
-
 </androidx.constraintlayout.widget.ConstraintLayout>

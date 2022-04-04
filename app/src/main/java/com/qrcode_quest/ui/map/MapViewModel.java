@@ -10,10 +10,10 @@ import androidx.lifecycle.ViewModel;
  * A ViewModel for MapFragment to store previously recorded location
  *
  * @author ageolleg
- * @version 1.1
+ * @version 1.0
  */
 public class MapViewModel extends ViewModel {
-    MutableLiveData<Location> lastLocation;
+    private MutableLiveData<Location> lastLocation;
 
     public MutableLiveData<Location> getLastLocation() {
         return lastLocation;
