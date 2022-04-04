@@ -18,7 +18,9 @@ package com.qrcode_quest.zxing.view;
 
 import com.google.zxing.ResultPoint;
 import com.google.zxing.ResultPointCallback;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 public final class ViewfinderResultPointCallback implements ResultPointCallback {
 
   private final ViewfinderView viewfinderView;

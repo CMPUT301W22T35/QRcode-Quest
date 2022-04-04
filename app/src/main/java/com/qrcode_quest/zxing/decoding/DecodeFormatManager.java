@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 final class DecodeFormatManager {
 
   private static final Pattern COMMA_PATTERN = Pattern.compile(",");

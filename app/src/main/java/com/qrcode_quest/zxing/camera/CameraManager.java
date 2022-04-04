@@ -28,7 +28,9 @@ import com.google.zxing.PlanarYUVLuminanceSource;
 import com.qrcode_quest.R;
 
 import java.io.IOException;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 public final class CameraManager {
 
   private static final String TAG = CameraManager.class.getSimpleName();

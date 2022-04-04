@@ -21,7 +21,9 @@ import android.hardware.Camera;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 final class PreviewCallback implements Camera.PreviewCallback {
 
   private static final String TAG = PreviewCallback.class.getSimpleName();
