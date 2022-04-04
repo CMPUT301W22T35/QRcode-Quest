@@ -7,11 +7,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.qrcode_quest.database.CommentManager;
-import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;

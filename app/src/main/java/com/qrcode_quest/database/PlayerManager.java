@@ -7,7 +7,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.qrcode_quest.database.ManagerResult.*;
+import com.qrcode_quest.database.ManagerResult.Listener;
+import com.qrcode_quest.database.ManagerResult.PlayerAccountRetriever;
+import com.qrcode_quest.database.ManagerResult.PlayerListRetriever;
+import com.qrcode_quest.database.ManagerResult.VoidResultRetriever;
 import com.qrcode_quest.entities.PlayerAccount;
 
 import java.util.ArrayList;

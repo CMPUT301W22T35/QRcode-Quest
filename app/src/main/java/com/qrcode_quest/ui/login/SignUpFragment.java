@@ -1,19 +1,14 @@
 package com.qrcode_quest.ui.login;
 
 
-import static com.qrcode_quest.Constants.*;
-
+import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
+import static com.qrcode_quest.Constants.DEVICE_UID_PREF;
 import static java.util.Objects.requireNonNull;
 
+import android.Manifest;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -23,6 +18,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.PlayerManager;
@@ -53,10 +57,15 @@ public class SignUpFragment extends Fragment {
 
     /** A tag constant used for logging */
     private static final String CLASS_TAG = "SignUpFragment";
+    private static final String[] CAM_PERMISSIONS = {
+            Manifest.permission.CAMERA,
+    };
 
     private SignUpViewModel viewModel;
     private FragmentSignUpBinding binding;
     private SharedPreferences sharedPrefs;
+
+
 
     public SignUpFragment(){}
     public static SignUpFragment newInstance() {
@@ -102,12 +111,17 @@ public class SignUpFragment extends Fragment {
         AppContainer container = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
         sharedPrefs = container.getPrivateDevicePrefs();
 
-
         // Set a click listener for scan to login button
         binding.loginSignupScanButton.setOnClickListener(v -> {
-            // TODO Implement scanning login codes
-            Toast.makeText(this.getContext(), "Feature not implemented.", Toast.LENGTH_SHORT)
-                    .show();
+            if (hasCamPermissions()) {
+                getParentFragmentManager().beginTransaction()
+                        .addToBackStack(null)
+                        .replace(R.id.login_fragment_container, LoginCaptureFragment.class, null)
+                        .commit();
+            }
+            else {
+                promptCamPermissions();
+            }
         });
 
         // Set a click listener for register button
@@ -251,6 +265,10 @@ public class SignUpFragment extends Fragment {
         return deviceUID;
     }
 
+    /**
+     * Toggles the loading view on or off
+     * @param state True to show loading, false for normal view
+     */
     private void showLoading(boolean state){
         if (state){
             binding.loginSignupMainContainer.setVisibility(View.GONE);
@@ -259,6 +277,30 @@ public class SignUpFragment extends Fragment {
         else{
             binding.loginSignupMainContainer.setVisibility(View.VISIBLE);
             binding.loginSignupProgress.setVisibility(View.GONE);
+        }
+    }
+
+
+    /**
+     * Checks if the app has necessary permissions to open the camera
+     */
+    private boolean hasCamPermissions() {
+        return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * If the app does not have permission to use camera,
+     * prompt user to grant permissions
+     */
+    public void promptCamPermissions() {
+        if (!hasCamPermissions() ) {
+            // Permissions not granted, prompt the user
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    CAM_PERMISSIONS,
+                    1
+            );
         }
     }
 }

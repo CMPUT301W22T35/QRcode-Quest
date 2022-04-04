@@ -1,129 +1,93 @@
 package com.qrcode_quest.ui.account;
 
-import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
-import static com.qrcode_quest.Constants.DEVICE_UID_PREF;
-
-import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.qrcode_quest.CaptureActivity;
+import com.qrcode_quest.Constants;
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
-import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.databinding.FragmentAccountBinding;
-import com.qrcode_quest.entities.GPSLocationLiveData;
-import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.entities.QRShot;
-import com.qrcode_quest.ui.playerQR.PlayerQRListViewModel;
-
-import java.util.Objects;
+import com.qrcode_quest.entities.QRStringConverter;
+import com.qrcode_quest.ui.login.LoginActivity;
 
 public class AccountFragment extends Fragment {
-    private String name;
+    private PlayerAccount account;
     private FragmentAccountBinding binding;
     private AccountViewModel accountViewModel;
     private MainViewModel mainViewModel;
 
+    static private final int QR_WIDTH = 300;
+    static private final int QR_HEIGHT = 300;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mainViewModel =
-                new ViewModelProvider(getActivity()).get(MainViewModel.class);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        accountViewModel = new ViewModelProvider(this).get(AccountViewModel.class);
 
-        AppContainer appContainer = ((QRCodeQuestApp) getActivity().getApplication()).getContainer();
-        ViewModelProvider.Factory accountViewModelFactory = new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> aClass) {
-                if (aClass.isAssignableFrom(AccountViewModel.class))
-                    return Objects.requireNonNull(aClass.cast(new AccountViewModel(
-                            new QRManager(appContainer.getDb(), appContainer.getStorage()))));
-                else
-                    throw new IllegalArgumentException("Unexpected ViewModelClass type request received by the factory!");
-            }
-        };
         accountViewModel =
-                new ViewModelProvider(this, accountViewModelFactory).get(AccountViewModel.class);
+                new ViewModelProvider(this).get(AccountViewModel.class);
+
         binding = FragmentAccountBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-       getGps();
-        return root;
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.test.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-
-                goCapture();
-
+        // after account is loaded, clicking on profile/login qr generates qr codes for them
+        binding.qrgenerateLoginButton.setOnClickListener(view1 -> {
+            if (account != null) {
+                accountViewModel.createQRImage(QRStringConverter.getLoginQRString(
+                        account.getUsername()), QR_WIDTH, QR_HEIGHT);
             }
         });
-        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), new Observer<PlayerAccount>() {
-
-
-            @Override
-            public void onChanged(PlayerAccount playerAccount) {
-
-                Log.e(AccountFragment.class.getSimpleName(),"onChanged");
-                if (playerAccount!=null){
-                     name = playerAccount.getUsername();
-                    String email = playerAccount.getEmail();
-                    accountViewModel.createQRImage(name+"##"+email,300,300);
-
-                }
+        binding.qrgenerateProfileButton.setOnClickListener(view1 -> {
+            if (account != null) {
+                accountViewModel.createQRImage(QRStringConverter.getProfileQRString(
+                        account.getUsername()), QR_WIDTH, QR_HEIGHT);
             }
         });
-        accountViewModel.getBitmapLivedata().observe(getViewLifecycleOwner(), new Observer<Bitmap>() {
-            @Override
-            public void onChanged(Bitmap bitmap) {
-                binding.ivCode.setImageBitmap(bitmap);
+        binding.accountLogoutButton.setOnClickListener(v -> {
+            // Clear saved account data
+            AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+            SharedPreferences sharedPrefs = appContainer.getPrivateDevicePrefs();
+            SharedPreferences.Editor prefEditor = sharedPrefs.edit();
+            prefEditor.remove(Constants.AUTHED_USERNAME_PREF);
+            prefEditor.remove(Constants.DEVICE_UID_PREF);
+            prefEditor.apply();
+
+            // Transition to login
+            startActivity(new Intent(requireActivity(), LoginActivity.class));
+            requireActivity().finish();
+        });
+
+        // fetch the current player account
+        mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), playerAccount -> {
+            Log.e(AccountFragment.class.getSimpleName(), "onChanged");
+            if (playerAccount != null) {
+                account = playerAccount;
+                binding.playerUsername.setText(playerAccount.getUsername());
+                binding.playerEmail.setText(playerAccount.getEmail());
+                accountViewModel.hideQRImage(QR_WIDTH, QR_HEIGHT);
             }
         });
-    }
 
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==100&&resultCode== Activity.RESULT_OK){
-           String code = data.getStringExtra("verify_code");
-           if (!TextUtils.isEmpty(code)){
-               Log.e(AccountFragment.class.getSimpleName(),"code:"+code);
-               String path = getActivity().getCacheDir() + "/images/qr.png";
-               Bitmap bitmap = BitmapFactory.decodeFile(path);
-               QRShot qrShot = new QRShot(name,code.hashCode()+"",bitmap,location);
-               accountViewModel.uploadQrCode(qrShot);
-           }
-        }
+        accountViewModel.getBitmapLivedata().observe(getViewLifecycleOwner(),
+                bitmap -> binding.ivCode.setImageBitmap(bitmap)
+        );
     }
 
     @Override
@@ -131,38 +95,4 @@ public class AccountFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-    Geolocation location = null;
-    private void getGps(){
-        QRCodeQuestApp app = (QRCodeQuestApp) getActivity().getApplication();
-        AppContainer appContainer = app.getContainer();
-        GPSLocationLiveData liveData = new GPSLocationLiveData(app.getApplicationContext(),
-                appContainer.getLocationManager());
-        if (liveData.isPermissionGranted()){
-            liveData.observe(getViewLifecycleOwner(), new Observer<Location>() {
-                @Override
-                public void onChanged(Location geolocation) {
-                    if (geolocation != null) {
-                        location = new Geolocation(geolocation.getLatitude(),geolocation.getLongitude());
-                    }
-
-                }
-            });
-        }else{
-            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.ACCESS_FINE_LOCATION
-            ,Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
-        }
-
-
-    }
-    private void goCapture() {
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.CAMERA}, 1);
-        } else {
-            Intent intent =  new Intent(getActivity(), CaptureActivity.class);
-            startActivityForResult(intent,100);
-        }
-
-    }
-
 }

@@ -3,6 +3,11 @@ package com.qrcode_quest.ui.comments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,13 +17,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
-
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
@@ -147,8 +145,9 @@ public class CommentsFragment extends Fragment {
         setLoadingState(true);
 
         // Add the comment to the database
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player-> {
-            new CommentManager(FirebaseFirestore.getInstance()).addComment(
+            new CommentManager(appContainer.getDb()).addComment(
                     new Comment( player.getUsername(), msg, qrHash),
                     result -> {
                         // Handle comment addition failure
@@ -156,8 +155,8 @@ public class CommentsFragment extends Fragment {
                             Toast.makeText(this.getContext(),
                                     "Failed to add comment.",
                                     Toast.LENGTH_SHORT).show();
-
                             setLoadingState(false);
+                            return;
                         }
 
                         // Handle addition success

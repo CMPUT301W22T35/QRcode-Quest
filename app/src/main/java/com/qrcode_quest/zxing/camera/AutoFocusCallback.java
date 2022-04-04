@@ -24,7 +24,9 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.RejectedExecutionException;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 final class AutoFocusCallback implements Camera.AutoFocusCallback {
 
   private static final String TAG = AutoFocusCallback.class.getSimpleName();

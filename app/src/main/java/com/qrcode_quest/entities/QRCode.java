@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 
 /**
  * Represents a QR code and manages its associated comments made by players

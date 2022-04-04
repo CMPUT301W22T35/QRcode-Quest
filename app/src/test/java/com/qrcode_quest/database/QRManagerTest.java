@@ -12,9 +12,9 @@ import android.graphics.Bitmap;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.qrcode_quest.MockDb;
+import com.qrcode_quest.MockFirebaseStorage;
 import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.QRShot;
-import com.qrcode_quest.MockFirebaseStorage;
 
 import org.junit.Before;
 import org.junit.Test;

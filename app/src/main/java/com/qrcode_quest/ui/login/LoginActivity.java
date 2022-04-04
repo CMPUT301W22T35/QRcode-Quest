@@ -1,8 +1,7 @@
 package com.qrcode_quest.ui.login;
 
-import static com.qrcode_quest.Constants.*;
-
-import androidx.appcompat.app.AppCompatActivity;
+import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
+import static com.qrcode_quest.Constants.DEVICE_UID_PREF;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,11 +10,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.qrcode_quest.MainActivity;
+import com.qrcode_quest.R;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
 import com.qrcode_quest.database.PlayerManager;
-import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.ActivityLoginBinding;
 
 /**
@@ -24,7 +25,9 @@ import com.qrcode_quest.databinding.ActivityLoginBinding;
  * @author jdumouch
  * @version 1.0
  */
-public class LoginActivity extends AppCompatActivity implements SignUpFragment.RegisterHandler {
+public class LoginActivity extends AppCompatActivity implements
+        SignUpFragment.RegisterHandler,
+        LoginCaptureFragment.RegisterHandler {
     /** A tag to be used for logging */
     private static final String CLASS_TAG = "LoginActivity";
     private ActivityLoginBinding binding;

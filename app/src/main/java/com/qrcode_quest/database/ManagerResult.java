@@ -2,10 +2,10 @@ package com.qrcode_quest.database;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.UploadTask;
+import com.qrcode_quest.entities.Comment;
 import com.qrcode_quest.entities.Geolocation;
 import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.entities.Comment;
-import com.google.firebase.storage.UploadTask;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 

@@ -4,14 +4,17 @@ import android.content.SharedPreferences;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.qrcode_quest.database.ManagerResult;
+import com.qrcode_quest.database.CommentManager;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
-import com.qrcode_quest.database.Result;
-import com.qrcode_quest.database.Schema;
+import com.qrcode_quest.database.QRManager;
+import com.qrcode_quest.entities.Comment;
 import com.qrcode_quest.entities.PlayerAccount;
+import com.qrcode_quest.entities.QRShot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * creates mock instances of Firebase db and storage
@@ -41,6 +44,68 @@ public class MockInstances {
     }
 
     /**
+     * Creates a database with a player and QR Shots
+     * @return a FirebaseFirestore db
+     */
+    public static FirebaseFirestore createPlayersQRShotsDb(ArrayList<QRShot> shots,
+                                                           PlayerAccount user,
+                                                           String correspondingDeviceID){
+        FirebaseFirestore db = MockDb.createMockDatabase(new HashMap<>());
+        PlayerManager playerManager = new PlayerManager(db);
+        playerManager.addPlayer(user, result -> {});
+        playerManager.createPlayerSession(correspondingDeviceID, user.getUsername(), result -> {});
+
+        QRManager qrManager = new QRManager(db, createEmptyPhotoStorage());
+        for (QRShot qrShot: shots){
+            qrManager.createQRShot(qrShot, result -> {}, result -> {});
+        }
+
+        return db;
+    }
+    
+    /**
+     * Populates a mock database using a set of data.
+     */
+    public static MockStorageBundle createPopulatedDb(List<PlayerAccount> players,
+                                                      List<QRShot> shots,
+                                                      List<Comment> comments,
+                                                      PlayerAccount localPlayer,
+                                                      String deviceID) {
+
+        FirebaseFirestore db = MockDb.createMockDatabase(new HashMap<>());
+        FirebaseStorage storage = MockFirebaseStorage.createMockFirebaseStorage(new HashMap<>());
+        PhotoStorage photoStorage = MockFirebaseStorage.createMockPhotoStorage(storage);
+
+        // Add players
+        PlayerManager pm = new PlayerManager(db);
+        for (PlayerAccount player : players) {
+            pm.addPlayer(player, r->{});
+        }
+        pm.addPlayer(localPlayer, r->{});
+        pm.createPlayerSession(deviceID, localPlayer.getUsername(), r->{});
+
+        // Add QRShots (and by extension, QRCodes)
+        if (shots != null){
+            QRManager qm = new QRManager(db, photoStorage);
+            for (QRShot shot : shots){
+                qm.createQRShot(shot, r->{}, r->{});
+            }
+        }
+
+        // Add comments
+        if (comments != null){
+            CommentManager cm = new CommentManager(db);
+            for (Comment comment : comments) {
+                cm.addComment(comment, r->{});
+            }
+        }
+
+        // Return the populated storage bundle
+        return new MockStorageBundle(db, photoStorage);
+    }
+
+
+    /**
      * creates an empty PhotoStorage mock object
      */
     public static PhotoStorage createEmptyPhotoStorage() {
@@ -54,13 +119,12 @@ public class MockInstances {
 
     /**
      * Create a mock preference of a pre-registered user.
-     * @param username The username of the player
-     * @param deviceID The device ID of the player.
      */
-    public static SharedPreferences createRegisteredPreferences(String username, String deviceID){
+    public static SharedPreferences createRegisteredPreferences(String username,
+                                                                String correspondingDeviceID){
         HashMap<String, String> prefMap = new HashMap<>();
         prefMap.put(Constants.AUTHED_USERNAME_PREF, username);
-        prefMap.put(Constants.DEVICE_UID_PREF, deviceID);
+        prefMap.put(Constants.DEVICE_UID_PREF, correspondingDeviceID);
 
         return MockSharedPref.createMockSharedPref(prefMap);
     }

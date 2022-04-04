@@ -1,9 +1,11 @@
 package com.qrcode_quest.ui.playerQR;
 
 import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
 import com.qrcode_quest.database.QRManager;
 import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;

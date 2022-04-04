@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 
 public class QRCodeTest {
 

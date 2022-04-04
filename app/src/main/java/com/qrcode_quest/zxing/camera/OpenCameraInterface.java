@@ -3,7 +3,9 @@ package com.qrcode_quest.zxing.camera;
 import android.annotation.SuppressLint;
 import android.hardware.Camera;
 import android.util.Log;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 public class OpenCameraInterface {
     private static final String TAG = OpenCameraInterface.class.getName();
 

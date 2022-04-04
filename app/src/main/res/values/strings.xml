@@ -48,4 +48,10 @@
     <string name="comments_label">Comments</string>
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
     <string name="no_comments">No comments yet :(</string>
+    <string name="contact_information_header">Contact Information</string>
+    <string name="username_literal">Username</string>
+    <string name="email_literal">Email</string>
+    <string name="modify_literal">Modify</string>
+    <string name="generate_profile_qr">Generate QR\nCode For Profile</string>
+    <string name="generate_login_qr">Generate QR\nCode For Login</string>
 </resources>

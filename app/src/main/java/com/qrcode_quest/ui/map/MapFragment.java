@@ -5,6 +5,11 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,12 +17,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-
-import android.os.Environment;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.qrcode_quest.BuildConfig;
@@ -40,7 +39,6 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Objects;
 
 /**
  * A view to display nearby QR codes on a map
@@ -92,10 +90,8 @@ public class MapFragment extends Fragment {
                 view.findViewById(R.id.mapListActionButton).setVisibility(View.VISIBLE);
 
                 mapViewModel.setLastLocation(gpsLocationLiveData);
-                Log.d(CLASS_TAG, String.valueOf(mapViewModel.getLastLocation()));
                 showMap(location);
-
-            } else if(mapViewModel.lastLocation == null){
+            } else if(mapViewModel.getLastLocation() == null){
                 mapView.setVisibility(View.GONE);
                 view.findViewById(R.id.mapListActionButton).setVisibility(View.GONE);
                 view.findViewById(R.id.map_loading).setVisibility(View.VISIBLE);
@@ -104,13 +100,12 @@ public class MapFragment extends Fragment {
         });
 
         // Use last recorded location from ViewModel to avoid reloading null location
-        if (mapViewModel.lastLocation != null){
+        if (mapViewModel.getLastLocation() != null){
             mapView.setVisibility(View.VISIBLE);
             view.findViewById(R.id.map_loading).setVisibility(View.GONE);
             view.findViewById(R.id.mapListActionButton).setVisibility(View.VISIBLE);
 
-            Log.d(CLASS_TAG, String.valueOf(mapViewModel.getLastLocation()));
-            mapViewModel.lastLocation.observe(getViewLifecycleOwner(), lastLocation->{
+            mapViewModel.getLastLocation().observe(getViewLifecycleOwner(), lastLocation->{
                 if (lastLocation != null) {
                     showMap(lastLocation);
                 }

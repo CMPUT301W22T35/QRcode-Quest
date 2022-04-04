@@ -2,28 +2,17 @@ package com.qrcode_quest.ui.account;
 
 import android.graphics.Bitmap;
 import android.location.Location;
-import android.location.LocationManager;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import com.qrcode_quest.application.AppContainer;
-import com.qrcode_quest.application.QRCodeQuestApp;
-import com.qrcode_quest.database.ManagerResult;
-import com.qrcode_quest.database.PhotoStorage;
-import com.qrcode_quest.database.QRManager;
-import com.qrcode_quest.database.Result;
-import com.qrcode_quest.entities.GPSLocationLiveData;
-import com.qrcode_quest.entities.QRShot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +23,10 @@ public class AccountViewModel extends ViewModel {
     private HashMap<Object, Object> pathToPhotos;
     private  MutableLiveData<Bitmap> bitmapLivedata = new MutableLiveData<Bitmap>();
     MutableLiveData<Location> actualLocation;
-    QRManager qrManager;
-    public AccountViewModel(QRManager qrManager) {
+    public AccountViewModel() {
         mText = new MutableLiveData<>();
         mText.setValue("This is account fragment");
         pathToPhotos = new HashMap<>();
-        this.qrManager = qrManager;
         actualLocation = new MutableLiveData<>();
     }
 
@@ -51,10 +38,16 @@ public class AccountViewModel extends ViewModel {
     public LiveData<String> getText() {
         return mText;
     }
+
+    public void hideQRImage(int widthPix, int heightPix) {
+        Bitmap bitmap = Bitmap.createBitmap(widthPix, heightPix, Bitmap.Config.ARGB_8888);
+        bitmapLivedata.postValue(bitmap);
+    }
+
     public void createQRImage(String content, int widthPix, int heightPix) {
         try {
             if (content == null || "".equals(content)) {
-                return ;
+                return;
             }
             Map<EncodeHintType, Object> hints = new HashMap<>();
             hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
@@ -78,19 +71,5 @@ public class AccountViewModel extends ViewModel {
         } catch (WriterException e) {
             e.printStackTrace();
         }
-    }
-
-    public void uploadQrCode(QRShot qrShot) {
-        qrManager.createQRShot(qrShot, new ManagerResult.Listener<Void>() {
-            @Override
-            public void onResult(Result<Void> result) {
-
-            }
-        }, new ManagerResult.Listener<Void>() {
-            @Override
-            public void onResult(Result<Void> result) {
-
-            }
-        });
     }
 }

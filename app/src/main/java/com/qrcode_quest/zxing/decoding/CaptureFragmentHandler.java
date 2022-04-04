@@ -16,23 +16,23 @@
 
 package com.qrcode_quest.zxing.decoding;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 
 import com.google.zxing.Result;
-import com.qrcode_quest.CaptureActivity;
+import com.qrcode_quest.ui.capture.CaptureFragment;
 import com.qrcode_quest.zxing.Constant;
 import com.qrcode_quest.zxing.camera.CameraManager;
 import com.qrcode_quest.zxing.view.ViewfinderResultPointCallback;
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
+public final class CaptureFragmentHandler extends Handler {
 
-public final class CaptureActivityHandler extends Handler {
-
-  private static final String TAG = CaptureActivityHandler.class
+  private static final String CLASS_TAG = CaptureFragmentHandler.class
           .getSimpleName();
 
-  private final CaptureActivity activity;
+  private final CaptureFragment fragment;
   private final DecodeThread decodeThread;
   private State state;
   private final CameraManager cameraManager;
@@ -41,10 +41,10 @@ public final class CaptureActivityHandler extends Handler {
     PREVIEW, SUCCESS, DONE
   }
 
-  public CaptureActivityHandler(CaptureActivity activity,CameraManager cameraManager) {
-    this.activity = activity;
-    decodeThread = new DecodeThread(activity,  new ViewfinderResultPointCallback(
-            activity.getViewfinderView()));
+  public CaptureFragmentHandler(CaptureFragment fragment, CameraManager cameraManager) {
+    this.fragment = fragment;
+    decodeThread = new DecodeThread(fragment,  new ViewfinderResultPointCallback(
+            fragment.getViewfinderView()));
     decodeThread.start();
     state = State.SUCCESS;
 
@@ -58,42 +58,44 @@ public final class CaptureActivityHandler extends Handler {
   public void handleMessage(Message message) {
     switch (message.what) {
       case Constant.RESTART_PREVIEW:
-
         restartPreviewAndDecode();
         break;
+
       case Constant.DECODE_SUCCEEDED:
         state = State.SUCCESS;
-        activity.handleDecode((Result) message.obj);
-
+        fragment.handleDecode((Result) message.obj);
         break;
+
       case Constant.DECODE_FAILED:
-
-
         state = State.PREVIEW;
         cameraManager.requestPreviewFrame(decodeThread.getHandler(),
                 Constant.DECODE);
         break;
+
       case Constant.RETURN_SCAN_RESULT:
-
-        activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
-        activity.finish();
+        fragment.returnToAccountFragment();
         break;
-
     }
   }
 
+  /**
+   * Closes the decode thread and stop the camera
+   */
   public void quitSynchronously() {
     state = State.DONE;
+
     cameraManager.stopPreview();
     Message quit = Message.obtain(decodeThread.getHandler(), Constant.QUIT);
     quit.sendToTarget();
+
     try {
       decodeThread.join(500L);
-    } catch (InterruptedException e) {
-    }
+    } catch (InterruptedException ignored){}
 
     removeMessages(Constant.DECODE_SUCCEEDED);
     removeMessages(Constant.DECODE_FAILED);
+
+    cameraManager.closeDriver();
   }
 
   public void restartPreviewAndDecode() {
@@ -101,7 +103,7 @@ public final class CaptureActivityHandler extends Handler {
       state = State.PREVIEW;
       cameraManager.requestPreviewFrame(decodeThread.getHandler(),
               Constant.DECODE);
-      activity.drawViewfinder();
+      fragment.drawViewfinder();
     }
   }
 

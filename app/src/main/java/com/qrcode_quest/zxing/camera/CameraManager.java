@@ -28,7 +28,11 @@ import com.google.zxing.PlanarYUVLuminanceSource;
 import com.qrcode_quest.R;
 
 import java.io.IOException;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ *
+ * modified by tianming: change getFramingRect
+ */
 public final class CameraManager {
 
   private static final String TAG = CameraManager.class.getSimpleName();
@@ -190,6 +194,11 @@ public final class CameraManager {
     }
   }
 
+  private double cameraYResolutionMultiplier = 0.74;
+
+  public void setCameraYResolutionMultiplier(double cameraYResolutionMultiplier) {
+    this.cameraYResolutionMultiplier = cameraYResolutionMultiplier;
+  }
 
   public synchronized Rect getFramingRect() {
     if (framingRect == null) {
@@ -197,19 +206,22 @@ public final class CameraManager {
         return null;
       }
       Point screenResolution = configManager.getScreenResolution();
+
       if (screenResolution == null) {
         // Called early, before init even finished
         return null;
       }
 
       int screenResolutionX = screenResolution.x;
-
+      int screenResolutionY = screenResolution.y;
       int width = (int) (screenResolutionX * 0.74);
-      int height = width;
+      int height = (int) (screenResolutionY * cameraYResolutionMultiplier);
 
 
-      int leftOffset = (screenResolution.x - width) / 2;
-      int topOffset = (int) ((screenResolution.y - height) / 2.7);
+      int leftOffset = (screenResolutionX - width) / 2;
+      int topOffset = 0;
+      Log.d("x", Integer.toString(leftOffset));
+      Log.d("y", Integer.toString(topOffset));
 
       framingRect = new Rect(leftOffset, topOffset, leftOffset + width,
               topOffset + height);

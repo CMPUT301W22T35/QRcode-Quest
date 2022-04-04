@@ -99,10 +99,12 @@ public class MockFirebaseStorage {
                 Task<byte[]> task = MockDb.createMockTask(task1 -> { });
                 if (!photos.containsKey(refPath))
                     when(task.isSuccessful()).thenReturn(false);
-                byte[] photoBytes = photos.get(refPath);
-                assert Objects.requireNonNull(photoBytes).length <=
-                        ((Long) invocation.getArgument(0)).intValue();
-                when(task.getResult()).thenReturn(photoBytes);
+                else {
+                    byte[] photoBytes = photos.get(refPath);
+                    assert Objects.requireNonNull(photoBytes).length <=
+                            ((Long) invocation.getArgument(0)).intValue();
+                    when(task.getResult()).thenReturn(photoBytes);
+                }
                 return task;
             }
         });

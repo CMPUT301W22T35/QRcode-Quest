@@ -24,7 +24,9 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import java.util.regex.Pattern;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 final class CameraConfigurationManager {
 
   private static final String TAG = CameraConfigurationManager.class.getSimpleName();

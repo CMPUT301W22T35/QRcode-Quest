@@ -16,7 +16,10 @@
 
 package com.qrcode_quest.zxing.decoding;
 
-import android.content.Context;
+import static java.lang.Math.floor;
+import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -33,9 +36,8 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
-import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
-import com.qrcode_quest.CaptureActivity;
+import com.qrcode_quest.ui.capture.CaptureFragment;
 import com.qrcode_quest.zxing.Constant;
 
 import java.io.ByteArrayOutputStream;
@@ -48,14 +50,14 @@ final class DecodeHandler extends Handler {
 
   private static final String TAG = DecodeHandler.class.getSimpleName();
 
-  private final CaptureActivity activity;
+  private final CaptureFragment fragment;
   private final MultiFormatReader multiFormatReader;
   private boolean running = true;
 
-  DecodeHandler(CaptureActivity activity, Map<DecodeHintType, Object> hints) {
+  DecodeHandler(CaptureFragment fragment, Map<DecodeHintType, Object> hints) {
     multiFormatReader = new MultiFormatReader();
     multiFormatReader.setHints(hints);
-    this.activity = activity;
+    this.fragment = fragment;
   }
 
   @Override
@@ -76,7 +78,6 @@ final class DecodeHandler extends Handler {
   }
 
   private void decode(byte[] data, int width, int height) {
-    byte[] orginData = data;
     Result rawResult = null;
 
     byte[] rotatedData = new byte[data.length];
@@ -85,15 +86,11 @@ final class DecodeHandler extends Handler {
         rotatedData[x * height + height - y - 1] = data[x + y * width];
       }
     }
-    int tmp = width; // Here we are swapping, that's the difference to #11
-    width = height;
-    height = tmp;
-    data = rotatedData;
 
-    PlanarYUVLuminanceSource source = activity.getCameraManager()
-            .buildLuminanceSource(data, width, height);
-
-
+    // note the parameters passed to .buildLuminanceSource have width and height swapped
+    // Here we are swapping, that's the difference to #11
+    PlanarYUVLuminanceSource source = fragment.getCameraManager()
+            .buildLuminanceSource(rotatedData, height, width);
     if (source != null) {
       BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
@@ -107,15 +104,14 @@ final class DecodeHandler extends Handler {
       }
     }
 
-
-
-    Handler handler = activity.getHandler();
+    Handler handler = fragment.getHandler();
     if (rawResult != null) {
 
       if (handler != null) {
-        Bitmap bitmap = getBitmapFromByte(orginData,width,height);
+        // this is the photo when taking shot of QR code
+        Bitmap bitmap = getBitmapFromByte(data, width, height);
         if (bitmap!=null){
-          Log.e("zzz",bitmap.toString());
+          Log.d(TAG, bitmap.toString());
           saveBitmap(bitmap);
         }
 
@@ -130,6 +126,7 @@ final class DecodeHandler extends Handler {
       }
     }
   }
+
   public Bitmap getBitmapFromByte(byte[] temp, int width, int height){
     if(temp != null){
       BitmapFactory.Options options = new BitmapFactory.Options();
@@ -139,30 +136,42 @@ final class DecodeHandler extends Handler {
       yuvImage.compressToJpeg(new Rect(0,0,width,height),100,baos);
       byte[] datas = baos.toByteArray();
       BitmapFactory.Options options2 = new BitmapFactory.Options();
-      options2.inPreferredConfig = Bitmap.Config.RGB_565;
-      Bitmap bitmap = BitmapFactory.decodeByteArray(datas, 0, datas.length,options2);
+      options2.inPreferredConfig = Bitmap.Config.ARGB_8888;
+      Bitmap bitmap = BitmapFactory.decodeByteArray(datas, 0, datas.length);
       return bitmap;
     }else{
       return null;
     }
   }
-   void saveBitmap(Bitmap bm) {
-    String path = activity.getCacheDir() + "/images/";
-     File saveFile = new File(path, "qr.png");
-     File file=new File(path);
-     if (!file.exists()){
-       file.mkdirs();
 
-     }
-     Log.e("zzz",file.getAbsolutePath());
-     try {
-       FileOutputStream saveImgOut = new FileOutputStream(saveFile);
-       bm.compress(Bitmap.CompressFormat.JPEG, 80, saveImgOut);
-       saveImgOut.flush();
-       saveImgOut.close();
-     } catch (IOException ex) {
-       ex.printStackTrace();
-     }
+  void saveBitmap(Bitmap bitmap) {
+    final int pixelSize = 4;  // assume one pixel 4 bytes, no compression
+    final int maxAllowedPixelCount = (8 * 1024) / pixelSize;
+    int width = bitmap.getWidth();
+    int height = bitmap.getHeight();
+    double scaleFactor = sqrt(((double)maxAllowedPixelCount / (width * height)));
+    int destWidth = max(1, (int) floor(width * scaleFactor));
+    int destHeight = max(1, (int) floor(height * scaleFactor));
+    // scale the bitmap to appropriate size
+    // StackOverflow by user432209 and JJD
+    // url: https://stackoverflow.com/questions/4837715/how-to-resize-a-bitmap-in-android
+    bitmap = Bitmap.createScaledBitmap(bitmap, destWidth, destHeight, false);
+
+    String path = fragment.requireActivity().getCacheDir() + "/images/";
+    File saveFile = new File(path, "qr.png");
+    File file=new File(path);
+    if (!file.exists()){
+        file.mkdirs();
+    }
+    Log.d(TAG, file.getAbsolutePath());
+    try {
+        FileOutputStream saveImgOut = new FileOutputStream(saveFile);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, saveImgOut);
+        saveImgOut.flush();
+        saveImgOut.close();
+    } catch (IOException ex) {
+        ex.printStackTrace();
+    }
   }
 
 }
