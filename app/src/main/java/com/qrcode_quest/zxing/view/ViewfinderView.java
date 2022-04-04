@@ -40,7 +40,9 @@ import com.qrcode_quest.zxing.camera.CameraManager;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 public final class ViewfinderView extends View {
 	private static final int CURRENT_POINT_OPACITY = 0xA0;
 	private static final int MAX_RESULT_POINTS = 20;

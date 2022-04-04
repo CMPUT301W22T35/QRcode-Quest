@@ -26,7 +26,9 @@ import com.qrcode_quest.ui.capture.CaptureFragment;
 import com.qrcode_quest.zxing.Constant;
 import com.qrcode_quest.zxing.camera.CameraManager;
 import com.qrcode_quest.zxing.view.ViewfinderResultPointCallback;
-
+/**
+ * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ */
 public final class CaptureFragmentHandler extends Handler {
 
   private static final String TAG = CaptureFragmentHandler.class
