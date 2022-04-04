@@ -30,6 +30,8 @@ import com.qrcode_quest.R;
 import java.io.IOException;
 /**
  * this part of code is from https://github.com/yipianfengye/android-zxingLibrary
+ *
+ * modified by tianming: change getFramingRect
  */
 public final class CameraManager {
 
@@ -192,6 +194,11 @@ public final class CameraManager {
     }
   }
 
+  private double cameraYResolutionMultiplier = 0.74;
+
+  public void setCameraYResolutionMultiplier(double cameraYResolutionMultiplier) {
+    this.cameraYResolutionMultiplier = cameraYResolutionMultiplier;
+  }
 
   public synchronized Rect getFramingRect() {
     if (framingRect == null) {
@@ -199,7 +206,6 @@ public final class CameraManager {
         return null;
       }
       Point screenResolution = configManager.getScreenResolution();
-      Point cameraResolution = configManager.getCameraResolution();
 
       if (screenResolution == null) {
         // Called early, before init even finished
@@ -209,7 +215,7 @@ public final class CameraManager {
       int screenResolutionX = screenResolution.x;
       int screenResolutionY = screenResolution.y;
       int width = (int) (screenResolutionX * 0.74);
-      int height = (int) (screenResolutionY * 0.74);
+      int height = (int) (screenResolutionY * cameraYResolutionMultiplier);
 
 
       int leftOffset = (screenResolutionX - width) / 2;

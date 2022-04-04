@@ -100,6 +100,7 @@ public class LoginCaptureFragment extends CaptureFragment implements SurfaceHold
     public void onResume() {
         super.onResume();
         cameraManager = new CameraManager(requireActivity().getApplication());
+        cameraManager.setCameraYResolutionMultiplier(0.9);
         binding.viewfinderView.setCameraManager(cameraManager);
         surfaceHolder = binding.previewView.getHolder();
 
