@@ -97,19 +97,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="10dp"
+                        android:layout_marginBottom="10dp"
                         android:gravity="left"
                         android:text="###"
                         android:textColor="?attr/colorOnSecondary"
                         android:textSize="18dp" />
                 </LinearLayout>
-
-                <Button
-                    android:id="@+id/modify_contact_info_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="24dp"
-                    android:text="@string/modify_literal" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
