@@ -60,10 +60,6 @@ import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.QRStringConverter;
 import com.qrcode_quest.entities.RawQRCode;
-import com.qrcode_quest.ui.account.AccountFragment;
-import com.qrcode_quest.ui.account.AccountFragmentDirections;
-import com.qrcode_quest.ui.account.AccountViewModel;
-import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections;
 import com.qrcode_quest.zxing.Constant;
 import com.qrcode_quest.zxing.camera.CameraManager;
 import com.qrcode_quest.zxing.decoding.CaptureFragmentHandler;
@@ -409,9 +405,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
 
     private void initBeepSound() {
         if (playBeep && mediaPlayer == null) {
-            // The volume on STREAM_SYSTEM is not adjustable, and users found it
-            // too loud,
-            // so we now play on the music stream.
+            // https://github.com/oVirt/moVirt/commit/f4e0c03d28932c8cc97c7f71793fd51122951ff3
+            // Author: Noise Doll
+            // Date: 10 June, 2015
+            // License: Apache 2.0
             requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

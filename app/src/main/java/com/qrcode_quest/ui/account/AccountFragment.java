@@ -74,9 +74,6 @@ public class AccountFragment extends Fragment {
                 account = playerAccount;
                 accountViewModel.createQRImage(
                         QRStringConverter.getLoginQRString(account.getUsername()),300,300);
-
-                // put this here to make sure the player is loaded before starting capture
-                binding.test.setOnClickListener(view1 -> goCapture());
             }
         });
 
@@ -88,29 +85,5 @@ public class AccountFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-    }
-
-    private void goCapture() {
-        boolean hasPermissions = true;
-        // camera permission
-        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            hasPermissions = false;
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{Manifest.permission.CAMERA}, 1);
-        }
-        // gps permission
-        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            hasPermissions = false;
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-        if (hasPermissions) {
-            NavController navController = NavHostFragment.findNavController(this);
-            AccountFragmentDirections.ActionNavigationAccountToCaptureFragment action =
-                    AccountFragmentDirections.actionNavigationAccountToCaptureFragment(account);
-            navController.navigate(action);
-        }
     }
 }
