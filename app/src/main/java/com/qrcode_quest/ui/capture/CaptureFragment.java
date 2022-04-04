@@ -60,6 +60,7 @@ import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.QRStringConverter;
 import com.qrcode_quest.entities.RawQRCode;
+import com.qrcode_quest.ui.login.LoginActivity;
 import com.qrcode_quest.zxing.Constant;
 import com.qrcode_quest.zxing.camera.CameraManager;
 import com.qrcode_quest.zxing.decoding.CaptureFragmentHandler;
@@ -165,7 +166,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         super.onResume();
 
         // Workaround to let LoginCaptureFragment inherit
-        if (this.binding == null) { return; }
+        if (requireActivity() instanceof LoginActivity) { return; }
 
         // handle camera and beeping
         cameraManager = new CameraManager(requireActivity().getApplication());
