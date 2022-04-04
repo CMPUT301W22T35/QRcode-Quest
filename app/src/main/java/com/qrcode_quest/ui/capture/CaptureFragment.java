@@ -191,7 +191,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     }
 
     @Override
-    public void onDestroy() {
+    public void onStop() {
         if (handler != null) {
             handler.quitSynchronously();
             handler = null;
@@ -201,7 +201,7 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
             surfaceHolder.removeCallback(this);
         }
         binding.viewfinderView.stopAnimator();
-        super.onDestroy();
+        super.onStop();
     }
 
     /**

@@ -119,12 +119,12 @@
         <action
             android:id="@+id/action_captureFragment_to_navigation_account"
             app:destination="@id/navigation_account"
-            app:popUpTo="@+id/navigation_account"
+            app:popUpTo="@+id/mobile_navigation"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_captureFragment_to_navigation_qrshot"
             app:destination="@id/navigation_qrshot"
-            app:popUpTo="@+id/navigation_account"
+            app:popUpTo="@+id/mobile_navigation"
             app:popUpToInclusive="true" />
         <argument android:name="player"
             app:argType="com.qrcode_quest.entities.PlayerAccount" />
