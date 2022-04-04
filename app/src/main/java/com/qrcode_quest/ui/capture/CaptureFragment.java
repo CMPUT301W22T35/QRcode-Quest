@@ -84,16 +84,16 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     protected String verify_code;
     protected String strhint_res ="Find and scan a QR code";;
     public static final int REQUEST_CODE_GET_PIC_URI=100;
-    private SurfaceHolder surfaceHolder;
-    private CameraManager cameraManager;
+    protected SurfaceHolder surfaceHolder;
+    protected CameraManager cameraManager;
     private static final int REQUEST_SD=1002;
     private static final long VIBRATE_DURATION = 200L;
 
-    MainViewModel mainViewModel;
-    CaptureViewModel captureViewModel;
-    FragmentCaptureBinding binding;
-    FirebaseFirestore db;
-    PhotoStorage storage;
+    private MainViewModel mainViewModel;
+    private CaptureViewModel captureViewModel;
+    protected FragmentCaptureBinding binding;
+    private FirebaseFirestore db;
+    private PhotoStorage storage;
     // lock the scan after first scan so we don't have 2 scans asynchronously upload data simultaneously
     private boolean lockScan;
 
@@ -164,6 +164,9 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
     public void onResume() {
         super.onResume();
 
+        // Workaround to let LoginCaptureFragment inherit
+        if (this.binding == null) { return; }
+
         // handle camera and beeping
         cameraManager = new CameraManager(requireActivity().getApplication());
 
@@ -187,12 +190,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
 
     @Override
     public void onDestroy() {
-
         if (handler != null) {
             handler.quitSynchronously();
             handler = null;
         }
-        cameraManager.closeDriver();
 
         if (!hasSurface) {
             surfaceHolder.removeCallback(this);
@@ -356,25 +357,18 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
         if (surfaceHolder == null) {
             throw new IllegalStateException("No SurfaceHolder provided");
         }
-        if (cameraManager.isOpen()) {
-            return;
-        }
-        try {
-            cameraManager.openDriver(surfaceHolder);
-            if (handler == null) {
-                handler = new CaptureFragmentHandler(this, cameraManager);
-            }
-        } catch (IOException ioe) {
-        } catch (RuntimeException e) {
-            return;
+        if (!cameraManager.isOpen()) {
+            try {
+                cameraManager.openDriver(surfaceHolder);
+                if (handler == null) {
+                    handler = new CaptureFragmentHandler(this, cameraManager);
+                }
+            } catch (IOException ignored){}
         }
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
-
-    }
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
 
     @Override
     public void surfaceCreated(final SurfaceHolder holder) {
@@ -382,14 +376,10 @@ public class CaptureFragment extends Fragment implements SurfaceHolder.Callback 
             hasSurface = true;
             initCamera(holder);
         }
-
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        hasSurface = false;
-
-    }
+    public void surfaceDestroyed(SurfaceHolder holder) { hasSurface = false; }
 
     public ViewfinderView getViewfinderView() {
         return binding.viewfinderView;

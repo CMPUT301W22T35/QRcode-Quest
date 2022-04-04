@@ -110,7 +110,7 @@
     <fragment
         android:id="@+id/captureFragment"
         android:name="com.qrcode_quest.ui.capture.CaptureFragment"
-        android:label="CaptureFragment" >
+        android:label="" >
         <action
             android:id="@+id/action_captureFragment_to_navigation_player_qrlist"
             app:destination="@id/navigation_player_qrlist"

@@ -29,7 +29,7 @@ import com.qrcode_quest.zxing.view.ViewfinderResultPointCallback;
 
 public final class CaptureFragmentHandler extends Handler {
 
-  private static final String TAG = CaptureFragmentHandler.class
+  private static final String CLASS_TAG = CaptureFragmentHandler.class
           .getSimpleName();
 
   private final CaptureFragment fragment;
@@ -58,40 +58,44 @@ public final class CaptureFragmentHandler extends Handler {
   public void handleMessage(Message message) {
     switch (message.what) {
       case Constant.RESTART_PREVIEW:
-
         restartPreviewAndDecode();
         break;
+
       case Constant.DECODE_SUCCEEDED:
         state = State.SUCCESS;
         fragment.handleDecode((Result) message.obj);
-
         break;
+
       case Constant.DECODE_FAILED:
-
-
         state = State.PREVIEW;
         cameraManager.requestPreviewFrame(decodeThread.getHandler(),
                 Constant.DECODE);
         break;
-      case Constant.RETURN_SCAN_RESULT:
 
+      case Constant.RETURN_SCAN_RESULT:
         fragment.returnToAccountFragment();
         break;
     }
   }
 
+  /**
+   * Closes the decode thread and stop the camera
+   */
   public void quitSynchronously() {
     state = State.DONE;
+
     cameraManager.stopPreview();
     Message quit = Message.obtain(decodeThread.getHandler(), Constant.QUIT);
     quit.sendToTarget();
+
     try {
       decodeThread.join(500L);
-    } catch (InterruptedException e) {
-    }
+    } catch (InterruptedException ignored){}
 
     removeMessages(Constant.DECODE_SUCCEEDED);
     removeMessages(Constant.DECODE_FAILED);
+
+    cameraManager.closeDriver();
   }
 
   public void restartPreviewAndDecode() {

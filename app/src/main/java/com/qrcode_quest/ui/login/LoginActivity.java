@@ -24,7 +24,9 @@ import com.qrcode_quest.databinding.ActivityLoginBinding;
  * @author jdumouch
  * @version 1.0
  */
-public class LoginActivity extends AppCompatActivity implements SignUpFragment.RegisterHandler {
+public class LoginActivity extends AppCompatActivity implements
+        SignUpFragment.RegisterHandler,
+        LoginCaptureFragment.RegisterHandler {
     /** A tag to be used for logging */
     private static final String CLASS_TAG = "LoginActivity";
     private ActivityLoginBinding binding;
