@@ -1,12 +1,12 @@
 package com.qrcode_quest.ui.map;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.qrcode_quest.databinding.MapListItemViewBinding;
 import com.qrcode_quest.ui.map.MapListContent.MapListItem;

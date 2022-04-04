@@ -2,28 +2,17 @@ package com.qrcode_quest.ui.account;
 
 import android.graphics.Bitmap;
 import android.location.Location;
-import android.location.LocationManager;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import com.qrcode_quest.application.AppContainer;
-import com.qrcode_quest.application.QRCodeQuestApp;
-import com.qrcode_quest.database.ManagerResult;
-import com.qrcode_quest.database.PhotoStorage;
-import com.qrcode_quest.database.QRManager;
-import com.qrcode_quest.database.Result;
-import com.qrcode_quest.entities.GPSLocationLiveData;
-import com.qrcode_quest.entities.QRShot;
 
 import java.util.HashMap;
 import java.util.Map;

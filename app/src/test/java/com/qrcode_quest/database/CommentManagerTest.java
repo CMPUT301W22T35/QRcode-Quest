@@ -2,18 +2,15 @@ package com.qrcode_quest.database;
 
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import org.junit.Test;
-
 import com.qrcode_quest.MockDb;
 import com.qrcode_quest.entities.Comment;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;

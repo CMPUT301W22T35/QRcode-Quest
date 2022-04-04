@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.qrcode_quest.Constants;
-import com.qrcode_quest.MainActivity;
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
@@ -22,7 +21,6 @@ import com.qrcode_quest.databinding.FragmentAccountBinding;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRStringConverter;
 import com.qrcode_quest.ui.login.LoginActivity;
-import com.qrcode_quest.zxing.Constant;
 
 public class AccountFragment extends Fragment {
     private PlayerAccount account;

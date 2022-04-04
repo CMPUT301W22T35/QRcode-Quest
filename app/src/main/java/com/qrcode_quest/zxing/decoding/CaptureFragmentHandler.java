@@ -16,8 +16,6 @@
 
 package com.qrcode_quest.zxing.decoding;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 

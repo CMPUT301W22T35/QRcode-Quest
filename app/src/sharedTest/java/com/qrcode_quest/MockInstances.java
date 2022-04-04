@@ -2,22 +2,15 @@ package com.qrcode_quest;
 
 import android.content.SharedPreferences;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.qrcode_quest.database.CommentManager;
-import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;
 import com.qrcode_quest.database.QRManager;
-import com.qrcode_quest.database.Result;
-import com.qrcode_quest.database.Schema;
 import com.qrcode_quest.entities.Comment;
 import com.qrcode_quest.entities.PlayerAccount;
 import com.qrcode_quest.entities.QRShot;
-import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.HashMap;

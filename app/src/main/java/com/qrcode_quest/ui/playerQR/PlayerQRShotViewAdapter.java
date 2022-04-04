@@ -1,22 +1,17 @@
 package com.qrcode_quest.ui.playerQR;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.qrcode_quest.R;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.qrcode_quest.databinding.QrshotItemViewBinding;
-import com.qrcode_quest.entities.QRCode;
 import com.qrcode_quest.entities.QRShot;
 import com.qrcode_quest.entities.RawQRCode;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**

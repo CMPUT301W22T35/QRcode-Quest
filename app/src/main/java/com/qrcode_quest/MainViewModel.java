@@ -1,9 +1,9 @@
 package com.qrcode_quest;
 
-import static com.qrcode_quest.Constants.*;
+import static com.qrcode_quest.Constants.AUTHED_USERNAME_PREF;
+import static com.qrcode_quest.Constants.DEVICE_UID_PREF;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -13,10 +13,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
 import com.qrcode_quest.application.AppContainer;
 import com.qrcode_quest.application.QRCodeQuestApp;
-import com.qrcode_quest.database.DbError;
 import com.qrcode_quest.database.ManagerResult;
 import com.qrcode_quest.database.PhotoStorage;
 import com.qrcode_quest.database.PlayerManager;

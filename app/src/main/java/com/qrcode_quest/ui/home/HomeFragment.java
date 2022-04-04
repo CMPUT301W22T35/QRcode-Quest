@@ -1,17 +1,12 @@
 package com.qrcode_quest.ui.home;
 
-import static com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections.actionLeaderboardToPlayerqrs;
-import static com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections.actionPlayerqrsToQrview;
-
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,10 +21,6 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.qrcode_quest.MainViewModel;
 import com.qrcode_quest.R;
 import com.qrcode_quest.databinding.FragmentHomeBinding;
-import com.qrcode_quest.entities.PlayerAccount;
-import com.qrcode_quest.ui.leaderboard.PlayerListFragmentDirections;
-import com.qrcode_quest.ui.map.MapFragment;
-import com.qrcode_quest.ui.playerQR.PlayerQRListFragmentDirections;
 
 public class HomeFragment extends Fragment {
     /** A constant tag used for logging */

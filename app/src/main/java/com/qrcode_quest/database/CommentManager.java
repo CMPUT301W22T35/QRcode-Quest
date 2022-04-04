@@ -11,7 +11,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
-import com.qrcode_quest.database.ManagerResult.*;
+import com.qrcode_quest.database.ManagerResult.CommentListRetriever;
+import com.qrcode_quest.database.ManagerResult.Listener;
+import com.qrcode_quest.database.ManagerResult.VoidResultRetriever;
 import com.qrcode_quest.entities.Comment;
 
 import java.util.ArrayList;

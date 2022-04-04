@@ -1,7 +1,6 @@
 package com.qrcode_quest.database;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,7 +13,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.qrcode_quest.database.ManagerResult.Listener;
@@ -87,12 +85,10 @@ public class QRManager extends DatabaseManager {
                         assert numPhotosRemaining[0] >= 0;
 
                         if (!taskLoadPhoto.isSuccessful()) {
-                            Log.d("QR_IMAGE_EXCEPTION", photoRef.getPath());
                             Exception e = taskLoadPhoto.getException();
                             assert e != null;
                             e.printStackTrace();
                         } else {
-                            Log.d("QR_IMAGE_SUCCESS", photoRef.getPath());
                             byte[] photoBytes = taskLoadPhoto.getResult();
                             if (photoBytes != null) {
                                 Bitmap reconstructedPhoto = photoStorage.decodeFromBytes(photoBytes);
@@ -100,7 +96,6 @@ public class QRManager extends DatabaseManager {
                             }
                         }
                         if (numPhotosRemaining[0] == 0) {
-                            Log.d("QR_FINISHED", "loading finished");
                             // all photos have been loaded
                             listener.onResult(new Result<>(shots));
                         }
