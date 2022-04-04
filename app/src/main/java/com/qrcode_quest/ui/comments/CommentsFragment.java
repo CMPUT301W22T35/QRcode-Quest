@@ -148,9 +148,9 @@ public class CommentsFragment extends Fragment {
         setLoadingState(true);
 
         // Add the comment to the database
-        AppContainer container = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
+        AppContainer appContainer = ((QRCodeQuestApp) requireActivity().getApplication()).getContainer();
         mainViewModel.getCurrentPlayer().observe(getViewLifecycleOwner(), player-> {
-            new CommentManager(container.getDb()).addComment(
+            new CommentManager(appContainer.getDb()).addComment(
                     new Comment( player.getUsername(), msg, qrHash),
                     result -> {
                         // Handle comment addition failure
