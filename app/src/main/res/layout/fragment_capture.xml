@@ -19,26 +19,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/pine"
-            app:contentInsetStart="0dp">
-
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
-
-
-
-
-        </androidx.appcompat.widget.Toolbar>
-
 
     </RelativeLayout>
 

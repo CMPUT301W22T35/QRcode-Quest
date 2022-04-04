@@ -35,9 +35,6 @@
             android:windowSoftInputMode="adjustPan">
         </activity>
 
-        <activity android:name=".CaptureActivity"
-            android:theme="@style/Theme.NOBar"/>
-
     </application>
 
 </manifest>

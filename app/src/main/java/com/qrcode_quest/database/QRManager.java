@@ -1,6 +1,7 @@
 package com.qrcode_quest.database;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,69 +46,70 @@ public class QRManager extends DatabaseManager {
     }
 
     public void retrieveQRShotsWithPhotos(Task<QuerySnapshot> task, Listener<ArrayList<QRShot>> listener) {
-        retrieveResultByTask(task, result -> {
-            // we have a list of documents but is missing the photos
-            // look for ones with photos
-            List<DocumentSnapshot> snapshots = result.unwrap();
-            final int[] numPhotosRemaining = {0};
-            final boolean[] hasExecutedListener = {false};
+        retrieveResultByTask(task, new Listener<List<DocumentSnapshot>>() {
+            @Override
+            public void onResult(Result<List<DocumentSnapshot>> result) {
+                // we have a list of documents but is missing the photos
+                // look for ones with photos
+                List<DocumentSnapshot> snapshots = result.unwrap();
+                final int[] numPhotosRemaining = {0};
 
-            ArrayList<QRShot> shots = new ArrayList<>();
-            HashMap<String, QRShot> photoPathToShot = new HashMap<>();
-            for (DocumentSnapshot snapshot: snapshots) {
-                Result<QRShot> shotResult = ManagerResult.getQRShotFromDocumentSnapshot(snapshot);
-                if(!shotResult.isSuccess()) {
-                    listener.onResult(new Result<>(shotResult.getError()));
-                    return;
+                ArrayList<QRShot> shots = new ArrayList<>();
+                HashMap<String, QRShot> photoPathToShot = new HashMap<>();
+                for (DocumentSnapshot snapshot : snapshots) {
+                    Result<QRShot> shotResult = ManagerResult.getQRShotFromDocumentSnapshot(snapshot);
+                    if (!shotResult.isSuccess()) {
+                        listener.onResult(new Result<>(shotResult.getError()));
+                        return;
+                    }
+                    QRShot shot = shotResult.unwrap();
+                    shots.add(shot);
+                    if (snapshot.getString(Schema.QRSHOT_PHOTO_REF) != null) {
+                        numPhotosRemaining[0] += 1;
+                        photoPathToShot.put(Schema.getPhotoPathOnCloudStorage(shot.getCodeHash(),
+                                shot.getOwnerName()), shot);
+                    }
                 }
-                QRShot shot = shotResult.unwrap();
-                shots.add(shot);
-                if(snapshot.getString(Schema.QRSHOT_PHOTO_REF) != null) {
-                    numPhotosRemaining[0] += 1;
-                    photoPathToShot.put(Schema.getPhotoPathOnCloudStorage(shot.getCodeHash(),
-                            shot.getOwnerName()), shot);
+
+                // Return the results without waiting for photos, if possible
+                if (numPhotosRemaining[0] == 0) {
+                    listener.onResult(new Result<>(shots));
                 }
-            }
 
-            // Return the results without waiting for photos, if possible
-            if (numPhotosRemaining[0] == 0){
-                listener.onResult(new Result<>(shots));
-            }
+                // open all download tasks at once
+                for (String path : photoPathToShot.keySet()) {
+                    StorageReference photoRef = photoStorage.getStorage().getReference(path);
+                    photoRef.getBytes(MAX_FILE_SIZE).addOnCompleteListener(taskLoadPhoto -> {
+                        // first we want to make sure this function is executed no more than #photos times
+                        // then the listener has not been executed (as the point of loading photos is to
+                        // give the loading results to the listener)
+                        numPhotosRemaining[0] -= 1;
+                        assert numPhotosRemaining[0] >= 0;
 
-            // open all download tasks at once
-            for (String path: photoPathToShot.keySet()) {
-                StorageReference photoRef = photoStorage.getStorage().getReference(path);
-                photoRef.getBytes(MAX_FILE_SIZE).addOnCompleteListener(taskLoadPhoto -> {
-                    // first we want to make sure this function is executed no more than #photos times
-                    // then the listener has not been executed (as the point of loading photos is to
-                    // give the loading results to the listener)
-                    numPhotosRemaining[0] -= 1;
-                    assert numPhotosRemaining[0] >= 0;
-                    if (hasExecutedListener[0])
-                        return;  // do nothing
-
-                    if (!taskLoadPhoto.isSuccessful()) {
-                        Exception e = taskLoadPhoto.getException();
-                        assert e != null;
-                        listener.onResult(new Result<>(new DbError(
-                                "Exception downloading photos: " + e.getLocalizedMessage(), path)));
-                        hasExecutedListener[0] = true;
-                    }
-                    byte[] photoBytes = taskLoadPhoto.getResult();
-                    if (photoBytes != null) {
-                        Bitmap reconstructedPhoto = photoStorage.decodeFromBytes(photoBytes);
-                        Objects.requireNonNull(photoPathToShot.get(path)).setPhoto(reconstructedPhoto);
-                    }
-
-                    if (numPhotosRemaining[0] == 0) {
-                        // all photos have been loaded
-                        listener.onResult(new Result<>(shots));
-                    }
-                });
+                        if (!taskLoadPhoto.isSuccessful()) {
+                            Log.d("QR_IMAGE_EXCEPTION", photoRef.getPath());
+                            Exception e = taskLoadPhoto.getException();
+                            assert e != null;
+                            e.printStackTrace();
+                        } else {
+                            Log.d("QR_IMAGE_SUCCESS", photoRef.getPath());
+                            byte[] photoBytes = taskLoadPhoto.getResult();
+                            if (photoBytes != null) {
+                                Bitmap reconstructedPhoto = photoStorage.decodeFromBytes(photoBytes);
+                                Objects.requireNonNull(photoPathToShot.get(path)).setPhoto(reconstructedPhoto);
+                            }
+                        }
+                        if (numPhotosRemaining[0] == 0) {
+                            Log.d("QR_FINISHED", "loading finished");
+                            // all photos have been loaded
+                            listener.onResult(new Result<>(shots));
+                        }
+                    });
+                }
             }
         }, querySnapshot -> {
             assert querySnapshot != null;
-            return new Result<>(querySnapshot.getDocuments());
+            return new Result<List<DocumentSnapshot>>(querySnapshot.getDocuments());
         });
     }
 

@@ -107,7 +107,7 @@
                     android:id="@+id/modify_contact_info_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="100dp"
+                    android:layout_marginTop="16dp"
                     android:layout_marginBottom="24dp"
                     android:text="@string/modify_literal" />
             </LinearLayout>
@@ -118,6 +118,7 @@
         android:id="@+id/iv_code"
         android:layout_width="0dp"
         android:layout_height="0dp"
+
         android:layout_margin="18dp"
         app:layout_constraintTop_toBottomOf="@id/account_main_layout"
         app:layout_constraintStart_toStartOf="parent"
