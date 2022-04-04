@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -156,8 +157,8 @@ public class CommentsFragment extends Fragment {
                             Toast.makeText(this.getContext(),
                                     "Failed to add comment.",
                                     Toast.LENGTH_SHORT).show();
-
                             setLoadingState(false);
+                            return;
                         }
 
                         // Handle addition success
