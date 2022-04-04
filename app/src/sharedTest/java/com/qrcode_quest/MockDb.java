@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -211,14 +213,18 @@ public class MockDb {
 
         when(docRef.getId()).thenReturn(documentName);
         when(docRef.getParent()).thenReturn(colRef);
-        when(docRef.delete()).then(new Answer<Void>() {
+        when(docRef.delete()).then(new Answer<Task<Void>>() {
             @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                HashMap<String, HashMap<String, Object>> colContent =
-                        Objects.requireNonNull(dbContent.get(collectionName));
-                Objects.requireNonNull(colContent.get(documentName)).clear();
-                colContent.remove(documentName);
-                return null;
+            public Task<Void> answer(InvocationOnMock invocation) throws Throwable {
+                return createMockTask(new MockTaskAction<Void>() {
+                    @Override
+                    public void onMockTaskExecution(Task<Void> task) throws FirebaseFirestoreException {
+                        HashMap<String, HashMap<String, Object>> colContent =
+                                Objects.requireNonNull(dbContent.get(collectionName));
+                        Objects.requireNonNull(colContent.get(documentName)).clear();
+                        colContent.remove(documentName);
+                    }
+                }).addOnCompleteListener(task -> { });
             }
         });
         when(docRef.set(any(HashMap.class))).thenAnswer(new Answer<Task<Void>>() {

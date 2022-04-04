@@ -249,8 +249,7 @@ public class MainActivityTest {
         onView(withId(R.id.qrview_delete_button)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
 
         // Check deletion functionality
-        // TODO fix exception (if time permits)
-        //onView(withId(R.id.qrview_delete_button)).perform(click());
+        onView(withId(R.id.qrview_delete_button)).perform(click());
         scenario.close();
     }
 
