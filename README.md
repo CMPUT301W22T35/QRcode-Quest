@@ -6,15 +6,16 @@ QRCodeQuest is an assignment project of UofA written by us (see [this page](../.
 A video demo of the project is available [here](https://youtu.be/Tvy3v0vWhqk).
 
 ### Build Dependencies
-Our app depends on the following components:
-- OpenStreetMap
+Our project depends on the following components (see the app level gradle file for more details.):
 - Android Navigation
+- OpenStreetMap
 - Firebase Firestore and Storage
 - ZXing
 - JUnit
 - Espresso
 - Mockito
-See the app's gradle file for more details.
+
+In order to build our application, you need to add the google-services.json file from a project you created on Google's Firestore console to the project directory. After that is done, open it with Android Studio and build the source code.
 
 ### Game Description
 In QRCodeQuest, the main objective is capturing QR codes to score points to a player's account. 
@@ -24,6 +25,7 @@ Our game features convenient account management. Whether you are a player or a p
 After login, you can look at the local map to determine the nearby QR codes that have been captured by other players. You can then navigates to a QR code on the map and capture it - the code will be recorded to your account to help you to get a higher score on the leaderboard. The game has a variety of stats recorded for a player: highest points QR code, number of codes captured, total scores and etc. You can see them in a leaderboard - and don't forget to make a comment under an interesting QR code you capture/discover on the leaderboard.
 
 ### What did we learn?
+In this project, we started with little knowledge of Android development. In the development process, we learnt to keeping track of user stories and maintaining the UI mockups and UML of the project. We applied agile practices and experimented with one week's standup meetings. by working with various libraries of Android Studio, we learnt how to work with permissions, view models, Android life cycles and database asynchronous calls. We learnt to write unit tests to specify requirements and check if the said requirements are met for any particular commit. We learnt to work with multiple Git branches and setup Git Action to automate unit tests.
 
 ### Acknowledgement
 We'd like to thank everybody in the team for completing this assignment, in particular Jayden who put a lot of efforts into this project, as well as our TA and professor Ildar Akhmetov for giving us advice on this project.
